@@ -4,6 +4,7 @@
 {% block title %}Visualización de Datos{% endblock %}
 {% block static %}
     <script src="{% static "documents/main.js" %}" defer></script>
+    <link rel="stylesheet" href="{% static "documents/Css/datos.css" %}">
 {% endblock %}
 {% block content %}
     {% if messages %}
@@ -70,7 +71,7 @@
         <tbody>
           {% for site in sites %}
           <tr>
-            <td class="edit-column"><button onclick="editarRegistro('sites', {{ site.pk }})">Editar</button></td>
+            <td class="edit-column"><button onclick="editarRegistro('sites', '{{ site.pk }}')">Editar</button></td>
             <td>{{ site.id_site }}</td>
             <td>{{ site.name }}</td>
             <td>{{ site.patent_count }}</td>
@@ -99,7 +100,7 @@
         <tbody>
           {% for equipment in sap_equipments %}
           <tr>
-            <td class="edit-column"><button onclick="editarRegistro('sap_equipments', {{ equipment.pk }})">Editar</button></td>
+            <td class="edit-column"><button onclick="editarRegistro('sap_equipments', '{{ equipment.pk }}')">Editar</button></td>
             <td>{{ equipment.id_equipment }}</td>
             <td>{{ equipment.code }}</td>
             <td>{{ equipment.description|default:"Sin descripción" }}</td>
@@ -130,7 +131,7 @@
         <tbody>
           {% for ceco in cecos %}
           <tr>
-            <td class="edit-column"><button onclick="editarRegistro('cecos', {{ ceco.pk }})">Editar</button></td>
+            <td class="edit-column"><button onclick="editarRegistro('cecos', '{{ ceco.pk }}')">Editar</button></td>
             <td>{{ ceco.id_ceco }}</td>
             <td>{{ ceco.code }}</td>
             <td>{{ ceco.name }}</td>
@@ -162,7 +163,7 @@
         <tbody>
           {% for vehicle_type in vehicle_types %}
           <tr>
-            <td class="edit-column"><button onclick="editarRegistro('vehicle_types', {{ vehicle_type.pk }})">Editar</button></td>
+            <td class="edit-column"><button onclick="editarRegistro('vehicle_types', '{{ vehicle_type.pk }}')">Editar</button></td>
             <td>{{ vehicle_type.id_type }}</td>
             <td>{{ vehicle_type.name }}</td>
             <td>{{ vehicle_type.site.name }}</td>
@@ -192,7 +193,7 @@
         <tbody>
           {% for status in vehicle_statuses %}
           <tr>
-            <td class="edit-column"><button onclick="editarRegistro('vehicle_statuses', {{ status.pk }})">Editar</button></td>
+            <td class="edit-column"><button onclick="editarRegistro('vehicle_statuses', '{{ status.pk }}')">Editar</button></td>
             <td>{{ status.id_status }}</td>
             <td>{{ status.name }}</td>
             <td>{{ status.description|default:"Sin descripción" }}</td>
@@ -240,7 +241,7 @@
         <tbody>
           {% for vehicle in vehicles %}
           <tr>
-            <td class="edit-column"><button onclick="editarRegistro('vehicles', {{ vehicle.pk }})">Editar</button></td>
+            <td class="edit-column"><button onclick="editarRegistro('vehicles', '{{ vehicle.pk }}')">Editar</button></td>
             <td>{{ vehicle.patent }}</td>
             <td>{{ vehicle.equipment.code }}</td>
             <td>{{ vehicle.ceco.name }}</td>
@@ -289,7 +290,7 @@
         <tbody>
           {% for role in roles %}
           <tr>
-            <td class="edit-column"><button onclick="editarRegistro('roles', {{ role.pk }})">Editar</button></td>
+            <td class="edit-column"><button onclick="editarRegistro('roles', '{{ role.pk }}')">Editar</button></td>
             <td>{{ role.id_role }}</td>
             <td>{{ role.name }}</td>
             <td>{{ role.description|default:"Sin descripción" }}</td>
@@ -319,7 +320,7 @@
         <tbody>
           {% for status in user_statuses %}
           <tr>
-            <td class="edit-column"><button onclick="editarRegistro('user_statuses', {{ status.pk }})">Editar</button></td>
+            <td class="edit-column"><button onclick="editarRegistro('user_statuses', '{{ status.pk }}')">Editar</button></td>
             <td>{{ status.id_status }}</td>
             <td>{{ status.name }}</td>
             <td>{{ status.description|default:"Sin descripción" }}</td>
@@ -352,7 +353,7 @@
         <tbody>
           {% for user in flota_users %}
           <tr>
-            <td class="edit-column"><button onclick="editarRegistro('flota_users', {{ user.pk }})">Editar</button></td>
+            <td class="edit-column"><button onclick="editarRegistro('flota_users', '{{ user.pk }}')">Editar</button></td>
             <td>{{ user.id_user }}</td>
             <td>{{ user.name }}</td>
             <td>{{ user.role.name }}</td>
@@ -388,7 +389,7 @@
         <tbody>
           {% for route in routes %}
           <tr>
-            <td class="edit-column"><button onclick="editarRegistro('routes', {{ route.pk }})">Editar</button></td>
+            <td class="edit-column"><button onclick="editarRegistro('routes', '{{ route.pk }}')">Editar</button></td>
             <td>{{ route.id_route }}</td>
             <td>{{ route.route_code }}</td>
             <td>{{ route.gtm }}</td>
@@ -426,7 +427,7 @@
         <tbody>
           {% for ingreso in ingresos %}
           <tr>
-            <td class="edit-column"><button onclick="editarRegistro('ingresos', {{ ingreso.pk }})">Editar</button></td>
+            <td class="edit-column"><button onclick="editarRegistro('ingresos', '{{ ingreso.pk }}')">Editar</button></td>
             <td>{{ ingreso.id_ingreso }}</td>
             <td>{{ ingreso.patent.patent }}</td>
             <td>{{ ingreso.service_type.name }}</td>
@@ -462,7 +463,7 @@
         <tbody>
           {% for service_type in service_types %}
           <tr>
-            <td class="edit-column"><button onclick="editarRegistro('service_types', {{ service_type.pk }})">Editar</button></td>
+            <td class="edit-column"><button onclick="editarRegistro('service_types', '{{ service_type.pk }}')">Editar</button></td>
             <td>{{ service_type.id_service_type }}</td>
             <td>{{ service_type.name }}</td>
             <td>{{ service_type.description|default:"Sin descripción" }}</td>
@@ -497,7 +498,7 @@
         <tbody>
           {% for task in tasks %}
           <tr>
-            <td class="edit-column"><button onclick="editarRegistro('tasks', {{ task.pk }})">Editar</button></td>
+            <td class="edit-column"><button onclick="editarRegistro('tasks', '{{ task.pk }}')">Editar</button></td>
             <td>{{ task.id_task }}</td>
             <td>{{ task.ingreso.id_ingreso }}</td>
             <td>{{ task.description }}</td>
@@ -531,7 +532,7 @@
         <tbody>
           {% for assignment in task_assignments %}
           <tr>
-            <td class="edit-column"><button onclick="editarRegistro('task_assignments', {{ assignment.pk }})">Editar</button></td>
+            <td class="edit-column"><button onclick="editarRegistro('task_assignments', '{{ assignment.pk }}')">Editar</button></td>
             <td>{{ assignment.id_assignment }}</td>
             <td>{{ assignment.task.id_task }}</td>
             <td>{{ assignment.user.name }}</td>
@@ -564,7 +565,7 @@
         <tbody>
           {% for pause in pauses %}
           <tr>
-            <td class="edit-column"><button onclick="editarRegistro('pauses', {{ pause.pk }})">Editar</button></td>
+            <td class="edit-column"><button onclick="editarRegistro('pauses', '{{ pause.pk }}')">Editar</button></td>
             <td>{{ pause.id_pause }}</td>
             <td>{{ pause.assignment.id_assignment }}</td>
             <td>{{ pause.motivo }}</td>
@@ -600,7 +601,7 @@
         <tbody>
           {% for document in documents %}
           <tr>
-            <td class="edit-column"><button onclick="editarRegistro('documents', {{ document.pk }})">Editar</button></td>
+            <td class="edit-column"><button onclick="editarRegistro('documents', '{{ document.pk }}')">Editar</button></td>
             <td>{{ document.id_document }}</td>
             <td>{{ document.ingreso.id_ingreso }}</td>
             <td>{{ document.type }}</td>
@@ -634,7 +635,7 @@
         <tbody>
           {% for repuesto in repuestos %}
           <tr>
-            <td class="edit-column"><button onclick="editarRegistro('repuestos', {{ repuesto.pk }})">Editar</button></td>
+            <td class="edit-column"><button onclick="editarRegistro('repuestos', '{{ repuesto.pk }}')">Editar</button></td>
             <td>{{ repuesto.id_repuesto }}</td>
             <td>{{ repuesto.name }}</td>
             <td>{{ repuesto.quantity }}</td>
@@ -667,7 +668,7 @@
         <tbody>
           {% for notification in notifications %}
           <tr>
-            <td class="edit-column"><button onclick="editarRegistro('notifications', {{ notification.pk }})">Editar</button></td>
+            <td class="edit-column"><button onclick="editarRegistro('notifications', '{{ notification.pk }}')">Editar</button></td>
             <td>{{ notification.id_notification }}</td>
             <td>{{ notification.recipient.name }}</td>
             <td>{{ notification.message }}</td>
@@ -700,7 +701,7 @@
         <tbody>
           {% for report in reports %}
           <tr>
-            <td class="edit-column"><button onclick="editarRegistro('reports', {{ report.pk }})">Editar</button></td>
+            <td class="edit-column"><button onclick="editarRegistro('reports', '{{ report.pk }}')">Editar</button></td>
             <td>{{ report.id_report }}</td>
             <td>{{ report.type }}</td>
             <td>{{ report.generated_datetime }}</td>
@@ -740,7 +741,7 @@
         <tbody>
           {% for schedule in maintenance_schedules %}
           <tr>
-            <td class="edit-column"><button onclick="editarRegistro('maintenance_schedules', {{ schedule.pk }})">Editar</button></td>
+            <td class="edit-column"><button onclick="editarRegistro('maintenance_schedules', '{{ schedule.pk }}')">Editar</button></td>
             <td>{{ schedule.id_schedule }}</td>
             <td>{{ schedule.patent.patent }}</td>
             <td>{{ schedule.service_type.name }}</td>

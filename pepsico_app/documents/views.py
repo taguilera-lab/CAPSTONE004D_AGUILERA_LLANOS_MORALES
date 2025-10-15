@@ -155,11 +155,15 @@ def edit_form(request, modelo, pk):
     forms[form_key] = form  # Replace with the instance form
 
     if request.method == 'POST':
-        form = form_class(request.POST, instance=instance)
+        form = form_class(request.POST)
+        form.instance = instance
         if form.is_valid():
-            form.save()
-            messages.success(request, f'Se ha editado un registro en {table_names.get(modelo, "Tabla")}.')
-            return redirect('datos')
+            try:
+                form.save()
+                messages.success(request, f'Se ha editado un registro en {table_names.get(modelo, "Tabla")}.')
+                return redirect('datos')
+            except Exception as e:
+                messages.error(request, f'Error al guardar: {str(e)}')
         else:
             forms[form_key] = form
 

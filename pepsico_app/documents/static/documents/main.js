@@ -228,7 +228,7 @@ function eliminarSeleccionados() {
 
   const selectedTableId = document.getElementById('tablaSelector').value;
   const modelo = selectedTableId.replace('tabla-', ''); // ej. 'sites'
-  const idIndex = modoActual === 'eliminar' ? 3 : 2; // En eliminar, ID es tercera columna
+  const idIndex = modoActual === 'normal' ? 1 : (modoActual === 'editar' ? 2 : 3); // nth-child para la columna ID
   const ids = Array.from(checkboxes).map(cb => cb.closest('tr').querySelector(`td:nth-child(${idIndex})`).textContent.trim());
 
   const csrftoken = getCookie('csrftoken');
@@ -296,6 +296,10 @@ function filterTable() {
   const rows = selectedTable.querySelectorAll('tbody tr');
 
   rows.forEach(row => {
+    if (row.querySelector('td[colspan]')) {
+      row.style.display = '';
+      return;
+    }
     const cells = Array.from(row.querySelectorAll('td'));
     let match = false;
 
@@ -310,10 +314,8 @@ function filterTable() {
         let adjustedIndex = fieldIndex;
         if (modoActual === 'eliminar') {
           adjustedIndex += 1; // +1 por la columna checkbox
-        } else if (modoActual === 'normal') {
-          adjustedIndex -= 1; // -1 porque no hay columna Editar
         }
-        // En modo editar, fieldIndex ya incluye la columna Editar
+        // En modo editar y normal, fieldIndex ya es correcto
 
         if (cells[adjustedIndex]) {
           match = cells[adjustedIndex].textContent.toLowerCase().includes(searchTerm);
@@ -347,7 +349,7 @@ function mostrarTabla() {
 }
 
 function editarRegistro(modelo, pk) {
-  window.location.href = `/datos/formulario/editar/${modelo}/${pk}/`;
+  window.location.href = `/datos/formulario/editar/${modelo}/${encodeURIComponent(pk)}/`;
 }
 
 window.onload = function() {

@@ -1,0 +1,121 @@
+/* Estilos para datos.html - Menú superpuesto */
+
+/* Contenido principal pegado al borde con padding */
+body {
+  margin-left: 0; /* Quitar margen para superposición */
+  padding: 80px 20px 20px 20px; /* Padding top para barra fija */
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f4;
+  position: relative; /* Para z-index si es necesario */
+}
+
+/* Asegurar que el menú lateral se superponga */
+.container-menu {
+  z-index: 1000; /* Alto z-index para superposición */
+}
+
+/* Estilos para el selector de tablas */
+label {
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+select, input[type="text"] {
+  padding: 8px;
+  margin-right: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* Botones */
+button {
+  padding: 8px 16px;
+  margin-right: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+/* Tablas */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  background-color: white;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+th, td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+th {
+  background-color: #f8f9fa;
+  font-weight: bold;
+}
+
+tr:hover {
+  background-color: #f1f1f1;
+}
+
+/* Columnas de edición */
+.edit-column {
+  width: 80px;
+}
+
+/* Contenedores de tablas */
+.tabla-contenedor {
+  display: none;
+}
+
+.tabla-contenedor h2 {
+  margin-bottom: 10px;
+  color: #333;
+}
+
+/* Mensajes */
+.messages {
+  margin-bottom: 20px;
+}
+
+.alert {
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+
+.alert-success {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.alert-error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+/* Responsive para móviles */
+@media (max-width: 768px) {
+  body {
+    margin-left: 0;
+    padding: 10px;
+  }
+
+  table {
+    font-size: 14px;
+  }
+
+  th, td {
+    padding: 8px;
+  }
+}
