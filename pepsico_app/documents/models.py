@@ -5,6 +5,9 @@ class Site(models.Model):
     name = models.CharField(max_length=100)
     patent_count = models.IntegerField()
 
+    def __str__(self):
+        return f"{self.id_site} - {self.name}"
+
     class Meta:
         db_table = 'Sites'
 
@@ -12,6 +15,9 @@ class SAPEquipment(models.Model):
     id_equipment = models.AutoField(primary_key=True)
     code = models.CharField(max_length=20)
     description = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.id_equipment} - {self.code}"
 
     class Meta:
         db_table = 'SAPEquipment'
@@ -23,6 +29,9 @@ class CECO(models.Model):
     type = models.CharField(max_length=50)
     description = models.TextField(null=True, blank=True)
 
+    def __str__(self):
+        return f"{self.id_ceco} - {self.name}"
+
     class Meta:
         db_table = 'CECO'
 
@@ -32,6 +41,9 @@ class VehicleType(models.Model):
     site = models.ForeignKey(Site, on_delete=models.CASCADE, db_column='site_id')
     data = models.CharField(max_length=50)
 
+    def __str__(self):
+        return f"{self.id_type} - {self.name}"
+
     class Meta:
         db_table = 'VehicleTypes'
 
@@ -39,6 +51,9 @@ class VehicleStatus(models.Model):
     id_status = models.AutoField(primary_key=True)
     name = models.CharField(max_length=50)
     description = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.id_status} - {self.name}"
 
     class Meta:
         db_table = 'VehicleStatus'
@@ -67,6 +82,9 @@ class Vehicle(models.Model):
     auction = models.BooleanField()
     status = models.ForeignKey(VehicleStatus, on_delete=models.SET_NULL, db_column='status_id', null=True, blank=True)
 
+    def __str__(self):
+        return self.patent
+
     class Meta:
         db_table = 'Vehicles'
 
@@ -76,6 +94,9 @@ class Role(models.Model):
     description = models.TextField(null=True, blank=True)
     is_supervisor_role = models.BooleanField(default=False)
 
+    def __str__(self):
+        return f"{self.id_role} - {self.name}"
+
     class Meta:
         db_table = 'Role'
 
@@ -83,6 +104,9 @@ class UserStatus(models.Model):
     id_status = models.AutoField(primary_key=True)
     name = models.CharField(max_length=50)
     description = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.id_status} - {self.name}"
 
     class Meta:
         db_table = 'UserStatus'
@@ -96,6 +120,9 @@ class FlotaUser(models.Model):
     observations = models.TextField()
     gpid = models.CharField(max_length=20)
 
+    def __str__(self):
+        return f"{self.id_user} - {self.name}"
+
     class Meta:
         db_table = 'FlotaUsers'
 
@@ -107,6 +134,9 @@ class Route(models.Model):
     truck = models.ForeignKey(Vehicle, on_delete=models.CASCADE, db_column='truck_patent')
     comment = models.TextField()
 
+    def __str__(self):
+        return f"{self.id_route} - {self.route_code}"
+
     class Meta:
         db_table = 'Routes'
 
@@ -115,6 +145,9 @@ class ServiceType(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(null=True, blank=True)
     site = models.ForeignKey(Site, on_delete=models.CASCADE, db_column='site_id')
+
+    def __str__(self):
+        return f"{self.id_service_type} - {self.name}"
 
     class Meta:
         db_table = 'ServiceTypes'
@@ -130,6 +163,9 @@ class Ingreso(models.Model):
     observations = models.TextField(null=True, blank=True)
     authorization = models.BooleanField()
 
+    def __str__(self):
+        return f"{self.id_ingreso} - {self.patent}"
+
     class Meta:
         db_table = 'Ingresos'
 
@@ -143,6 +179,9 @@ class Task(models.Model):
     service_type = models.ForeignKey(ServiceType, on_delete=models.CASCADE, db_column='service_type_id')
     supervisor = models.ForeignKey(FlotaUser, on_delete=models.SET_NULL, db_column='supervisor_id', null=True, blank=True)
 
+    def __str__(self):
+        return f"{self.id_task} - {self.description[:50]}"
+
     class Meta:
         db_table = 'Tasks'
 
@@ -150,6 +189,9 @@ class TaskAssignment(models.Model):
     id_assignment = models.AutoField(primary_key=True)
     task = models.ForeignKey(Task, on_delete=models.CASCADE, db_column='task_id')
     user = models.ForeignKey(FlotaUser, on_delete=models.CASCADE, db_column='user_id')
+
+    def __str__(self):
+        return f"{self.id_assignment} - {self.task} - {self.user}"
 
     class Meta:
         db_table = 'TaskAssignments'
@@ -163,6 +205,9 @@ class Pause(models.Model):
     start_datetime = models.DateTimeField()
     end_datetime = models.DateTimeField()
 
+    def __str__(self):
+        return f"{self.id_pause} - {self.motivo}"
+
     class Meta:
         db_table = 'Pauses'
 
@@ -174,6 +219,9 @@ class Document(models.Model):
     upload_datetime = models.DateTimeField()
     user = models.ForeignKey(FlotaUser, on_delete=models.CASCADE, db_column='user_id')
 
+    def __str__(self):
+        return f"{self.id_document} - {self.type}"
+
     class Meta:
         db_table = 'Documents'
 
@@ -183,6 +231,9 @@ class Repuesto(models.Model):
     quantity = models.IntegerField()
     task = models.ForeignKey(Task, on_delete=models.SET_NULL, db_column='task_id', null=True, blank=True)
     delivery_datetime = models.DateTimeField()
+
+    def __str__(self):
+        return f"{self.id_repuesto} - {self.name}"
 
     class Meta:
         db_table = 'Repuestos'
@@ -194,6 +245,9 @@ class Notification(models.Model):
     sent_datetime = models.DateTimeField()
     type = models.CharField(max_length=50)
 
+    def __str__(self):
+        return f"{self.id_notification} - {self.type}"
+
     class Meta:
         db_table = 'Notifications'
 
@@ -203,6 +257,9 @@ class Report(models.Model):
     generated_datetime = models.DateTimeField()
     data = models.JSONField()
     user = models.ForeignKey(FlotaUser, on_delete=models.CASCADE, db_column='user_id')
+
+    def __str__(self):
+        return f"{self.id_report} - {self.type}"
 
     class Meta:
         db_table = 'Reports'
@@ -219,6 +276,9 @@ class MaintenanceSchedule(models.Model):
     supervisor = models.ForeignKey(FlotaUser, on_delete=models.SET_NULL, db_column='supervisor_id', null=True, blank=True, related_name='supervised_schedules')
     status = models.ForeignKey(UserStatus, on_delete=models.CASCADE, db_column='status_id')
     observations = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.id_schedule} - {self.patent}"
 
     class Meta:
         db_table = 'MaintenanceSchedules'
