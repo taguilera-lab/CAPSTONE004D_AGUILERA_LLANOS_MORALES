@@ -25,9 +25,15 @@ document.addEventListener('DOMContentLoaded', function() {
       document.getElementById('modal-status').textContent = info.event.extendedProps.status;
       document.getElementById('modal-description').textContent = info.event.extendedProps.description;
 
-      // Mostrar el modal
-      document.getElementById('eventModal').style.display = 'block';
-      console.log('Modal abierto');
+      // Mostrar el modal con Bootstrap
+      var modal = new bootstrap.Modal(document.getElementById('eventModal'));
+      modal.show();
+      
+      // Configurar el botón de crear ingreso
+      document.getElementById('create-ingreso-btn').onclick = function() {
+        var patent = info.event.extendedProps.patent;
+        window.location.href = '/agenda/ingresos/crear/?patent=' + encodeURIComponent(patent);
+      };
     },
     dateClick: function(info) {
       console.log('Día clicado:', info.dateStr);
@@ -35,25 +41,4 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
   calendar.render();
-
-  // Cerrar el modal
-  var closeBtn = document.querySelector('#eventModal .modal-close');
-  console.log('Botón close encontrado:', closeBtn);
-  if (closeBtn) {
-    closeBtn.addEventListener('click', function() {
-      console.log('Cerrando modal con X');
-      document.getElementById('eventModal').style.display = 'none';
-    });
-  } else {
-    console.log('No se encontró el botón de cerrar');
-  }
-
-  // Cerrar el modal al hacer clic fuera
-  window.addEventListener('click', function(event) {
-    var modal = document.getElementById('eventModal');
-    if (event.target == modal) {
-      console.log('Cerrando modal con clic afuera');
-      modal.style.display = 'none';
-    }
-  });
 });

@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Crear Ingreso{% endblock %}
+
+{% block static %}
+<script src="{% static 'agenda/js/ingreso_form.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h1 class="mb-4">Crear Ingreso</h1>
+  
+  {% if related_schedule %}
+  <div class="alert alert-info">
+    <h5><i class="icon-calendar"></i> Agendamiento encontrado</h5>
+    <p>Se ha encontrado un agendamiento para este vehículo. La información se ha pre-llenado automáticamente.</p>
+    <small>
+      <strong>Agendado para:</strong> {{ related_schedule.start_datetime|date:"d/m/Y H:i" }}<br>
+      <strong>Servicio:</strong> {{ related_schedule.service_type.name }}<br>
+      {% if related_schedule.observations %}
+      <strong>Observaciones:</strong> {{ related_schedule.observations }}
+      {% endif %}
+    </small>
+  </div>
+  {% endif %}
+  
+  <form method="post" id="ingreso-form" class="row g-3">
+    {% csrf_token %}
+    <div class="col-md-6">
+      <label for="{{ form.patent.id_for_label }}" class="form-label">Patente</label>
+      {{ form.patent }}
+    </div>
+    <div class="col-md-6">
+      <label for="{{ form.service_type.id_for_label }}" class="form-label">Tipo de Servicio</label>
+      {{ form.service_type }}
+    </div>
+    <div class="col-md-6">
+      <label for="{{ form.entry_datetime.id_for_label }}" class="form-label">Fecha y Hora de Entrada</label>
+      {{ form.entry_datetime }}
+    </div>
+    <div class="col-md-6">
+      <label for="{{ form.chofer.id_for_label }}" class="form-label">Chofer</label>
+      {{ form.chofer }}
+    </div>
+    <div class="col-md-6">
+      <label for="{{ form.supervisor.id_for_label }}" class="form-label">Supervisor</label>
+      {{ form.supervisor }}
+    </div>
+    <div class="col-md-6">
+      <label for="{{ form.route.id_for_label }}" class="form-label">Ruta</label>
+      {{ form.route }}
+    </div>
+    <div class="col-md-6">
+      <label for="{{ form.site.id_for_label }}" class="form-label">Sucursal de Origen</label>
+      {{ form.site }}
+    </div>
+    <div class="col-12">
+      <label for="{{ form.observations.id_for_label }}" class="form-label">Observaciones</label>
+      {{ form.observations }}
+    </div>
+    <div class="col-12">
+      <button type="submit" class="btn btn-primary">Guardar</button>
+      <a href="{% url 'ingresos_list' %}" class="btn btn-secondary">Cancelar</a>
+    </div>
+  </form>
+</div>
+
+<script>
+  var vehiclesData = {{ vehicles|safe }};
+  var routesData = {{ routes|safe }};
+</script>
+{% endblock %}

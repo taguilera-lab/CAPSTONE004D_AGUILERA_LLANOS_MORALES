@@ -11,27 +11,41 @@
 {% endblock %}
 
 {% block content %}
-<div class="container">
-  <h1>Calendario de Agendas</h1>
+<div class="container mt-4">
+  <h1 class="mb-4">Calendario de Agendas</h1>
+  <a href="{% url 'agendar_ingreso' %}" class="btn btn-primary mb-3">Agendar Nuevo Ingreso</a>
+  <a href="{% url 'ingresos_list' %}" class="btn btn-secondary mb-3">Ver Lista de Ingresos</a>
   <div id='calendar'></div>
 </div>
 
 <!-- Modal -->
-<div id="eventModal" class="modal">
-  <div class="modal-content">
-    <span class="modal-close">&times;</span>
-    <h2>Detalles del Evento</h2>
-    <p><strong>ID:</strong> <span id="modal-id"></span></p>
-    <p><strong>Patente:</strong> <span id="modal-patent"></span></p>
-    <p><strong>Tipo de Servicio:</strong> <span id="modal-service-type"></span></p>
-    <p><strong>Inicio:</strong> <span id="modal-start"></span></p>
-    <p><strong>Fin:</strong> <span id="modal-end"></span></p>
-    <p><strong>Regla de Recurrencia:</strong> <span id="modal-recurrence"></span></p>
-    <p><strong>Minutos de Recordatorio:</strong> <span id="modal-reminder"></span></p>
-    <p><strong>Usuario Asignado:</strong> <span id="modal-assigned"></span></p>
-    <p><strong>Supervisor:</strong> <span id="modal-supervisor"></span></p>
-    <p><strong>Estado:</strong> <span id="modal-status"></span></p>
-    <p><strong>Observaciones:</strong> <span id="modal-description"></span></p>
+<div id="eventModal" class="modal fade" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Detalles del Evento</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p><strong>ID:</strong> <span id="modal-id"></span></p>
+        <p><strong>Patente:</strong> <span id="modal-patent"></span></p>
+        <p><strong>Tipo de Servicio:</strong> <span id="modal-service-type"></span></p>
+        <p><strong>Inicio:</strong> <span id="modal-start"></span></p>
+        <p><strong>Fin:</strong> <span id="modal-end"></span></p>
+        <p><strong>Regla de Recurrencia:</strong> <span id="modal-recurrence"></span></p>
+        <p><strong>Minutos de Recordatorio:</strong> <span id="modal-reminder"></span></p>
+        <p><strong>Usuario Asignado:</strong> <span id="modal-assigned"></span></p>
+        <p><strong>Supervisor:</strong> <span id="modal-supervisor"></span></p>
+        <p><strong>Estado:</strong> <span id="modal-status"></span></p>
+        <p><strong>Observaciones:</strong> <span id="modal-description"></span></p>
+      </div>
+      <div class="modal-footer">
+        <a href="#" id="create-ingreso-btn" class="btn btn-primary">Crear Ingreso</a>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
   </div>
 </div>
 

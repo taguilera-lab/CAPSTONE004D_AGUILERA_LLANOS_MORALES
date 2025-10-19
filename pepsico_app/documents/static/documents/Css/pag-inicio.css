@@ -1,5 +1,5 @@
 * { box-sizing: border-box; }
-body { margin: 0; background: #fff; position: relative; font-family: system-ui, Arial; }
+body { margin: 0; background: #fff; position: relative; font-family: system-ui, Arial; padding-top: 3.75rem; }
 
 
 .barra-superior {

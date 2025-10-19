@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Crear Ingreso{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h1 class="mb-4">Crear Nuevo Ingreso</h1>
+  
+  <!-- Selector de fecha -->
+  <div class="row mb-4">
+    <div class="col-md-6">
+      <form method="get" class="d-flex gap-2">
+        <label for="date" class="form-label align-self-center mb-0">Seleccionar fecha:</label>
+        <input type="date" name="date" id="date" class="form-control" 
+               value="{{ selected_date|date:'Y-m-d' }}" style="width: auto;">
+        <button type="submit" class="btn btn-outline-primary">Filtrar</button>
+      </form>
+    </div>
+    <div class="col-md-6 text-end">
+      <p class="mb-0 text-muted">Mostrando agendamientos para: <strong>{{ selected_date|date:"l, d F Y" }}</strong></p>
+    </div>
+  </div>
+  
+  {% if pending_schedules %}
+  <div class="row">
+    <div class="col-md-8">
+      <h3>Agendamientos Pendientes - {{ selected_date|date:"l, d F" }}</h3>
+      <p class="text-muted">Selecciona un agendamiento existente para crear el ingreso con la información pre-llenada:</p>
+      
+      <div class="list-group">
+        {% for schedule in pending_schedules %}
+        <div class="list-group-item">
+          <div class="d-flex w-100 justify-content-between">
+            <h5 class="mb-1">{{ schedule.patent }} - {% if schedule.expected_chofer %}{{ schedule.expected_chofer.name }}{% else %}Chofer por asignar{% endif %}</h5>
+            <small>{{ schedule.start_datetime|date:"d/m/Y H:i" }}</small>
+          </div>
+          {% if schedule.observations %}
+          <p class="mb-1">{{ schedule.observations }}</p>
+          {% endif %}
+          <small class="text-muted">
+            Sucursal: {{ schedule.patent.site.name }}
+            {% if schedule.assigned_user %} | Asignado: {{ schedule.assigned_user.name }}{% endif %}
+          </small>
+          <div class="mt-2">
+            <a href="{% url 'ingreso_create' %}?schedule_id={{ schedule.id_schedule }}" class="btn btn-primary btn-sm">Crear Ingreso</a>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    
+    <div class="col-md-4">
+      <h3>Crear Ingreso Directo</h3>
+      <p class="text-muted">Si no hay agendamiento relacionado, crea un ingreso desde cero:</p>
+      <a href="{% url 'ingreso_create' %}" class="btn btn-secondary">Crear Ingreso Directo</a>
+    </div>
+  </div>
+  {% else %}
+  <div class="alert alert-info">
+    <h4>No hay agendamientos pendientes</h4>
+    <p>No se encontraron agendamientos sin ingreso asociado para la fecha <strong>{{ selected_date|date:"d/m/Y" }}</strong>.</p>
+    <p>Puedes <a href="{% url 'ingreso_create' %}" class="alert-link">crear un ingreso directamente</a> o seleccionar otra fecha.</p>
+    
+    {% if available_dates %}
+    <p><strong>Fechas con agendamientos disponibles:</strong></p>
+    <div class="d-flex flex-wrap gap-2">
+      {% for available_date in available_dates %}
+      <a href="?date={{ available_date|date:'Y-m-d' }}" class="btn btn-sm btn-outline-info">
+        {{ available_date|date:"d/m" }}
+      </a>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+  
+  <div class="mt-4">
+    <a href="{% url 'ingresos_list' %}" class="btn btn-secondary">Volver a Lista</a>
+  </div>
+</div>
+{% endblock %}
