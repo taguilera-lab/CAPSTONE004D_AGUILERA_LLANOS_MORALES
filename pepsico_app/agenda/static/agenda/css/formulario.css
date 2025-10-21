@@ -193,7 +193,10 @@ a.btn-programar {
 /* Botón programar */
 .botones {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  padding: 20px 0;
 }
 
 .btn-programar {

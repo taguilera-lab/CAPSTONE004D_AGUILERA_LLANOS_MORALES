@@ -147,16 +147,14 @@ class IngresoForm(forms.ModelForm):
     class Meta:
         model = Ingreso
         fields = [
-            'patent', 'service_type', 'entry_datetime', 'exit_datetime',
-            'chofer', 'supervisor', 'observations', 'authorization'
+            'patent', 'entry_datetime', 'exit_datetime',
+            'chofer', 'observations', 'authorization'
         ]
         widgets = {
             'patent': forms.Select(attrs={'class': 'form-control'}),
-            'service_type': forms.Select(attrs={'class': 'form-control'}),
             'entry_datetime': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
             'exit_datetime': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
             'chofer': forms.Select(attrs={'class': 'form-control'}),
-            'supervisor': forms.Select(attrs={'class': 'form-control'}),
             'observations': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Observaciones'}),
             'authorization': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
@@ -165,7 +163,7 @@ class TaskForm(forms.ModelForm):
     class Meta:
         model = Task
         fields = [
-            'ingreso', 'description', 'urgency', 'start_datetime',
+            'work_order', 'description', 'urgency', 'start_datetime',
             'end_datetime', 'service_type', 'supervisor'
         ]
         widgets = {

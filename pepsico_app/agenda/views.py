@@ -310,7 +310,7 @@ def orden_trabajo_detail(request, work_order_id):
     # Obtener datos relacionados
     mechanic_assignments = work_order.mechanic_assignments.select_related('mechanic').filter(is_active=True)
     spare_part_usages = work_order.spare_part_usages.select_related('repuesto')
-    tasks = Task.objects.filter(ingreso=work_order.ingreso).select_related('service_type', 'supervisor')
+    tasks = Task.objects.filter(work_order=work_order).select_related('service_type', 'supervisor')
 
     # Formularios para agregar elementos
     mechanic_form = WorkOrderMechanicForm()
@@ -338,6 +338,12 @@ def orden_trabajo_update(request, work_order_id):
     """Vista para actualizar una orden de trabajo"""
     work_order = get_object_or_404(WorkOrder, id_work_order=work_order_id)
 
+    # Verificar si la orden está completada
+    if work_order.status.name == 'Completada':
+        from django.contrib import messages
+        messages.error(request, 'No puedes editar una orden de trabajo completada')
+        return redirect('orden_trabajo_detail', work_order_id=work_order.id_work_order)
+
     if request.method == 'POST':
         form = WorkOrderForm(request.POST, instance=work_order)
         if form.is_valid():
@@ -357,6 +363,12 @@ def orden_trabajo_update(request, work_order_id):
 def orden_trabajo_add_mechanic(request, work_order_id):
     """Vista para agregar un mecánico a una orden de trabajo"""
     work_order = get_object_or_404(WorkOrder, id_work_order=work_order_id)
+
+    # Verificar si la orden está completada
+    if work_order.status.name == 'Completada':
+        from django.contrib import messages
+        messages.error(request, 'No puedes agregar mecánicos a una orden de trabajo completada')
+        return redirect('orden_trabajo_detail', work_order_id=work_order.id_work_order)
 
     if request.method == 'POST':
         form = WorkOrderMechanicForm(request.POST)
@@ -380,6 +392,12 @@ def orden_trabajo_add_mechanic(request, work_order_id):
 def orden_trabajo_add_spare_part(request, work_order_id):
     """Vista para agregar un repuesto a una orden de trabajo"""
     work_order = get_object_or_404(WorkOrder, id_work_order=work_order_id)
+
+    # Verificar si la orden está completada
+    if work_order.status.name == 'Completada':
+        from django.contrib import messages
+        messages.error(request, 'No puedes agregar repuestos a una orden de trabajo completada')
+        return redirect('orden_trabajo_detail', work_order_id=work_order.id_work_order)
 
     if request.method == 'POST':
         form = SparePartUsageForm(request.POST)

@@ -207,14 +207,10 @@ class Ingreso(models.Model):
     id_ingreso = models.AutoField(primary_key=True)
     patent = models.ForeignKey(
         Vehicle, on_delete=models.CASCADE, db_column='patent')
-    service_type = models.ForeignKey(
-        ServiceType, on_delete=models.SET_NULL, db_column='service_type_id', null=True, blank=True)
     entry_datetime = models.DateTimeField()
     exit_datetime = models.DateTimeField(null=True, blank=True)
     chofer = models.ForeignKey(
         FlotaUser, on_delete=models.CASCADE, db_column='chofer_id')
-    supervisor = models.ForeignKey(FlotaUser, on_delete=models.SET_NULL, db_column='supervisor_id',
-                                   null=True, blank=True, related_name='supervised_ingresos')
     observations = models.TextField(null=True, blank=True)
     authorization = models.BooleanField()
     entry_registered_by = models.ForeignKey(
@@ -231,16 +227,54 @@ class Ingreso(models.Model):
         db_table = 'Ingresos'
 
 
+class WorkOrderStatus(models.Model):
+    id_status = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=50)
+    description = models.TextField(null=True, blank=True)
+    color = models.CharField(max_length=7, default='#6c757d')  # Color para UI
+
+    def __str__(self):
+        return f"{self.id_status} - {self.name}"
+
+    class Meta:
+        db_table = 'WorkOrderStatuses'
+
+
+class WorkOrder(models.Model):
+    id_work_order = models.AutoField(primary_key=True)
+    ingreso = models.OneToOneField(
+        Ingreso, on_delete=models.CASCADE, db_column='ingreso_id', related_name='work_order')
+    service_type = models.ForeignKey(
+        ServiceType, on_delete=models.CASCADE, db_column='service_type_id', null=True, blank=True)
+    status = models.ForeignKey(
+        WorkOrderStatus, on_delete=models.CASCADE, db_column='status_id')
+    created_datetime = models.DateTimeField(auto_now_add=True)
+    estimated_completion = models.DateTimeField(null=True, blank=True)
+    actual_completion = models.DateTimeField(null=True, blank=True)
+    total_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    observations = models.TextField(null=True, blank=True)
+    created_by = models.ForeignKey(
+        FlotaUser, on_delete=models.SET_NULL, db_column='created_by_id', null=True, blank=True, related_name='created_work_orders')
+    supervisor = models.ForeignKey(
+        FlotaUser, on_delete=models.SET_NULL, db_column='supervisor_id', null=True, blank=True, related_name='supervised_work_orders')
+
+    def __str__(self):
+        return f"OT-{self.id_work_order} - {self.ingreso.patent}"
+
+    class Meta:
+        db_table = 'WorkOrders'
+
+
 class Task(models.Model):
     id_task = models.AutoField(primary_key=True)
-    ingreso = models.ForeignKey(
-        Ingreso, on_delete=models.CASCADE, db_column='ingreso_id')
+    work_order = models.ForeignKey(
+        WorkOrder, on_delete=models.CASCADE, db_column='work_order_id', null=True, blank=True)
     description = models.TextField()
     urgency = models.CharField(max_length=20)
     start_datetime = models.DateTimeField()
     end_datetime = models.DateTimeField(null=True, blank=True)
     service_type = models.ForeignKey(
-        ServiceType, on_delete=models.CASCADE, db_column='service_type_id')
+        ServiceType, on_delete=models.CASCADE, db_column='service_type_id', null=True, blank=True)
     supervisor = models.ForeignKey(
         FlotaUser, on_delete=models.SET_NULL, db_column='supervisor_id', null=True, blank=True)
 
@@ -298,7 +332,7 @@ class Document(models.Model):
     class Meta:
         db_table = 'Documents'
 
-
+# Repuesto puede ser modificado para detalles técnicos de las piezas en el futuro. Ahora Repuesto y SparePartUsage son como lo mismo, con SparePartUsage manejando el uso en OTs.
 class Repuesto(models.Model):
     id_repuesto = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100)
@@ -342,42 +376,6 @@ class Report(models.Model):
 
     class Meta:
         db_table = 'Reports'
-
-
-class WorkOrderStatus(models.Model):
-    id_status = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=50)
-    description = models.TextField(null=True, blank=True)
-    color = models.CharField(max_length=7, default='#6c757d')  # Color para UI
-
-    def __str__(self):
-        return f"{self.id_status} - {self.name}"
-
-    class Meta:
-        db_table = 'WorkOrderStatuses'
-
-
-class WorkOrder(models.Model):
-    id_work_order = models.AutoField(primary_key=True)
-    ingreso = models.OneToOneField(
-        Ingreso, on_delete=models.CASCADE, db_column='ingreso_id', related_name='work_order')
-    status = models.ForeignKey(
-        WorkOrderStatus, on_delete=models.CASCADE, db_column='status_id')
-    created_datetime = models.DateTimeField(auto_now_add=True)
-    estimated_completion = models.DateTimeField(null=True, blank=True)
-    actual_completion = models.DateTimeField(null=True, blank=True)
-    total_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    observations = models.TextField(null=True, blank=True)
-    created_by = models.ForeignKey(
-        FlotaUser, on_delete=models.SET_NULL, db_column='created_by_id', null=True, blank=True, related_name='created_work_orders')
-    supervisor = models.ForeignKey(
-        FlotaUser, on_delete=models.SET_NULL, db_column='supervisor_id', null=True, blank=True, related_name='supervised_work_orders')
-
-    def __str__(self):
-        return f"OT-{self.id_work_order} - {self.ingreso.patent}"
-
-    class Meta:
-        db_table = 'WorkOrders'
 
 
 class WorkOrderMechanic(models.Model):

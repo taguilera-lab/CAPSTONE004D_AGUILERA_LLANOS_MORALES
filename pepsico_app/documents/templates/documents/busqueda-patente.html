@@ -111,11 +111,11 @@
         <tr>
           <td>{{ ingreso.id_ingreso }}</td>
           <td>{{ ingreso.patent.patent }}</td>
-          <td>{{ ingreso.service_type.name }}</td>
+          <td>{{ ingreso.work_order.service_type.name|default:"Sin tipo" }}</td>
           <td>{{ ingreso.entry_datetime }}</td>
           <td>{{ ingreso.exit_datetime|default:"Sin datos" }}</td>
           <td>{{ ingreso.chofer.name }}</td>
-          <td>{{ ingreso.supervisor.name|default:"Sin supervisor" }}</td>
+          <td>{{ ingreso.work_order.supervisor.name|default:"Sin supervisor" }}</td>
           <td>{{ ingreso.observations|default:"Sin observaciones" }}</td>
           <td>{{ ingreso.authorization|yesno:"Sí,No" }}</td>
         </tr>

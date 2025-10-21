@@ -64,7 +64,7 @@ class AgendarIngresoForm(forms.ModelForm):
 class WorkOrderForm(forms.ModelForm):
     class Meta:
         model = WorkOrder
-        fields = ['status', 'estimated_completion', 'observations', 'supervisor']
+        fields = ['service_type', 'status', 'estimated_completion', 'observations', 'supervisor']
         widgets = {
             'estimated_completion': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
             'observations': forms.Textarea(attrs={'rows': 3}),
@@ -74,6 +74,22 @@ class WorkOrderForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         # Filtrar solo usuarios con roles de supervisor
         self.fields['supervisor'].queryset = FlotaUser.objects.filter(role__is_supervisor_role=True)
+
+        # Configurar opciones de estado según si es creación o edición
+        if self.instance.pk:
+            # Edición: mostrar todos los estados
+            self.fields['status'].queryset = WorkOrderStatus.objects.all()
+        else:
+            # Creación: solo mostrar "Pendiente" y "En Progreso"
+            self.fields['status'].queryset = WorkOrderStatus.objects.filter(
+                name__in=['Pendiente', 'En Progreso']
+            )
+            # Establecer "Pendiente" como valor inicial
+            try:
+                pending_status = WorkOrderStatus.objects.get(name='Pendiente')
+                self.fields['status'].initial = pending_status
+            except WorkOrderStatus.DoesNotExist:
+                pass
 
 
 class WorkOrderMechanicForm(forms.ModelForm):

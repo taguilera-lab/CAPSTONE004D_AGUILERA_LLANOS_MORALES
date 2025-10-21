@@ -34,6 +34,15 @@
       </div>
 
       <div class="campo">
+        <label for="{{ form.service_type.id_for_label }}">Tipo de Servicio</label>
+        {{ form.service_type }}
+        {% if form.service_type.errors %}
+          <div class="text-danger">{{ form.service_type.errors }}</div>
+        {% endif %}
+        <small class="form-text text-muted">Selecciona el tipo de servicio para esta orden de trabajo</small>
+      </div>
+
+      <div class="campo">
         <label for="{{ form.estimated_completion.id_for_label }}">Completación Estimada</label>
         {{ form.estimated_completion }}
         {% if form.estimated_completion.errors %}

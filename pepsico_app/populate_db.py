@@ -34,6 +34,7 @@ def populate_db():
     Report.objects.all().delete()
     MaintenanceSchedule.objects.all().delete()
     WorkOrder.objects.all().delete()
+    WorkOrderStatus.objects.all().delete()
 
     # Poblar Sites
     sites = []
@@ -171,11 +172,9 @@ def populate_db():
     for _ in range(15):
         ingreso = Ingreso.objects.create(
             patent=random.choice(vehicles),
-            service_type=random.choice(service_types),
             entry_datetime=fake.date_time_this_year(),
             exit_datetime=fake.date_time_this_year() if random.choice([True, False]) else None,
             chofer=random.choice(flota_users),
-            supervisor=random.choice([user for user in flota_users if user.role.is_supervisor_role]) if random.choice([True, False]) else None,
             observations=fake.text(max_nb_chars=200) if random.choice([True, False]) else None,
             authorization=random.choice([True, False])
         )
@@ -185,7 +184,6 @@ def populate_db():
     tasks = []
     for _ in range(20):
         task = Task.objects.create(
-            ingreso=random.choice(ingresos),
             description=fake.text(max_nb_chars=200),
             urgency=random.choice(['Alta', 'Media', 'Baja']),
             start_datetime=fake.date_time_this_year(),
@@ -267,8 +265,21 @@ def populate_db():
             observations=fake.text(max_nb_chars=200) if random.choice([True, False]) else None
         )
 
+    # Poblar WorkOrderStatuses
+    work_order_statuses_data = [
+        {'name': 'Pendiente', 'description': 'Orden de trabajo pendiente de asignación', 'color': '#ffc107'},
+        {'name': 'En Progreso', 'description': 'Orden de trabajo en ejecución', 'color': '#007bff'},
+        {'name': 'Completada', 'description': 'Orden de trabajo finalizada', 'color': '#28a745'},
+        {'name': 'Cancelada', 'description': 'Orden de trabajo cancelada', 'color': '#dc3545'},
+        {'name': 'Pausada', 'description': 'Orden de trabajo temporalmente pausada', 'color': '#6c757d'},
+    ]
+    
+    work_order_statuses = []
+    for status_data in work_order_statuses_data:
+        status = WorkOrderStatus.objects.create(**status_data)
+        work_order_statuses.append(status)
+
     # Crear órdenes de trabajo para algunos ingresos
-    work_order_statuses = list(WorkOrderStatus.objects.all())
     ingresos_for_work_orders = list(Ingreso.objects.all()[:8])  # Usar los primeros 8 ingresos
 
     for ingreso in ingresos_for_work_orders:
@@ -279,7 +290,7 @@ def populate_db():
                 created_datetime=fake.date_time_this_year(),
                 estimated_completion=fake.date_time_this_year() if random.choice([True, False]) else None,
                 actual_completion=fake.date_time_this_year() if random.choice([True, False]) else None,
-                total_cost=random.uniform(100, 5000) if random.choice([True, False]) else None
+                total_cost=random.uniform(100, 5000)
             )
 
     print("Base de datos poblada con éxito.")

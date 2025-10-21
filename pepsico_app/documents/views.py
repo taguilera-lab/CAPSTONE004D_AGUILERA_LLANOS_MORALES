@@ -232,7 +232,7 @@ def datos(request):
         'routes': Route.objects.all(),
         'ingresos': Ingreso.objects.all(),
         'service_types': ServiceType.objects.all(),
-        'tasks': Task.objects.all(),
+        'tasks': Task.objects.select_related('work_order__ingreso', 'service_type', 'supervisor').all(),
         'task_assignments': TaskAssignment.objects.all(),
         'pauses': Pause.objects.all(),
         'documents': Document.objects.all(),

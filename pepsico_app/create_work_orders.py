@@ -9,20 +9,23 @@ import random
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'pepsico_app.settings')
 django.setup()
 
-from documents.models import Ingreso, WorkOrder, WorkOrderStatus
+from documents.models import Ingreso, WorkOrder, WorkOrderStatus, ServiceType
 
 def create_work_orders():
     # Obtener algunos ingresos
     ingresos = list(Ingreso.objects.all()[:5])
     statuses = list(WorkOrderStatus.objects.all())
+    service_types = list(ServiceType.objects.all())
 
-    print(f"Encontrados {len(ingresos)} ingresos y {len(statuses)} estados")
+    print(f"Encontrados {len(ingresos)} ingresos, {len(statuses)} estados y {len(service_types)} tipos de servicio")
 
     for i, ingreso in enumerate(ingresos):
         if not hasattr(ingreso, 'work_order'):
             status = random.choice(statuses)
+            service_type = random.choice(service_types) if service_types else None
             WorkOrder.objects.create(
                 ingreso=ingreso,
+                service_type=service_type,
                 status=status,
                 created_datetime=datetime.now(),
                 estimated_completion=datetime.now()

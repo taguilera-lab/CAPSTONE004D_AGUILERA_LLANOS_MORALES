@@ -500,7 +500,7 @@
           <tr>
             <td class="edit-column"><button onclick="editarRegistro('tasks', '{{ task.pk }}')">Editar</button></td>
             <td>{{ task.id_task }}</td>
-            <td>{{ task.ingreso.id_ingreso }}</td>
+            <td>{{ task.work_order.ingreso.id_ingreso }}</td>
             <td>{{ task.description }}</td>
             <td>{{ task.urgency }}</td>
             <td>{{ task.start_datetime }}</td>

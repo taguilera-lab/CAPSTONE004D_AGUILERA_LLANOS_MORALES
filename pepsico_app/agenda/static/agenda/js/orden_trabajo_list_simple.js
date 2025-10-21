@@ -1,20 +1,17 @@
 // Órdenes de Trabajo - Lista
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('=== JAVASCRIPT ÓRDENES DE TRABAJO CARGADO ===');
+    console.log('JavaScript de órdenes de trabajo cargado');
 
     // Elementos básicos
     const clearFiltersBtn = document.getElementById('clear-filters');
     const resultsCount = document.getElementById('results-count');
-
-    console.log('clearFiltersBtn encontrado:', !!clearFiltersBtn);
-    console.log('resultsCount encontrado:', !!resultsCount);
 
     // Función para aplicar todos los filtros combinados
     function applyAllFilters() {
         console.log('Aplicando filtros...');
         const container = document.getElementById('work-orders-container');
         const columns = container ? container.querySelectorAll('.col-md-6.col-lg-4.mb-4') : [];
-        
+
         // Obtener valores de filtros
         const patentFilter = document.getElementById('filter-patent')?.value?.toLowerCase().trim() || '';
         const choferFilter = document.getElementById('filter-chofer')?.value?.toLowerCase().trim() || '';
@@ -22,7 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const fechaFilter = document.getElementById('filter-entry-date')?.value || '';
         const mesAnioFilter = document.getElementById('filter-month-year')?.value || '';
 
-        console.log('Filtros:', { patentFilter, choferFilter, estadoFilter, fechaFilter, mesAnioFilter });
+        console.log('Filtros activos:', { fechaFilter, mesAnioFilter });
 
         let visibleCount = 0;
         columns.forEach(function(column) {
@@ -87,6 +84,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (dateParts.length === 3) {
                         const formattedDate = `${dateParts[2]}-${dateParts[1].padStart(2, '0')}-${dateParts[0].padStart(2, '0')}`;
                         show = (formattedDate === fechaFilter);
+                        console.log('Comparando fecha:', formattedDate, 'vs', fechaFilter, 'resultado:', show);
                     } else {
                         show = false;
                     }
@@ -115,6 +113,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         const month = dateParts[1].padStart(2, '0');
                         const cardMonthYear = `${year}-${month}`;
                         show = (cardMonthYear === mesAnioFilter);
+                        console.log('Comparando mes/año:', cardMonthYear, 'vs', mesAnioFilter, 'resultado:', show);
                     } else {
                         show = false;
                     }
@@ -133,111 +132,52 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         // Actualizar contador
-        const resultsCount = document.getElementById('results-count');
         if (resultsCount) {
             resultsCount.textContent = 'Mostrando ' + visibleCount + ' de ' + columns.length + ' órdenes';
         }
-
-        console.log('Filtros aplicados. Visibles:', visibleCount);
     }
 
-    // Función para restaurar el orden original
-    function restoreOriginalOrder() {
-        console.log('RESTAURANDO ORDEN ORIGINAL');
-        // Limpiar todos los filtros
-        const allInputs = document.querySelectorAll('input[type="text"], input[type="date"], input[type="month"], select');
-        allInputs.forEach(function(input) {
-            input.value = '';
-        });
-        // Aplicar filtros (que estarán vacíos, mostrando todo)
-        applyAllFilters();
-    }
-
-    // Guardar el orden original (no necesitamos guardar referencias, usaremos data-id)
-    console.log('Sistema de filtros inicializado');
-
-    // Función básica para limpiar filtros
+    // Función para limpiar filtros
     if (clearFiltersBtn) {
         clearFiltersBtn.addEventListener('click', function() {
-            console.log('Botón limpiar filtros clickeado');
-
-            // Limpiar todos los inputs
             const allInputs = document.querySelectorAll('input[type="text"], input[type="date"], input[type="month"], select');
             allInputs.forEach(function(input) {
                 input.value = '';
-                console.log('Input limpiado:', input.id);
             });
-
-            // Aplicar filtros (que estarán vacíos, mostrando todo)
             applyAllFilters();
         });
     }
 
-    // Función básica de filtro de texto
-    function setupTextFilters() {
-        const textInputs = document.querySelectorAll('input[type="text"].filter-input');
-
-        textInputs.forEach(function(input) {
-            let filterTimeout;
-            input.addEventListener('input', function() {
-                clearTimeout(filterTimeout);
-                filterTimeout = setTimeout(() => {
-                    console.log('Filtro de texto ' + this.id + ' cambiado: "' + this.value + '"');
-                    // Aplicar todos los filtros combinados
-                    applyAllFilters();
-                }, 100); // Delay de 100ms para evitar llamadas excesivas
-            });
+    // Configurar filtros de texto
+    const textInputs = document.querySelectorAll('input[type="text"].filter-input');
+    textInputs.forEach(function(input) {
+        input.addEventListener('input', function() {
+            setTimeout(() => applyAllFilters(), 300);
         });
-    }
+    });
 
-    // Función básica de filtro select
-    function setupSelectFilters() {
-        const selectInputs = document.querySelectorAll('select.filter-input');
-
-        selectInputs.forEach(function(select) {
-            select.addEventListener('change', function() {
-                console.log('Filtro select ' + this.id + ' cambiado: "' + this.value + '"');
-                // Aplicar todos los filtros combinados
-                applyAllFilters();
-            });
+    // Configurar filtro select
+    const selectInputs = document.querySelectorAll('select.filter-input');
+    selectInputs.forEach(function(select) {
+        select.addEventListener('change', function() {
+            applyAllFilters();
         });
-    }
+    });
 
-    // Función básica de filtro de fecha
-    function setupDateFilters() {
-        const dateInputs = document.querySelectorAll('input[type="date"], input[type="month"]');
-
-        console.log('Configurando filtros de fecha, elementos encontrados:', dateInputs.length);
-
-        dateInputs.forEach(function(input) {
-            console.log('Configurando event listener para:', input.id, input.type);
-            input.addEventListener('change', function() {
-                console.log('=== EVENTO CHANGE EN FILTRO DE FECHA ===');
-                console.log('Filtro de fecha ' + this.id + ' cambiado: "' + this.value + '"');
-                // Aplicar todos los filtros combinados
-                setTimeout(() => applyAllFilters(), 100);
-            });
-            input.addEventListener('input', function() {
-                console.log('=== EVENTO INPUT EN FILTRO DE FECHA ===');
-                console.log('Filtro de fecha ' + this.id + ' input: "' + this.value + '"');
-                // Aplicar todos los filtros combinados
-                setTimeout(() => applyAllFilters(), 100);
-            });
+    // Configurar filtros de fecha
+    const dateInputs = document.querySelectorAll('input[type="date"], input[type="month"]');
+    dateInputs.forEach(function(input) {
+        input.addEventListener('change', function() {
+            console.log('Filtro de fecha cambió:', this.id, this.value);
+            applyAllFilters();
         });
-    }
-
-    // Inicializar filtros
-    console.log('=== INICIALIZANDO FILTROS ===');
-    setupTextFilters();
-    setupSelectFilters();
-    setupDateFilters();
+    });
 
     // Inicializar contador
     const allCards = document.querySelectorAll('.work-order-card');
-    console.log('Total de tarjetas encontradas al inicializar:', allCards.length);
     if (resultsCount) {
         resultsCount.textContent = 'Mostrando ' + allCards.length + ' órdenes';
     }
 
-    console.log('=== INICIALIZACIÓN COMPLETADA ===');
+    console.log('Filtros inicializados');
 });
