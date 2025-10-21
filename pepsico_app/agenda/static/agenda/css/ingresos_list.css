@@ -1,0 +1,6 @@
+/* ingresos_list.css - Estilos específicos para la lista de ingresos */
+
+.table th {
+    vertical-align: middle !important;
+    text-align: center;
+}

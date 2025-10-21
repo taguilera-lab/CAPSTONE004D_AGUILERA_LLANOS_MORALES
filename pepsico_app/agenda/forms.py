@@ -1,5 +1,5 @@
 from django import forms
-from documents.models import Ingreso, Vehicle, ServiceType, FlotaUser, Route, Site, MaintenanceSchedule, UserStatus
+from documents.models import Ingreso, Vehicle, ServiceType, FlotaUser, Route, Site, MaintenanceSchedule, UserStatus, WorkOrder, WorkOrderStatus, WorkOrderMechanic, SparePartUsage, Repuesto
 
 class IngresoForm(forms.ModelForm):
     route = forms.ModelChoiceField(queryset=Route.objects.all(), required=False, label="Ruta")
@@ -7,14 +7,21 @@ class IngresoForm(forms.ModelForm):
 
     class Meta:
         model = Ingreso
-        fields = ['patent', 'service_type', 'entry_datetime', 'exit_datetime', 'chofer', 'supervisor', 'observations', 'authorization']
+        fields = ['patent', 'entry_datetime', 'chofer', 'observations']
         widgets = {
             'entry_datetime': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
-            'exit_datetime': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        
+        # Hacer que chofer sea obligatorio para ingresos directos
+        self.fields['chofer'].required = True
+        self.fields['chofer'].help_text = "Selecciona el chofer asignado para este ingreso."
+        
+        # Hacer que observations sea opcional
+        self.fields['observations'].required = False
+        
         if self.instance and self.instance.pk:
             # Para edición, poblar site y route
             self.fields['site'].initial = self.instance.patent.site.name if self.instance.patent.site else ''
@@ -52,3 +59,48 @@ class AgendarIngresoForm(forms.ModelForm):
             self.fields['expected_chofer'].initial = self.user
             self.fields['expected_chofer'].widget.attrs['readonly'] = True
             self.fields['expected_chofer'].help_text = "Este campo se registra automáticamente con tu usuario."
+
+
+class WorkOrderForm(forms.ModelForm):
+    class Meta:
+        model = WorkOrder
+        fields = ['status', 'estimated_completion', 'observations', 'supervisor']
+        widgets = {
+            'estimated_completion': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'observations': forms.Textarea(attrs={'rows': 3}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Filtrar solo usuarios con roles de supervisor
+        self.fields['supervisor'].queryset = FlotaUser.objects.filter(role__is_supervisor_role=True)
+
+
+class WorkOrderMechanicForm(forms.ModelForm):
+    class Meta:
+        model = WorkOrderMechanic
+        fields = ['mechanic', 'hours_worked']
+        widgets = {
+            'hours_worked': forms.NumberInput(attrs={'step': '0.25', 'min': '0'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Filtrar solo usuarios con roles de mecánico (no supervisores)
+        self.fields['mechanic'].queryset = FlotaUser.objects.filter(role__is_supervisor_role=False)
+
+
+class SparePartUsageForm(forms.ModelForm):
+    class Meta:
+        model = SparePartUsage
+        fields = ['repuesto', 'quantity_used', 'unit_cost', 'notes']
+        widgets = {
+            'quantity_used': forms.NumberInput(attrs={'min': '1'}),
+            'unit_cost': forms.NumberInput(attrs={'step': '0.01', 'min': '0'}),
+            'notes': forms.Textarea(attrs={'rows': 2}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Solo mostrar repuestos disponibles (quantity > 0)
+        self.fields['repuesto'].queryset = Repuesto.objects.filter(quantity__gt=0)

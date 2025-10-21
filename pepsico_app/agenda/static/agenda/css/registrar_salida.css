@@ -1,0 +1,48 @@
+/* Estilos específicos para registrar_salida.html */
+
+.error-alert {
+  background-color: #ffebee;
+  padding: 15px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  border-left: 4px solid #f44336;
+  color: #c62828;
+}
+
+.custom-select {
+  width: 100%;
+  padding: 8px;
+  border: 2px solid black;
+  border-radius: 15px;
+  font-family: system-ui, Arial;
+}
+
+.custom-datetime {
+  width: 100%;
+  padding: 8px;
+  border: 2px solid black;
+  border-radius: 15px;
+  font-family: system-ui, Arial;
+}
+
+.checkbox-container {
+  display: flex;
+  align-items: center;
+}
+
+.checkbox-container input[type="checkbox"] {
+  margin-right: 10px;
+}
+
+.checkbox-container label {
+  margin-bottom: 0;
+}
+
+.info-alert {
+  background-color: #e3f2fd;
+  padding: 15px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  border-left: 4px solid #2196f3;
+  color: #1976d2;
+}

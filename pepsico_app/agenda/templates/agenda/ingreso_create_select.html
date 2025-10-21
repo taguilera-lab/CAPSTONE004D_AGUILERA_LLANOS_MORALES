@@ -3,80 +3,245 @@
 
 {% block title %}Crear Ingreso{% endblock %}
 
+{% block static %}
+<link rel="stylesheet" href="{% static 'agenda/css/formulario.css' %}">
+<link rel="stylesheet" href="{% static 'agenda/css/ingreso_create_select.css' %}">
+{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
-  <h1 class="mb-4">Crear Nuevo Ingreso</h1>
-  
-  <!-- Selector de fecha -->
-  <div class="row mb-4">
-    <div class="col-md-6">
-      <form method="get" class="d-flex gap-2">
-        <label for="date" class="form-label align-self-center mb-0">Seleccionar fecha:</label>
-        <input type="date" name="date" id="date" class="form-control" 
-               value="{{ selected_date|date:'Y-m-d' }}" style="width: auto;">
-        <button type="submit" class="btn btn-outline-primary">Filtrar</button>
+<div class="contenedor">
+  <div class="formulario">
+    <h2>Crear Nuevo Ingreso</h2>
+
+    <!-- Selector de fecha -->
+    <div class="date-selector">
+      <form method="get" class="date-form">
+        <label for="date">Seleccionar fecha:</label>
+        <input type="date" name="date" id="date" class="date-input" value="{{ selected_date|date:'Y-m-d' }}">
+        <button type="submit" class="btn-programar filter-btn">Filtrar</button>
       </form>
+      <p class="date-info">Mostrando agendamientos para: <strong>{{ selected_date|date:"l, d F Y" }}</strong></p>
     </div>
-    <div class="col-md-6 text-end">
-      <p class="mb-0 text-muted">Mostrando agendamientos para: <strong>{{ selected_date|date:"l, d F Y" }}</strong></p>
-    </div>
-  </div>
-  
-  {% if pending_schedules %}
-  <div class="row">
-    <div class="col-md-8">
-      <h3>Agendamientos Pendientes - {{ selected_date|date:"l, d F" }}</h3>
-      <p class="text-muted">Selecciona un agendamiento existente para crear el ingreso con la información pre-llenada:</p>
-      
-      <div class="list-group">
-        {% for schedule in pending_schedules %}
-        <div class="list-group-item">
-          <div class="d-flex w-100 justify-content-between">
-            <h5 class="mb-1">{{ schedule.patent }} - {% if schedule.expected_chofer %}{{ schedule.expected_chofer.name }}{% else %}Chofer por asignar{% endif %}</h5>
-            <small>{{ schedule.start_datetime|date:"d/m/Y H:i" }}</small>
+
+    {% if pending_schedules %}
+    <div class="schedules-container">
+      <div class="schedules-list">
+        <h3 class="schedule-title">Agendamientos Pendientes - {{ selected_date|date:"l, d F" }}</h3>
+        <p class="schedule-description">Selecciona un agendamiento existente para crear el ingreso con la información pre-llenada:</p>
+
+        <div class="schedule-cards">
+          {% for schedule in pending_schedules %}
+          <div class="schedule-card">
+            <div class="schedule-header">
+              <h5>{{ schedule.patent }} - {% if schedule.expected_chofer %}{{ schedule.expected_chofer.name }}{% else %}Chofer por asignar{% endif %}</h5>
+              <small class="schedule-time">{{ schedule.start_datetime|date:"d/m/Y H:i" }}</small>
+            </div>
+            {% if schedule.observations %}
+            <p class="schedule-observations">{{ schedule.observations }}</p>
+            {% endif %}
+            <small class="schedule-meta">
+              Sucursal: {{ schedule.patent.site.name }}
+              {% if schedule.assigned_user %} | Asignado: {{ schedule.assigned_user.name }}{% endif %}
+            </small>
+            <button type="button" class="btn-programar create-btn" 
+                    onclick="openConfirmModal('{{ schedule.id_schedule }}', '{{ schedule.patent }}', '{{ schedule.start_datetime|date:"d/m/Y H:i" }}', '{{ schedule.expected_chofer.name|default:"Chofer por asignar" }}', '{{ schedule.observations|default:"" }}')">
+              Crear Ingreso
+            </button>
           </div>
-          {% if schedule.observations %}
-          <p class="mb-1">{{ schedule.observations }}</p>
-          {% endif %}
-          <small class="text-muted">
-            Sucursal: {{ schedule.patent.site.name }}
-            {% if schedule.assigned_user %} | Asignado: {{ schedule.assigned_user.name }}{% endif %}
-          </small>
-          <div class="mt-2">
-            <a href="{% url 'ingreso_create' %}?schedule_id={{ schedule.id_schedule }}" class="btn btn-primary btn-sm">Crear Ingreso</a>
-          </div>
+          {% endfor %}
         </div>
-        {% endfor %}
+      </div>
+
+      <div class="create-section">
+        <h3>Crear Ingreso Directo</h3>
+        <p class="create-description">Si no hay agendamiento relacionado, crea un ingreso desde cero:</p>
+        <a href="{% url 'ingreso_create' %}" class="btn-programar">Crear Ingreso Directo</a>
       </div>
     </div>
-    
-    <div class="col-md-4">
-      <h3>Crear Ingreso Directo</h3>
-      <p class="text-muted">Si no hay agendamiento relacionado, crea un ingreso desde cero:</p>
-      <a href="{% url 'ingreso_create' %}" class="btn btn-secondary">Crear Ingreso Directo</a>
-    </div>
-  </div>
-  {% else %}
-  <div class="alert alert-info">
-    <h4>No hay agendamientos pendientes</h4>
-    <p>No se encontraron agendamientos sin ingreso asociado para la fecha <strong>{{ selected_date|date:"d/m/Y" }}</strong>.</p>
-    <p>Puedes <a href="{% url 'ingreso_create' %}" class="alert-link">crear un ingreso directamente</a> o seleccionar otra fecha.</p>
-    
-    {% if available_dates %}
-    <p><strong>Fechas con agendamientos disponibles:</strong></p>
-    <div class="d-flex flex-wrap gap-2">
-      {% for available_date in available_dates %}
-      <a href="?date={{ available_date|date:'Y-m-d' }}" class="btn btn-sm btn-outline-info">
-        {{ available_date|date:"d/m" }}
-      </a>
-      {% endfor %}
+    {% else %}
+    <div class="alert-info">
+      <h4 style="margin-top: 0;">No hay agendamientos pendientes</h4>
+      <p>No se encontraron agendamientos sin ingreso asociado para la fecha <strong>{{ selected_date|date:"d/m/Y" }}</strong>.</p>
+      <p>Puedes <a href="{% url 'ingreso_create' %}" style="color: #1976d2; text-decoration: underline;">crear un ingreso directamente</a> o seleccionar otra fecha.</p>
+
+      {% if available_dates %}
+      <p><strong>Fechas con agendamientos disponibles:</strong></p>
+      <div class="available-dates">
+        {% for available_date in available_dates %}
+        <a href="?date={{ available_date|date:'Y-m-d' }}" class="date-link">
+          {{ available_date|date:"d/m" }}
+        </a>
+        {% endfor %}
+      </div>
+      {% endif %}
     </div>
     {% endif %}
-  </div>
-  {% endif %}
-  
-  <div class="mt-4">
-    <a href="{% url 'ingresos_list' %}" class="btn btn-secondary">Volver a Lista</a>
+
+    <div class="back-btn">
+      <a href="{% url 'ingresos_list' %}" class="btn-programar">Volver a Lista</a>
+    </div>
   </div>
 </div>
+
+<!-- Modal de confirmación -->
+<div id="confirmModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Confirmar Ingreso Agendado</h3>
+      <span class="close" onclick="closeModal()">&times;</span>
+    </div>
+    <div class="modal-body">
+      <p><strong>¿Desea confirmar el ingreso para el siguiente agendamiento?</strong></p>
+      <div class="schedule-info">
+        <p><strong>Patente:</strong> <span id="modal-patent"></span></p>
+        <p><strong>Fecha y Hora:</strong> <span id="modal-datetime"></span></p>
+        <p><strong>Chofer:</strong> <span id="modal-chofer"></span></p>
+        <div id="modal-observations-container" style="display: none;">
+          <p><strong>Observaciones:</strong> <span id="modal-observations"></span></p>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <form id="confirmForm" method="post" action="{% url 'ingreso_create_from_schedule' %}">
+        {% csrf_token %}
+        <input type="hidden" name="schedule_id" id="modal-schedule-id">
+        <button type="button" class="btn-cancel" onclick="closeModal()">No</button>
+        <button type="submit" class="btn-confirm">Sí, Confirmar Ingreso</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+// Función para abrir el modal de confirmación
+function openConfirmModal(scheduleId, patent, datetime, chofer, observations) {
+    document.getElementById('modal-schedule-id').value = scheduleId;
+    document.getElementById('modal-patent').textContent = patent;
+    document.getElementById('modal-datetime').textContent = datetime;
+    document.getElementById('modal-chofer').textContent = chofer;
+    
+    const obsContainer = document.getElementById('modal-observations-container');
+    const obsSpan = document.getElementById('modal-observations');
+    
+    if (observations && observations.trim()) {
+        obsSpan.textContent = observations;
+        obsContainer.style.display = 'block';
+    } else {
+        obsContainer.style.display = 'none';
+    }
+    
+    document.getElementById('confirmModal').style.display = 'block';
+}
+
+// Función para cerrar el modal
+function closeModal() {
+    document.getElementById('confirmModal').style.display = 'none';
+}
+
+// Cerrar modal al hacer clic fuera de él
+window.onclick = function(event) {
+    const modal = document.getElementById('confirmModal');
+    if (event.target == modal) {
+        modal.style.display = 'none';
+    }
+}
+</script>
+
+<style>
+/* Estilos del modal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 15% auto;
+    padding: 0;
+    border: 1px solid #888;
+    width: 90%;
+    max-width: 500px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+    padding: 15px 20px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    border-radius: 8px 8px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: #333;
+}
+
+.close {
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: #000;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.schedule-info p {
+    margin: 8px 0;
+    font-size: 14px;
+}
+
+.modal-footer {
+    padding: 15px 20px;
+    background-color: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+    border-radius: 0 0 8px 8px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.btn-cancel, .btn-confirm {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.btn-cancel {
+    background-color: #6c757d;
+    color: white;
+}
+
+.btn-cancel:hover {
+    background-color: #5a6268;
+}
+
+.btn-confirm {
+    background-color: #28a745;
+    color: white;
+}
+
+.btn-confirm:hover {
+    background-color: #218838;
+}
+</style>
+
 {% endblock %}

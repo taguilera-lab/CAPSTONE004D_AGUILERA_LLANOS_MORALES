@@ -1,0 +1,291 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Orden de Trabajo OT-{{ work_order.id_work_order }}{% endblock %}
+
+{% block static %}
+<link rel="stylesheet" href="{% static 'agenda/css/orden_trabajo_detail.css' %}">
+<script src="{% static 'agenda/js/orden_trabajo_detail.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <!-- Mostrar mensajes -->
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <!-- Header de la orden de trabajo -->
+  <div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h2 class="mb-0">
+        <i class="fas fa-tools"></i> Orden de Trabajo OT-{{ work_order.id_work_order }}
+      </h2>
+      <div>
+        <span class="badge fs-6" style="background-color: {{ work_order.status.color }};">
+          {{ work_order.status.name }}
+        </span>
+        <a href="{% url 'orden_trabajo_list' %}" class="btn btn-outline-secondary ms-2">
+          <i class="fas fa-arrow-left"></i> Volver
+        </a>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6">
+          <h5>Información del Ingreso</h5>
+          <table class="table table-sm">
+            <tr>
+              <td><strong>ID Ingreso:</strong></td>
+              <td>{{ work_order.ingreso.id_ingreso }}</td>
+            </tr>
+            <tr>
+              <td><strong>Patente:</strong></td>
+              <td>{{ work_order.ingreso.patent }}</td>
+            </tr>
+            <tr>
+              <td><strong>Chofer:</strong></td>
+              <td>{{ work_order.ingreso.chofer.name }}</td>
+            </tr>
+            <tr>
+              <td><strong>Sucursal:</strong></td>
+              <td>{{ work_order.ingreso.patent.site.name }}</td>
+            </tr>
+            <tr>
+              <td><strong>Fecha Entrada:</strong></td>
+              <td>{{ work_order.ingreso.entry_datetime|date:"d/m/Y H:i" }}</td>
+            </tr>
+            {% if work_order.ingreso.exit_datetime %}
+            <tr>
+              <td><strong>Fecha Salida:</strong></td>
+              <td>{{ work_order.ingreso.exit_datetime|date:"d/m/Y H:i" }}</td>
+            </tr>
+            {% endif %}
+          </table>
+        </div>
+        <div class="col-md-6">
+          <h5>Información de la Orden</h5>
+          <table class="table table-sm">
+            <tr>
+              <td><strong>Creada:</strong></td>
+              <td>{{ work_order.created_datetime|date:"d/m/Y H:i" }}</td>
+            </tr>
+            {% if work_order.created_by %}
+            <tr>
+              <td><strong>Creada por:</strong></td>
+              <td>{{ work_order.created_by.name }}</td>
+            </tr>
+            {% endif %}
+            {% if work_order.supervisor %}
+            <tr>
+              <td><strong>Supervisor:</strong></td>
+              <td>{{ work_order.supervisor.name }}</td>
+            </tr>
+            {% endif %}
+            {% if work_order.estimated_completion %}
+            <tr>
+              <td><strong>Completación Estimada:</strong></td>
+              <td>{{ work_order.estimated_completion|date:"d/m/Y H:i" }}</td>
+            </tr>
+            {% endif %}
+            {% if work_order.actual_completion %}
+            <tr>
+              <td><strong>Completación Real:</strong></td>
+              <td>{{ work_order.actual_completion|date:"d/m/Y H:i" }}</td>
+            </tr>
+            {% endif %}
+            <tr>
+              <td><strong>Costo Total:</strong></td>
+              <td>${{ work_order.total_cost|floatformat:2 }}</td>
+            </tr>
+          </table>
+          {% if work_order.observations %}
+          <div class="mt-3">
+            <strong>Observaciones:</strong>
+            <p class="text-muted">{{ work_order.observations }}</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Acciones rápidas -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">Acciones</h5>
+        </div>
+        <div class="card-body">
+          <div class="btn-group me-2" role="group">
+            <a href="{% url 'orden_trabajo_update' work_order.id_work_order %}" class="btn btn-outline-primary">
+              <i class="fas fa-edit"></i> Editar Orden
+            </a>
+            <a href="{% url 'orden_trabajo_add_mechanic' work_order.id_work_order %}" class="btn btn-outline-success">
+              <i class="fas fa-user-plus"></i> Agregar Mecánico
+            </a>
+            <a href="{% url 'orden_trabajo_add_spare_part' work_order.id_work_order %}" class="btn btn-outline-warning">
+              <i class="fas fa-cog"></i> Agregar Repuesto
+            </a>
+          </div>
+          {% if work_order.status.name != 'Completada' %}
+          <a href="{% url 'orden_trabajo_complete' work_order.id_work_order %}" class="btn btn-success">
+            <i class="fas fa-check"></i> Marcar como Completada
+          </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Mecánicos Asignados -->
+    <div class="col-md-6 mb-4">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">
+            <i class="fas fa-users"></i> Mecánicos Asignados
+          </h5>
+          <a href="{% url 'orden_trabajo_add_mechanic' work_order.id_work_order %}" class="btn btn-sm btn-outline-success">
+            <i class="fas fa-plus"></i> Agregar
+          </a>
+        </div>
+        <div class="card-body">
+          {% if mechanic_assignments %}
+            <div class="table-responsive">
+              <table class="table table-sm">
+                <thead>
+                  <tr>
+                    <th>Mecánico</th>
+                    <th>Horas</th>
+                    <th>Asignado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for assignment in mechanic_assignments %}
+                  <tr>
+                    <td>{{ assignment.mechanic.name }}</td>
+                    <td>{{ assignment.hours_worked|floatformat:2 }}</td>
+                    <td>{{ assignment.assigned_datetime|date:"d/m/Y" }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+                <tfoot>
+                  <tr class="table-info">
+                    <td><strong>Total:</strong></td>
+                    <td><strong>{{ total_mechanic_hours|floatformat:2 }}</strong></td>
+                    <td></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          {% else %}
+            <p class="text-muted mb-0">No hay mecánicos asignados</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Repuestos Utilizados -->
+    <div class="col-md-6 mb-4">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">
+            <i class="fas fa-cogs"></i> Repuestos Utilizados
+          </h5>
+          <a href="{% url 'orden_trabajo_add_spare_part' work_order.id_work_order %}" class="btn btn-sm btn-outline-warning">
+            <i class="fas fa-plus"></i> Agregar
+          </a>
+        </div>
+        <div class="card-body">
+          {% if spare_part_usages %}
+            <div class="table-responsive">
+              <table class="table table-sm">
+                <thead>
+                  <tr>
+                    <th>Repuesto</th>
+                    <th>Cantidad</th>
+                    <th>Costo Unit.</th>
+                    <th>Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for usage in spare_part_usages %}
+                  <tr>
+                    <td>{{ usage.repuesto.name }}</td>
+                    <td>{{ usage.quantity_used }}</td>
+                    <td>${{ usage.unit_cost|floatformat:2 }}</td>
+                    <td>${{ usage.total_cost|floatformat:2 }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+                <tfoot>
+                  <tr class="table-warning">
+                    <td colspan="3"><strong>Total Repuestos:</strong></td>
+                    <td><strong>${{ total_spare_parts_cost|floatformat:2 }}</strong></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          {% else %}
+            <p class="text-muted mb-0">No se han utilizado repuestos</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tareas del Ingreso -->
+  {% if tasks %}
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">
+            <i class="fas fa-tasks"></i> Tareas del Ingreso
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-sm">
+              <thead>
+                <tr>
+                  <th>Descripción</th>
+                  <th>Servicio</th>
+                  <th>Urgencia</th>
+                  <th>Inicio</th>
+                  <th>Fin</th>
+                  <th>Supervisor</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for task in tasks %}
+                <tr>
+                  <td>{{ task.description|truncatechars:50 }}</td>
+                  <td>{{ task.service_type.name }}</td>
+                  <td>
+                    <span class="badge bg-{% if task.urgency == 'Alta' %}danger{% elif task.urgency == 'Media' %}warning{% else %}info{% endif %}">
+                      {{ task.urgency }}
+                    </span>
+                  </td>
+                  <td>{{ task.start_datetime|date:"d/m/Y H:i" }}</td>
+                  <td>{% if task.end_datetime %}{{ task.end_datetime|date:"d/m/Y H:i" }}{% else %}-{% endif %}</td>
+                  <td>{% if task.supervisor %}{{ task.supervisor.name }}{% else %}-{% endif %}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

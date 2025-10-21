@@ -3,41 +3,58 @@
 
 {% block title %}Registrar Salida{% endblock %}
 
+{% block static %}
+<link rel="stylesheet" href="{% static 'agenda/css/formulario.css' %}">
+<link rel="stylesheet" href="{% static 'agenda/css/registrar_salida.css' %}">
+{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
-  <h1 class="mb-4">Registrar Salida de Camión</h1>
-  {% if error %}
-  <div class="alert alert-danger">{{ error }}</div>
-  {% endif %}
-  {% if ingresos_pendientes %}
-  <form method="post" class="row g-3">
-    {% csrf_token %}
-    <div class="col-md-8">
-      <label for="ingreso" class="form-label">Seleccionar Ingreso:</label>
-      <select name="ingreso" id="ingreso" class="form-select" required>
-        <option value="">---------</option>
-        {% for ingreso in ingresos_pendientes %}
-        <option value="{{ ingreso.id_ingreso }}">{{ ingreso.patent }} - {{ ingreso.service_type }} (Fin: {{ ingreso.observations|default:"-" }}, Entrada: {{ ingreso.entry_datetime }})</option>
-        {% endfor %}
-      </select>
+<div class="contenedor">
+  <div class="formulario">
+    <h2>Registrar Salida de Camión</h2>
+
+    {% if error %}
+    <div class="error-alert">
+      {{ error }}
     </div>
-    <div class="col-md-4">
-      <label for="exit_datetime" class="form-label">Fecha y Hora de Salida:</label>
-      <input type="datetime-local" name="exit_datetime" id="exit_datetime" class="form-control" required>
-    </div>
-    <div class="col-12">
-      <div class="form-check">
-        <input type="checkbox" name="autorizar" id="autorizar" class="form-check-input">
-        <label for="autorizar" class="form-check-label">Autorizar salida (confirmar revisión de correo con patente y fin de mantención)</label>
+    {% endif %}
+
+    {% if ingresos_pendientes %}
+    <form method="post">
+      {% csrf_token %}
+      <div class="campo">
+        <label for="ingreso">Seleccionar Ingreso:</label>
+        <select name="ingreso" id="ingreso" class="custom-select" required>
+          <option value="">---------</option>
+          {% for ingreso in ingresos_pendientes %}
+          <option value="{{ ingreso.id_ingreso }}">{{ ingreso.patent }} - {{ ingreso.service_type }} (Fin: {{ ingreso.observations|default:"-" }}, Entrada: {{ ingreso.entry_datetime }})</option>
+          {% endfor %}
+        </select>
       </div>
+      <div class="campo">
+        <label for="exit_datetime">Fecha y Hora de Salida:</label>
+        <input type="datetime-local" name="exit_datetime" id="exit_datetime" class="custom-datetime" required>
+      </div>
+      <div class="campo">
+        <div class="checkbox-container">
+          <input type="checkbox" name="autorizar" id="autorizar">
+          <label for="autorizar">Autorizar salida (confirmar revisión de correo con patente y fin de mantención)</label>
+        </div>
+      </div>
+      <br>
+      <div class="botones">
+        <button type="submit" class="btn-programar">Registrar Salida</button>
+      </div>
+    </form>
+    {% else %}
+    <div class="info-alert">
+      No hay ingresos pendientes de salida.
     </div>
-    <div class="col-12">
-      <button type="submit" class="btn btn-primary">Registrar Salida</button>
+    {% endif %}
+    <br>
+    <div class="botones">
+      <a href="{% url 'ingresos_list' %}" class="btn-programar" style="background-color: #6c757d;">Volver a Lista de Ingresos</a>
     </div>
-  </form>
-  {% else %}
-  <div class="alert alert-info">No hay ingresos pendientes de salida.</div>
-  {% endif %}
-  <a href="{% url 'ingresos_list' %}" class="btn btn-secondary mt-3">Volver a Lista de Ingresos</a>
+  </div>
 </div>
 {% endblock %}

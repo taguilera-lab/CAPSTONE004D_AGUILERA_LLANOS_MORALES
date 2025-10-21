@@ -3,46 +3,88 @@
 
 {% block title %}Detalle de Ingreso{% endblock %}
 
+{% block static %}
+<link rel="stylesheet" href="{% static 'agenda/css/formulario.css' %}">
+<link rel="stylesheet" href="{% static 'agenda/css/ingreso_detail.css' %}">
+{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
-  <h1 class="mb-4">Detalle de Ingreso</h1>
-  <div class="card">
-    <div class="card-body">
-      <p class="card-text"><strong>ID:</strong> {{ ingreso.id_ingreso }}</p>
-      <p class="card-text"><strong>Patente:</strong> {{ ingreso.patent }}</p>
-      <p class="card-text"><strong>Servicio:</strong> {{ ingreso.service_type }}</p>
-      <p class="card-text"><strong>Entrada:</strong> {{ ingreso.entry_datetime }}</p>
-      <p class="card-text"><strong>Salida:</strong> {{ ingreso.exit_datetime|default:"Pendiente" }}</p>
-      <p class="card-text"><strong>Chofer:</strong> {{ ingreso.chofer }}</p>
-      <p class="card-text"><strong>Supervisor:</strong> {{ ingreso.supervisor|default:"-" }}</p>
-      <p class="card-text"><strong>Observaciones:</strong> {{ ingreso.observations|default:"-" }}</p>
-      <p class="card-text"><strong>Sucursal de Origen:</strong> {{ ingreso.patent.site.name }}</p>
-      <p class="card-text"><strong>Ruta:</strong> {% for route in ingreso.patent.route_set.all %}{{ route.route_code }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
-      <p class="card-text"><strong>Autorización:</strong> 
+<div class="contenedor">
+  <div class="formulario">
+    <h2>Detalle de Ingreso</h2>
+
+    <div class="detail-container">
+      <div class="detail-field">
+        <strong>ID:</strong> {{ ingreso.id_ingreso }}
+      </div>
+      <div class="detail-field">
+        <strong>Patente:</strong> {{ ingreso.patent }}
+      </div>
+      <div class="detail-field">
+        <strong>Servicio:</strong> {{ ingreso.service_type|default:"Sin especificar" }}
+      </div>
+      <div class="detail-field">
+        <strong>Entrada:</strong> {{ ingreso.entry_datetime }}
+      </div>
+      <div class="detail-field">
+        <strong>Salida:</strong> {{ ingreso.exit_datetime|default:"Pendiente" }}
+      </div>
+      <div class="detail-field">
+        <strong>Chofer:</strong> {{ ingreso.chofer }}
+      </div>
+      <div class="detail-field">
+        <strong>Supervisor:</strong> {{ ingreso.supervisor|default:"-" }}
+      </div>
+      <div class="detail-field">
+        <strong>Observaciones:</strong> {{ ingreso.observations|default:"-" }}
+      </div>
+      <div class="detail-field">
+        <strong>Sucursal de Origen:</strong> {{ ingreso.patent.site.name }}
+      </div>
+      <div class="detail-field">
+        <strong>Ruta:</strong> {% for route in ingreso.patent.route_set.all %}{{ route.route_code }}{% if not forloop.last %}, {% endif %}{% endfor %}
+      </div>
+      <div class="detail-field">
+        <strong>Autorización:</strong>
         {% if ingreso.authorization %}
-          <span class="badge bg-success">Sí</span>
+          <span class="authorization-yes">Sí</span>
         {% else %}
-          <span class="badge bg-danger">No</span>
+          <span class="authorization-no">No</span>
         {% endif %}
-      </p>
-      <p class="card-text"><strong>Salida Registrada Por:</strong> {{ ingreso.exit_registered_by|default:"-" }}</p>
-      <p class="card-text"><strong>Entrada Registrada Por:</strong> {{ ingreso.entry_registered_by|default:"-" }}</p>
+      </div>
+      <div class="detail-field">
+        <strong>Salida Registrada Por:</strong> {{ ingreso.exit_registered_by|default:"-" }}
+      </div>
+      <div class="detail-field">
+        <strong>Entrada Registrada Por:</strong> {{ ingreso.entry_registered_by|default:"-" }}
+      </div>
       {% if ingreso.schedule %}
-      <p class="card-text"><strong>Agendamiento Relacionado:</strong> 
-        <span class="badge bg-info">ID {{ ingreso.schedule.id_schedule }}</span>
-        <small class="text-muted">Agendado: {{ ingreso.schedule.start_datetime|date:"d/m/Y H:i" }}</small>
-      </p>
+      <div class="detail-field">
+        <strong>Agendamiento Relacionado:</strong>
+        <span class="related-badge">ID {{ ingreso.schedule.id_schedule }}</span>
+        <small class="related-time">Agendado: {{ ingreso.schedule.start_datetime|date:"d/m/Y H:i" }}</small>
+      </div>
       {% endif %}
     </div>
+
+    <h3 class="related-title">Agendamientos Relacionados</h3>
+    {% if schedules %}
+    <div class="related-schedules">
+      {% for schedule in schedules %}
+      <div class="schedule-item">
+        {{ schedule.start_datetime }} - {{ schedule.end_datetime }}: {{ schedule.observations }}
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="no-related">
+      No hay agendamientos relacionados
+    </div>
+    {% endif %}
+
+    <div class="back-section">
+      <a href="{% url 'ingresos_list' %}" class="btn-programar">Volver a Lista</a>
+    </div>
   </div>
-
-  <h2 class="mt-4">Agendamientos Relacionados</h2>
-  <ul class="list-group">
-    {% for schedule in schedules %}
-    <li class="list-group-item">{{ schedule.start_datetime }} - {{ schedule.end_datetime }}: {{ schedule.observations }}</li>
-    {% endfor %}
-  </ul>
-
-  <a href="{% url 'ingresos_list' %}" class="btn btn-secondary mt-3">Volver a Lista</a>
 </div>
 {% endblock %}

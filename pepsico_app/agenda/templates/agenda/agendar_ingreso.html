@@ -4,34 +4,38 @@
 {% block title %}Agendar Ingreso{% endblock %}
 
 {% block static %}
+<link rel="stylesheet" href="{% static 'agenda/css/formulario.css' %}">
+<link rel="stylesheet" href="{% static 'agenda/css/agendar_ingreso.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-  <h1 class="mb-4">Agendar Ingreso de Camión</h1>
-  <form method="post" id="ingreso-form" class="row g-3">
-    {% csrf_token %}
-    <div class="col-md-6">
-      <label for="{{ form.patent.id_for_label }}" class="form-label">Patente</label>
-      {{ form.patent }}
-    </div>
-    <div class="col-md-6">
-      <label for="{{ form.start_datetime.id_for_label }}" class="form-label">Fecha y Hora de Inicio</label>
-      {{ form.start_datetime }}
-    </div>
-    <div class="col-md-6">
-      <label for="{{ form.expected_chofer.id_for_label }}" class="form-label">Chofer (Usuario Actual)</label>
-      {{ form.expected_chofer }}
-      <div class="form-text">Este campo se registra automáticamente con tu usuario.</div>
-    </div>
-    <div class="col-12">
-      <label for="{{ form.observations.id_for_label }}" class="form-label">Observaciones</label>
-      {{ form.observations }}
-    </div>
-    <div class="col-12">
-      <button type="submit" class="btn btn-primary">Agendar</button>
-      <a href="{% url 'calendario' %}" class="btn btn-secondary">Cancelar</a>
-    </div>
-  </form>
+<div class="contenedor">
+  <div class="formulario">
+    <h2>Agendar Ingreso de Camión</h2>
+    <form method="post" id="ingreso-form">
+      {% csrf_token %}
+      <div class="campo">
+        <label for="{{ form.patent.id_for_label }}">Patente</label>
+        {{ form.patent }}
+      </div>
+      <div class="campo">
+        <label for="{{ form.start_datetime.id_for_label }}">Fecha y Hora de Inicio</label>
+        {{ form.start_datetime }}
+      </div>
+      <div class="campo">
+        <label for="{{ form.expected_chofer.id_for_label }}">Chofer (Usuario Actual)</label>
+        {{ form.expected_chofer }}
+        <div class="form-text">Este campo se registra automáticamente con tu usuario.</div>
+      </div>
+      <div class="campo">
+        <label for="{{ form.observations.id_for_label }}">Observaciones</label>
+        {{ form.observations }}
+      </div>
+      <div class="botones">
+        <button type="submit" class="btn-programar">Agendar</button>
+        <a href="{% url 'calendario' %}" class="btn-programar" style="background-color: #6c757d; margin-left: 10px;">Cancelar</a>
+      </div>
+    </form>
+  </div>
 </div>
 {% endblock %}

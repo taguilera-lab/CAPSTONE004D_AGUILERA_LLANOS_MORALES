@@ -1,0 +1,74 @@
+/* Estilos específicos para ingreso_detail.html */
+
+.detail-container {
+  background-color: rgba(102, 88, 88, 0.05);
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
+.detail-field {
+  margin-bottom: 15px;
+}
+
+.authorization-yes {
+  background-color: #4caf50;
+  color: white;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.authorization-no {
+  background-color: #f44336;
+  color: white;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.related-badge {
+  background-color: #2196f3;
+  color: white;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.related-time {
+  color: #666;
+  margin-left: 10px;
+}
+
+.related-title {
+  margin-top: 30px;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.related-schedules {
+  background-color: rgba(102, 88, 88, 0.05);
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.schedule-item {
+  padding: 10px;
+  margin-bottom: 10px;
+  background-color: #fafafa;
+  border-radius: 5px;
+  border-left: 3px solid #FFD54F;
+}
+
+.no-related {
+  background-color: rgba(102, 88, 88, 0.05);
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  color: #666;
+}
+
+.back-section {
+  margin-top: 30px;
+  text-align: center;
+}

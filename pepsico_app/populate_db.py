@@ -7,7 +7,7 @@ from django.utils import timezone
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'pepsico_app.settings')
 django.setup()
 
-from documents.models import Site, SAPEquipment, CECO, VehicleType, VehicleStatus, Vehicle, Role, UserStatus, FlotaUser, Route, ServiceType, Ingreso, Task, TaskAssignment, Pause, Document, Repuesto, Notification, Report, MaintenanceSchedule
+from documents.models import Site, SAPEquipment, CECO, VehicleType, VehicleStatus, Vehicle, Role, UserStatus, FlotaUser, Route, ServiceType, Ingreso, Task, TaskAssignment, Pause, Document, Repuesto, Notification, Report, MaintenanceSchedule, WorkOrder, WorkOrderStatus
 
 fake = Faker('es_ES')
 
@@ -33,6 +33,7 @@ def populate_db():
     Notification.objects.all().delete()
     Report.objects.all().delete()
     MaintenanceSchedule.objects.all().delete()
+    WorkOrder.objects.all().delete()
 
     # Poblar Sites
     sites = []
@@ -265,6 +266,21 @@ def populate_db():
             status=random.choice(user_statuses),
             observations=fake.text(max_nb_chars=200) if random.choice([True, False]) else None
         )
+
+    # Crear órdenes de trabajo para algunos ingresos
+    work_order_statuses = list(WorkOrderStatus.objects.all())
+    ingresos_for_work_orders = list(Ingreso.objects.all()[:8])  # Usar los primeros 8 ingresos
+
+    for ingreso in ingresos_for_work_orders:
+        if not hasattr(ingreso, 'work_order'):  # Solo si no tiene orden de trabajo
+            WorkOrder.objects.create(
+                ingreso=ingreso,
+                status=random.choice(work_order_statuses),
+                created_datetime=fake.date_time_this_year(),
+                estimated_completion=fake.date_time_this_year() if random.choice([True, False]) else None,
+                actual_completion=fake.date_time_this_year() if random.choice([True, False]) else None,
+                total_cost=random.uniform(100, 5000) if random.choice([True, False]) else None
+            )
 
     print("Base de datos poblada con éxito.")
 
