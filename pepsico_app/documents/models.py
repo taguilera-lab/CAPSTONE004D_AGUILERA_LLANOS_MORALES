@@ -1,4 +1,6 @@
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 
 class Site(models.Model):
@@ -96,6 +98,25 @@ class Vehicle(models.Model):
 
     def __str__(self):
         return self.patent
+
+    def update_status_based_on_incidents(self):
+        """
+        Actualiza el estado del vehículo basado en incidencias activas.
+        Si hay incidencias no resueltas, cambia a 'Fuera de servicio'.
+        Si no hay, vuelve a 'Disponible' (asumiendo que no hay otros factores).
+        """
+        active_incidents = self.incidents.filter(status__in=['Reportada', 'En_revision'])
+        if active_incidents.exists():
+            # Asumir que hay un VehicleStatus con name='Fuera de servicio'
+            out_of_service_status = VehicleStatus.objects.filter(name='Fuera de servicio').first()
+            if out_of_service_status:
+                self.status = out_of_service_status
+        else:
+            # Asumir que hay un VehicleStatus con name='Disponible'
+            available_status = VehicleStatus.objects.filter(name='Disponible').first()
+            if available_status:
+                self.status = available_status
+        self.save()
 
     class Meta:
         db_table = 'Vehicles'
@@ -412,3 +433,130 @@ class SparePartUsage(models.Model):
 
     class Meta:
         db_table = 'SparePartUsages'
+
+
+class Incident(models.Model):
+    INCIDENT_TYPES = [
+        ('Mecanica', 'Mecánica'),
+        ('Electrica', 'Eléctrica'),
+        ('Carroceria', 'Carrocería'),
+        ('Neumaticos', 'Neumáticos'),
+        ('Otro', 'Otro'),
+    ]
+
+    SEVERITY_LEVELS = [
+        ('Baja', 'Baja'),
+        ('Media', 'Media'),
+        ('Alta', 'Alta'),
+        ('Critica', 'Crítica'),
+    ]
+
+    CATEGORIES = [
+        ('Seguridad', 'Seguridad'),
+        ('Operativo', 'Operativo'),
+        ('Mantenimiento', 'Mantenimiento'),
+    ]
+
+    STATUS_CHOICES = [
+        ('Reportada', 'Reportada'),
+        ('En_revision', 'En revisión'),
+        ('Resuelta', 'Resuelta'),
+        ('Cerrada', 'Cerrada'),
+    ]
+
+    PRIORITY_LEVELS = [
+        ('Baja', 'Baja'),
+        ('Normal', 'Normal'),
+        ('Alta', 'Alta'),
+        ('Urgente', 'Urgente'),
+    ]
+
+    RESOLUTION_TYPES = [
+        ('Taller', 'Taller'),
+        ('Campo', 'Campo'),
+        ('No_aplica', 'No aplica'),
+    ]
+
+    RESOLUTION_SOURCES = [
+        ('OT_Completada', 'OT Completada'),
+        ('Ingreso_Cerrado', 'Ingreso Cerrado'),
+        ('Manual', 'Manual'),
+    ]
+
+    id_incident = models.AutoField(primary_key=True)
+    vehicle = models.ForeignKey(
+        Vehicle, on_delete=models.CASCADE, db_column='vehicle_id', related_name='incidents')
+    reported_by = models.ForeignKey(
+        FlotaUser, on_delete=models.CASCADE, db_column='reported_by_id', related_name='reported_incidents')
+    name = models.CharField(max_length=200)
+    incident_type = models.CharField(max_length=50, choices=INCIDENT_TYPES)
+    severity = models.CharField(max_length=20, choices=SEVERITY_LEVELS, default='Media')
+    category = models.CharField(max_length=50, choices=CATEGORIES, default='Operativo')
+    description = models.TextField()
+    symptoms = models.TextField(null=True, blank=True)
+    possible_cause = models.TextField(null=True, blank=True)
+    location = models.CharField(max_length=200, null=True, blank=True)
+    latitude = models.DecimalField(max_digits=10, decimal_places=8, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=11, decimal_places=8, null=True, blank=True)
+    route = models.ForeignKey(
+        Route, on_delete=models.SET_NULL, db_column='route_id', null=True, blank=True, related_name='incidents')
+    status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='Reportada')
+    priority = models.CharField(max_length=20, choices=PRIORITY_LEVELS, default='Normal')
+    assigned_to = models.ForeignKey(
+        FlotaUser, on_delete=models.SET_NULL, db_column='assigned_to_id', null=True, blank=True, related_name='assigned_incidents')
+    reported_at = models.DateTimeField(auto_now_add=True)
+    resolved_at = models.DateTimeField(null=True, blank=True)
+    resolution_notes = models.TextField(null=True, blank=True)
+    estimated_resolution_time = models.CharField(max_length=50, null=True, blank=True)
+    is_emergency = models.BooleanField(default=False)
+    requires_tow = models.BooleanField(default=False)
+    affects_operation = models.BooleanField(default=False)
+    follow_up_required = models.BooleanField(default=False)
+
+    # Nuevos campos para asociaciones
+    related_schedule = models.ForeignKey(
+        MaintenanceSchedule, on_delete=models.SET_NULL, db_column='related_schedule_id', null=True, blank=True, related_name='incidents')
+    related_ingreso = models.ForeignKey(
+        Ingreso, on_delete=models.SET_NULL, db_column='related_ingreso_id', null=True, blank=True, related_name='incidents')
+    related_work_order = models.ForeignKey(
+        WorkOrder, on_delete=models.SET_NULL, db_column='related_work_order_id', null=True, blank=True, related_name='incidents')
+    resolution_type = models.CharField(max_length=50, choices=RESOLUTION_TYPES, null=True, blank=True)
+    auto_resolved = models.BooleanField(default=False)
+    resolution_source = models.CharField(max_length=50, choices=RESOLUTION_SOURCES, null=True, blank=True)
+
+    # Campos de auditoría
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(
+        FlotaUser, on_delete=models.SET_NULL, db_column='created_by_id', null=True, blank=True, related_name='created_incidents')
+    updated_by = models.ForeignKey(
+        FlotaUser, on_delete=models.SET_NULL, db_column='updated_by_id', null=True, blank=True, related_name='updated_incidents')
+
+    def __str__(self):
+        return f"Incidencia #{self.id_incident} - {self.vehicle.patent} - {self.name}"
+
+    class Meta:
+        db_table = 'Incidents'
+
+
+class IncidentImage(models.Model):
+    id_image = models.AutoField(primary_key=True)
+    incident = models.ForeignKey(
+        Incident, on_delete=models.CASCADE, db_column='incident_id', related_name='images')
+    name = models.CharField(max_length=100)
+    image = models.ImageField(upload_to='incident_images/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.incident.name} - {self.name}"
+
+    class Meta:
+        db_table = 'IncidentImages'
+
+
+@receiver(post_save, sender=Incident)
+def update_vehicle_status_on_incident_save(sender, instance, **kwargs):
+    """
+    Signal para actualizar el estado del vehículo cuando se guarda una incidencia.
+    """
+    instance.vehicle.update_status_based_on_incidents()

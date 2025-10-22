@@ -3,7 +3,7 @@ from .models import (
     Site, SAPEquipment, CECO, VehicleType, VehicleStatus, Vehicle,
     Role, UserStatus, FlotaUser, Route, ServiceType, Ingreso,
     Task, TaskAssignment, Pause, Document, Repuesto, Notification,
-    Report, MaintenanceSchedule
+    Report, MaintenanceSchedule, Incident, IncidentImage
 )
 
 class SiteForm(forms.ModelForm):
@@ -53,6 +53,51 @@ class VehicleStatusForm(forms.ModelForm):
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre del estado'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Descripción'}),
         }
+
+
+class IncidentForm(forms.ModelForm):
+    class Meta:
+        model = Incident
+        fields = [
+            'vehicle', 'reported_by', 'name', 'incident_type', 'severity', 'category',
+            'description', 'symptoms', 'possible_cause', 'location', 'latitude', 'longitude',
+            'route', 'priority', 'assigned_to', 'estimated_resolution_time',
+            'is_emergency', 'requires_tow', 'affects_operation', 'follow_up_required'
+        ]
+        widgets = {
+            'vehicle': forms.Select(attrs={'class': 'form-control'}),
+            'reported_by': forms.Select(attrs={'class': 'form-control'}),
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Título de la incidencia'}),
+            'incident_type': forms.Select(attrs={'class': 'form-control'}),
+            'severity': forms.Select(attrs={'class': 'form-control'}),
+            'category': forms.Select(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Descripción detallada'}),
+            'symptoms': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Síntomas observados'}),
+            'possible_cause': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Causa posible'}),
+            'location': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ubicación'}),
+            'latitude': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.00000001'}),
+            'longitude': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.00000001'}),
+            'route': forms.Select(attrs={'class': 'form-control'}),
+            'priority': forms.Select(attrs={'class': 'form-control'}),
+            'assigned_to': forms.Select(attrs={'class': 'form-control'}),
+            'estimated_resolution_time': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'ej: 2 horas, 1 día'}),
+            'is_emergency': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'requires_tow': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'affects_operation': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'follow_up_required': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+
+class IncidentImageForm(forms.ModelForm):
+    class Meta:
+        model = IncidentImage
+        fields = ['incident', 'name', 'image']
+        widgets = {
+            'incident': forms.Select(attrs={'class': 'form-control'}),
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre de la imagen'}),
+            'image': forms.FileInput(attrs={'class': 'form-control'}),
+        }
+
 
 class VehicleForm(forms.ModelForm):
     class Meta:

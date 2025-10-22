@@ -3,7 +3,7 @@ from .models import (
     Site, SAPEquipment, CECO, VehicleType, VehicleStatus, Vehicle,
     Role, UserStatus, FlotaUser, Route, ServiceType, Ingreso,
     Task, TaskAssignment, Pause, Document, Repuesto, Notification,
-    Report, MaintenanceSchedule
+    Report, MaintenanceSchedule, Incident, IncidentImage
 )
 
 # Register your models here.
@@ -28,3 +28,5 @@ admin.site.register(Repuesto)
 admin.site.register(Notification)
 admin.site.register(Report)
 admin.site.register(MaintenanceSchedule)
+admin.site.register(Incident)
+admin.site.register(IncidentImage)
