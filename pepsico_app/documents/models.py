@@ -554,6 +554,23 @@ class IncidentImage(models.Model):
         db_table = 'IncidentImages'
 
 
+class IngresoImage(models.Model):
+    id_image = models.AutoField(primary_key=True)
+    ingreso = models.ForeignKey(
+        Ingreso, on_delete=models.CASCADE, db_column='ingreso_id', related_name='images')
+    name = models.CharField(max_length=100)
+    image = models.ImageField(upload_to='ingreso_images/')
+    uploaded_by = models.ForeignKey(
+        FlotaUser, on_delete=models.SET_NULL, db_column='uploaded_by_id', null=True, blank=True, related_name='uploaded_ingreso_images')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.ingreso} - {self.name}"
+
+    class Meta:
+        db_table = 'IngresoImages'
+
+
 @receiver(post_save, sender=Incident)
 def update_vehicle_status_on_incident_save(sender, instance, **kwargs):
     """
