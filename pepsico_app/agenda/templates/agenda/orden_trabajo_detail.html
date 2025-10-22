@@ -18,6 +18,7 @@
     {% for message in messages %}
       {% if message.tags == 'error' %}
         <!-- Los mensajes de error se mostrarán en modal -->
+        <div class="d-none">{{ message }}</div>
       {% else %}
         <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
           {{ message }}
@@ -219,6 +220,9 @@
           <span class="badge fs-6 me-2" style="background-color: {{ work_order.status.color }};">
             {{ work_order.status.name }}
           </span>
+          <a href="{% url 'orden_trabajo_update' work_order.id_work_order %}" class="btn btn-outline-primary me-2">
+            <i class="fas fa-edit"></i> Editar
+          </a>
           <a href="{% url 'orden_trabajo_list' %}" class="btn btn-outline-secondary">
             <i class="fas fa-arrow-left"></i> Volver
           </a>
@@ -521,62 +525,14 @@
   {% endif %}
 </div>
 
-<!-- Modal para mensajes de error -->
-<div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header bg-danger text-white">
-        <h5 class="modal-title text-center w-100" id="errorModalLabel">
-          <i class="fas fa-exclamation-triangle"></i> Acción no permitida
-        </h5>
-      </div>
-      <div class="modal-body text-center">
-        {% for message in messages %}
-          {% if message.tags == 'error' %}
-            <p class="mb-0">{{ message }}</p>
-          {% endif %}
-        {% endfor %}
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal para confirmar eliminación -->
-<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header bg-warning">
-        <h5 class="modal-title text-center w-100" id="deleteConfirmModalLabel">
-          <i class="fas fa-exclamation-triangle"></i> Confirmar Eliminación
-        </h5>
-      </div>
-      <div class="modal-body text-center">
-        <p id="deleteConfirmMessage" class="mb-0"></p>
-      </div>
-      <div class="modal-footer justify-content-center">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-          <i class="fas fa-times"></i> Cancelar
-        </button>
-        <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
-          <i class="fas fa-trash"></i> Eliminar
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Mostrar modal de error si hay mensajes de error
-    {% if messages %}
-      {% for message in messages %}
-        {% if message.tags == 'error' %}
-          const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
-          errorModal.show();
-          break;
-        {% endif %}
-      {% endfor %}
-    {% endif %}
+    const errorModalBody = document.querySelector('#errorModal .modal-body');
+    if (errorModalBody && errorModalBody.textContent.trim() !== '') {
+        const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
+        errorModal.show();
+    }
 });
 </script>
 {% endblock %}
