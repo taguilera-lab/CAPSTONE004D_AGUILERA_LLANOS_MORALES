@@ -10,6 +10,9 @@
 
 {% block content %}
 <div class="container mt-4">
+  <!-- Campo hidden para el ID de la orden de trabajo -->
+  <input type="hidden" id="work-order-id" value="{{ work_order.id_work_order }}">
+  
   <!-- Mostrar mensajes -->
   {% if messages %}
     {% for message in messages %}
@@ -39,6 +42,30 @@
               <p class="mb-0">{{ message }}</p>
             {% endif %}
           {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para confirmar eliminación -->
+  <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-warning">
+          <h5 class="modal-title text-center w-100" id="deleteConfirmModalLabel">
+            <i class="fas fa-exclamation-triangle"></i> Confirmar Eliminación
+          </h5>
+        </div>
+        <div class="modal-body text-center">
+          <p id="deleteConfirmMessage" class="mb-0"></p>
+        </div>
+        <div class="modal-footer justify-content-center">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="fas fa-times"></i> Cancelar
+          </button>
+          <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+            <i class="fas fa-trash"></i> Eliminar
+          </button>
         </div>
       </div>
     </div>
@@ -333,16 +360,24 @@
           <h5 class="mb-0">
             <i class="fas fa-users"></i> Mecánicos Asignados
           </h5>
-          <a href="{% url 'orden_trabajo_add_mechanic' work_order.id_work_order %}" class="btn btn-sm btn-outline-success">
-            <i class="fas fa-plus"></i> Agregar
-          </a>
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-sm btn-outline-danger" onclick="showDeleteConfirm('mechanics-table')" id="delete-mechanics-btn" style="display: none;">
+              <i class="fas fa-trash"></i> Eliminar Seleccionados
+            </button>
+            <a href="{% url 'orden_trabajo_add_mechanic' work_order.id_work_order %}" class="btn btn-sm btn-outline-success">
+              <i class="fas fa-plus"></i> Agregar
+            </a>
+          </div>
         </div>
         <div class="card-body">
           {% if mechanic_assignments %}
             <div class="table-responsive">
-              <table class="table table-sm">
+              <table class="table table-sm" id="mechanics-table">
                 <thead>
                   <tr>
+                    <th width="50">
+                      <input type="checkbox" data-toggle-all="mechanics-table" onchange="toggleAllCheckboxes('mechanics-table', this)">
+                    </th>
                     <th>Mecánico</th>
                     <th>Horas</th>
                     <th>Asignado</th>
@@ -351,6 +386,9 @@
                 <tbody>
                   {% for assignment in mechanic_assignments %}
                   <tr>
+                    <td>
+                      <input type="checkbox" value="{{ assignment.id_assignment }}" onchange="updateDeleteButton('mechanics-table')">
+                    </td>
                     <td>{{ assignment.mechanic.name }}</td>
                     <td>{{ assignment.hours_worked|floatformat:2 }}</td>
                     <td>{{ assignment.assigned_datetime|date:"d/m/Y" }}</td>
@@ -359,6 +397,7 @@
                 </tbody>
                 <tfoot>
                   <tr class="table-info">
+                    <td></td>
                     <td><strong>Total:</strong></td>
                     <td><strong>{{ total_mechanic_hours|floatformat:2 }}</strong></td>
                     <td></td>
@@ -380,16 +419,24 @@
           <h5 class="mb-0">
             <i class="fas fa-cogs"></i> Repuestos Utilizados
           </h5>
-          <a href="{% url 'orden_trabajo_add_spare_part' work_order.id_work_order %}" class="btn btn-sm btn-outline-warning">
-            <i class="fas fa-plus"></i> Agregar
-          </a>
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-sm btn-outline-danger" onclick="showDeleteConfirm('spare-parts-table')" id="delete-spare_parts-btn" style="display: none;">
+              <i class="fas fa-trash"></i> Eliminar Seleccionados
+            </button>
+            <a href="{% url 'orden_trabajo_add_spare_part' work_order.id_work_order %}" class="btn btn-sm btn-outline-warning">
+              <i class="fas fa-plus"></i> Agregar
+            </a>
+          </div>
         </div>
         <div class="card-body">
           {% if spare_part_usages %}
             <div class="table-responsive">
-              <table class="table table-sm">
+              <table class="table table-sm" id="spare-parts-table">
                 <thead>
                   <tr>
+                    <th width="50">
+                      <input type="checkbox" data-toggle-all="spare-parts-table" onchange="toggleAllCheckboxes('spare-parts-table', this)">
+                    </th>
                     <th>Repuesto</th>
                     <th>Cantidad</th>
                     <th>Costo Unit.</th>
@@ -399,6 +446,9 @@
                 <tbody>
                   {% for usage in spare_part_usages %}
                   <tr>
+                    <td>
+                      <input type="checkbox" value="{{ usage.id_usage }}" onchange="updateDeleteButton('spare-parts-table')">
+                    </td>
                     <td>{{ usage.repuesto.name }}</td>
                     <td>{{ usage.quantity_used }}</td>
                     <td>${{ usage.unit_cost|floatformat:2 }}</td>
@@ -408,6 +458,7 @@
                 </tbody>
                 <tfoot>
                   <tr class="table-warning">
+                    <td></td>
                     <td colspan="3"><strong>Total Repuestos:</strong></td>
                     <td><strong>${{ total_spare_parts_cost|floatformat:2 }}</strong></td>
                   </tr>
@@ -470,26 +521,61 @@
   {% endif %}
 </div>
 
+<!-- Modal para mensajes de error -->
+<div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title text-center w-100" id="errorModalLabel">
+          <i class="fas fa-exclamation-triangle"></i> Acción no permitida
+        </h5>
+      </div>
+      <div class="modal-body text-center">
+        {% for message in messages %}
+          {% if message.tags == 'error' %}
+            <p class="mb-0">{{ message }}</p>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para confirmar eliminación -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-warning">
+        <h5 class="modal-title text-center w-100" id="deleteConfirmModalLabel">
+          <i class="fas fa-exclamation-triangle"></i> Confirmar Eliminación
+        </h5>
+      </div>
+      <div class="modal-body text-center">
+        <p id="deleteConfirmMessage" class="mb-0"></p>
+      </div>
+      <div class="modal-footer justify-content-center">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          <i class="fas fa-times"></i> Cancelar
+        </button>
+        <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+          <i class="fas fa-trash"></i> Eliminar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Verificar si hay mensajes de error y mostrar el modal
+    // Mostrar modal de error si hay mensajes de error
     {% if messages %}
-        var hasErrorMessage = false;
-        {% for message in messages %}
-            {% if message.tags == 'error' %}
-                hasErrorMessage = true;
-            {% endif %}
-        {% endfor %}
-        
-        if (hasErrorMessage) {
-            var errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
-            errorModal.show();
-            
-            // Cerrar automáticamente después de 2 segundos
-            setTimeout(function() {
-                errorModal.hide();
-            }, 2000);
-        }
+      {% for message in messages %}
+        {% if message.tags == 'error' %}
+          const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
+          errorModal.show();
+          break;
+        {% endif %}
+      {% endfor %}
     {% endif %}
 });
 </script>

@@ -423,6 +423,77 @@ def orden_trabajo_add_spare_part(request, work_order_id):
     })
 
 
+def orden_trabajo_delete_mechanics(request, work_order_id):
+    """Vista para eliminar mecánicos seleccionados de una orden de trabajo"""
+    work_order = get_object_or_404(WorkOrder, id_work_order=work_order_id)
+
+    # Verificar si la orden está completada
+    if work_order.status.name == 'Completada':
+        from django.contrib import messages
+        messages.error(request, 'No puedes editar una orden de trabajo completada')
+        return redirect('orden_trabajo_detail', work_order_id=work_order.id_work_order)
+
+    if request.method == 'POST':
+        selected_ids = request.POST.getlist('selected_ids')
+        if selected_ids:
+            # Eliminar las asignaciones de mecánicos seleccionadas
+            deleted_count = WorkOrderMechanic.objects.filter(
+                id_assignment__in=selected_ids,
+                work_order=work_order
+            ).delete()[0]
+
+            from django.contrib import messages
+            if deleted_count > 0:
+                messages.success(request, f'{deleted_count} mecánico(s) eliminado(s) exitosamente')
+            else:
+                messages.warning(request, 'No se encontraron mecánicos para eliminar')
+        else:
+            messages.warning(request, 'No se seleccionaron mecánicos para eliminar')
+
+    return redirect('orden_trabajo_detail', work_order_id=work_order.id_work_order)
+
+
+def orden_trabajo_delete_spare_parts(request, work_order_id):
+    """Vista para eliminar piezas de repuesto seleccionadas de una orden de trabajo"""
+    work_order = get_object_or_404(WorkOrder, id_work_order=work_order_id)
+
+    # Verificar si la orden está completada
+    if work_order.status.name == 'Completada':
+        from django.contrib import messages
+        messages.error(request, 'No puedes editar una orden de trabajo completada')
+        return redirect('orden_trabajo_detail', work_order_id=work_order.id_work_order)
+
+    if request.method == 'POST':
+        selected_ids = request.POST.getlist('selected_ids')
+        if selected_ids:
+            # Obtener los usos de repuestos antes de eliminarlos para actualizar el costo total
+            spare_part_usages = SparePartUsage.objects.filter(
+                id_usage__in=selected_ids,
+                work_order=work_order
+            )
+
+            # Calcular el costo total a restar
+            total_cost_to_subtract = sum(usage.total_cost for usage in spare_part_usages)
+
+            # Eliminar los usos de repuestos
+            deleted_count = spare_part_usages.delete()[0]
+
+            # Actualizar el costo total de la orden de trabajo
+            if total_cost_to_subtract > 0:
+                work_order.total_cost -= total_cost_to_subtract
+                work_order.save()
+
+            from django.contrib import messages
+            if deleted_count > 0:
+                messages.success(request, f'{deleted_count} pieza(s) de repuesto eliminada(s) exitosamente')
+            else:
+                messages.warning(request, 'No se encontraron piezas de repuesto para eliminar')
+        else:
+            messages.warning(request, 'No se seleccionaron piezas de repuesto para eliminar')
+
+    return redirect('orden_trabajo_detail', work_order_id=work_order.id_work_order)
+
+
 def orden_trabajo_complete(request, work_order_id):
     """Vista para marcar una orden de trabajo como completada"""
     work_order = get_object_or_404(WorkOrder, id_work_order=work_order_id)
