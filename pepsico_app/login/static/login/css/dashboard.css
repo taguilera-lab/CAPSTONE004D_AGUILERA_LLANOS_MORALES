@@ -1,0 +1,21 @@
+/* Estilos para dashboard.html */
+
+.contenedor {
+  display: flex;
+  justify-content: center;
+  padding: 30px;
+}
+
+.formulario {
+  background-color: rgba(102, 88, 88, 0.103);
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  width: 100%;
+  max-width: 500px;
+}
+
+.formulario h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}

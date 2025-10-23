@@ -32,6 +32,8 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'documents',
+    'incidents',
+    'login',
     'agenda',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -71,6 +73,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'pepsico_app.wsgi.application'
 
+# Authentication
+LOGIN_URL = 'login'
+LOGOUT_REDIRECT_URL = 'login'
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases

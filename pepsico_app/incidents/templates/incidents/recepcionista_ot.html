@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Generar OT Móvil - Recepcionista{% endblock %}
+
+{% block static %}
+<link rel="stylesheet" href="{% static 'incidents/css/recepcionista_ot.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="contenedor">
+    <div class="formulario">
+        <h2>Generar OT de Mecánica In Situ</h2>
+        <p>Incidente: {{ incident.name }}</p>
+        <form method="post">
+            {% csrf_token %}
+            <div class="botones">
+                <button type="submit" class="btn-programar">Generar OT</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

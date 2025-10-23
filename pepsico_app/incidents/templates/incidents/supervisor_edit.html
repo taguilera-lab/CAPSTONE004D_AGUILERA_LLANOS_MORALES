@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Editar Incidente - Supervisor{% endblock %}
+
+{% block static %}
+<link rel="stylesheet" href="{% static 'incidents/css/supervisor_edit.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="contenedor">
+    <div class="formulario">
+        <h2>Editar Incidente (Supervisor)</h2>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <div class="botones">
+                <button type="submit" class="btn-programar">Guardar Cambios</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

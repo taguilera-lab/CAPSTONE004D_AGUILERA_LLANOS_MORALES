@@ -1,4 +1,7 @@
 from django.db import models
+from django.contrib.auth.models import User
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
@@ -149,6 +152,7 @@ class UserStatus(models.Model):
 
 class FlotaUser(models.Model):
     id_user = models.AutoField(primary_key=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='flotauser')
     name = models.CharField(max_length=100)
     role = models.ForeignKey(
         Role, on_delete=models.CASCADE, db_column='role_id')

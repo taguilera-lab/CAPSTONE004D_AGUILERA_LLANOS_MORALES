@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Lista de Incidentes{% endblock %}
+
+{% block static %}
+<link rel="stylesheet" href="{% static 'incidents/css/incident_list.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="contenedor">
+    <div class="formulario">
+        <h2>Lista de Incidentes</h2>
+        <ul>
+            {% for incident in incidents %}
+            <li><a href="{% url 'incident_detail' incident.id_incident %}">{{ incident.name }}</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}

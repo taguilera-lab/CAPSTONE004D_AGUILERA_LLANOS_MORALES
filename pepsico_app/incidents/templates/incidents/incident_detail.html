@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Detalle de Incidente{% endblock %}
+
+{% block static %}
+<link rel="stylesheet" href="{% static 'incidents/css/incident_detail.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="contenedor">
+    <div class="formulario">
+        <h2>Detalle de Incidente</h2>
+        <p><strong>Nombre:</strong> {{ incident.name }}</p>
+        <p><strong>Descripción:</strong> {{ incident.description }}</p>
+        <p><strong>Status:</strong> {{ incident.status }}</p>
+        <!-- Agregar más campos según necesidad -->
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,13 @@
+.campo input[type="password"] {
+  border: 2px solid black;
+  border-radius: 10px;
+  background: #fff;
+  width: 100%;
+  padding: 8px;
+  font-size: 16px;
+  outline: none;
+}
+.campo input[type="password"]:focus {
+  border-color: #1332e0;
+  box-shadow: 0 0 5px rgba(19, 50, 224, 0.3);
+}
