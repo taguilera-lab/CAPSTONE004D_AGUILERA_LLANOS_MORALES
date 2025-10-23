@@ -11,9 +11,37 @@
 <div class="contenedor">
     <div class="formulario">
         <h2>Editar Incidente (Supervisor)</h2>
-        <form method="post">
+        <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             {{ form.as_p }}
+
+            <!-- Sección de imágenes -->
+            <div class="form-group">
+                <label for="{{ image_form.images.id_for_label }}">Agregar imágenes adicionales (opcional):</label>
+                {{ image_form.images }}
+                <small class="form-text text-muted">Puede seleccionar múltiples imágenes (JPG, PNG, GIF)</small>
+                {% if image_form.images.errors %}
+                    <div class="text-danger">
+                        {{ image_form.images.errors }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Mostrar imágenes existentes -->
+            {% if incident.images.all %}
+            <div class="form-group">
+                <label>Imágenes actuales:</label>
+                <div class="current-images">
+                    {% for image in incident.images.all %}
+                    <div class="image-preview">
+                        <img src="{{ image.image.url }}" alt="{{ image.name }}" style="max-width: 100px; max-height: 100px;">
+                        <small>{{ image.name }}</small>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
             <div class="botones">
                 <button type="submit" class="btn-programar">Guardar Cambios</button>
             </div>

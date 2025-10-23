@@ -37,7 +37,20 @@ class SupervisorIncidentForm(IncidentForm):
     class Meta(IncidentForm.Meta):
         fields = IncidentForm.Meta.fields  # Todos los campos para edición
 
+from django import forms
+from documents.models import Incident, IncidentImage
+
+class MultipleFileInput(forms.ClearableFileInput):
+    allow_multiple_selected = True
+
 class IncidentImageForm(forms.ModelForm):
+    images = forms.FileField(
+        required=False,
+        widget=MultipleFileInput(attrs={'multiple': True, 'accept': 'image/*'}),
+        label='Imágenes del incidente',
+        help_text='Puede seleccionar múltiples imágenes (JPG, PNG, GIF)'
+    )
+
     class Meta:
         model = IncidentImage
-        fields = ['name', 'image']
+        fields = ['images']

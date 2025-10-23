@@ -7,12 +7,14 @@ from django.utils import timezone
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'pepsico_app.settings')
 django.setup()
 
-from documents.models import Site, SAPEquipment, CECO, VehicleType, VehicleStatus, Vehicle, Role, UserStatus, FlotaUser, Route, ServiceType, Ingreso, Task, TaskAssignment, Pause, Document, Repuesto, Notification, Report, MaintenanceSchedule, WorkOrder, WorkOrderStatus
+from documents.models import Site, SAPEquipment, CECO, VehicleType, VehicleStatus, Vehicle, Role, UserStatus, FlotaUser, Route, ServiceType, Ingreso, Task, TaskAssignment, Pause, Document, Repuesto, Notification, Report, MaintenanceSchedule, WorkOrder, WorkOrderStatus, Incident
+from django.contrib.auth.models import User
 
 fake = Faker('es_ES')
 
 def populate_db():
     # Limpiar base de datos
+    User.objects.all().delete()
     Site.objects.all().delete()
     SAPEquipment.objects.all().delete()
     CECO.objects.all().delete()
@@ -35,6 +37,7 @@ def populate_db():
     MaintenanceSchedule.objects.all().delete()
     WorkOrder.objects.all().delete()
     WorkOrderStatus.objects.all().delete()
+    Incident.objects.all().delete()
 
     # Poblar Sites
     sites = []
@@ -115,11 +118,12 @@ def populate_db():
 
     # Poblar Role
     roles = []
-    for role_name in ['Conductor', 'Supervisor de Taller', 'Administrador', 'Mecánico']:
+    role_names = ['Jefe de Flota', 'Mecánico', 'Vendedor', 'Guardia', 'Bodeguero', 'Supervisor', 'Jefe de taller', 'Recepcionista de Vehículos', 'Conductor', 'Administrador']
+    for role_name in role_names:
         role = Role.objects.create(
             name=role_name,
             description=fake.text(max_nb_chars=200) if random.choice([True, False]) else None,
-            is_supervisor_role=role_name in ['Supervisor de Taller', 'Administrador']
+            is_supervisor_role=role_name in ['Jefe de Flota', 'Supervisor', 'Jefe de taller', 'Administrador']
         )
         roles.append(role)
 
@@ -132,10 +136,48 @@ def populate_db():
         )
         user_statuses.append(status)
 
-    # Poblar FlotaUsers
+    # Poblar FlotaUsers - Usuarios por defecto
     flota_users = []
-    for _ in range(15):
+    
+    # Usuarios específicos
+    default_users = [
+        {'username': 'jefe_de_flota', 'password': '123', 'role_name': 'Jefe de Flota', 'name': 'Jefe de Flota'},
+        {'username': 'mecanico', 'password': '123', 'role_name': 'Mecánico', 'name': 'Mecánico'},
+        {'username': 'vendedor', 'password': '123', 'role_name': 'Vendedor', 'name': 'Vendedor'},
+        {'username': 'guardia', 'password': '123', 'role_name': 'Guardia', 'name': 'Guardia'},
+        {'username': 'bodeguero', 'password': '123', 'role_name': 'Bodeguero', 'name': 'Bodeguero'},
+        {'username': 'supervisor', 'password': '123', 'role_name': 'Supervisor', 'name': 'Supervisor'},
+        {'username': 'jefe_de_taller', 'password': '123', 'role_name': 'Jefe de taller', 'name': 'Jefe de Taller'},
+        {'username': 'recepcionista_de_vehículos', 'password': '123', 'role_name': 'Recepcionista de Vehículos', 'name': 'Recepcionista de Vehículos'},
+    ]
+    
+    for user_data in default_users:
+        user_django = User.objects.create_user(
+            username=user_data['username'],
+            email=f"{user_data['username']}@example.com",
+            password=user_data['password']
+        )
+        role = next(r for r in roles if r.name == user_data['role_name'])
         user = FlotaUser.objects.create(
+            user=user_django,
+            name=user_data['name'],
+            role=role,
+            patent=random.choice(vehicles),
+            status=random.choice(user_statuses),
+            observations=fake.text(max_nb_chars=200),
+            gpid=f"GP{fake.unique.random_int(min=1000, max=9999)}"
+        )
+        flota_users.append(user)
+    
+    # Poblar usuarios adicionales aleatorios
+    for _ in range(7):  # Total 15 usuarios, 8 específicos + 7 aleatorios
+        user_django = User.objects.create_user(
+            username=fake.user_name(),
+            email=fake.email(),
+            password='password123'
+        )
+        user = FlotaUser.objects.create(
+            user=user_django,
             name=fake.name(),
             role=random.choice(roles),
             patent=random.choice(vehicles),
@@ -292,6 +334,23 @@ def populate_db():
                 actual_completion=fake.date_time_this_year() if random.choice([True, False]) else None,
                 total_cost=random.uniform(100, 5000)
             )
+
+    # Poblar Incidents
+    incidents = []
+    for _ in range(20):
+        incident = Incident.objects.create(
+            incident_type=random.choice(['Accidente', 'Falla Mecánica', 'Robo', 'Otro']),
+            name=fake.sentence(),
+            description=fake.text(max_nb_chars=300),
+            reported_by=random.choice(flota_users),
+            vehicle=random.choice(vehicles),
+            status=random.choice(['Reportada', 'En_revision', 'Resuelta', 'Cerrada']),
+            location=fake.address() if random.choice([True, False]) else None,
+            severity=random.choice(['Baja', 'Media', 'Alta', 'Critica'])
+        )
+        incidents.append(incident)
+
+    print(f"Incidentes poblados: {len(incidents)}")
 
     print("Base de datos poblada con éxito.")
 
