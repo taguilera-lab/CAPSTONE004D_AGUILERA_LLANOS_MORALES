@@ -12,7 +12,6 @@ def chofer_report_incident(request):
         if form.is_valid():
             incident = form.save(commit=False)
             incident.reported_by = request.user.flotauser
-            incident.status = 'Reportada'
             incident.save()
 
             # Guardar imágenes capturadas desde la cámara
@@ -51,7 +50,7 @@ def guardia_report_incident(request):
         if form.is_valid():
             incident = form.save(commit=False)
             incident.reported_by = request.user.flotauser
-            incident.status = 'Reportada'
+            incident.name = f"Incidente reportado por guardia - {incident.vehicle.patent}"
             incident.save()
 
             # Guardar imágenes capturadas desde la cámara
@@ -135,13 +134,13 @@ def incident_list(request):
     if request.user.is_authenticated and hasattr(request.user, 'flotauser'):
         if request.user.flotauser.role.name == 'Vendedor':
             # Vendedor solo ve las incidencias que él mismo reportó
-            incidents = Incident.objects.filter(reported_by=request.user.flotauser)
+            incidents = Incident.objects.filter(reported_by=request.user.flotauser).select_related('reported_by__role', 'vehicle')
         elif request.user.flotauser.role.name == 'Bodeguero':
             # Bodeguero no puede acceder a incidencias
             incidents = Incident.objects.none()
         else:
             # Otros roles ven todas las incidencias
-            incidents = Incident.objects.all()
+            incidents = Incident.objects.all().select_related('reported_by__role', 'vehicle')
     else:
         # Usuario sin rol asignado, no mostrar incidencias
         incidents = Incident.objects.none()

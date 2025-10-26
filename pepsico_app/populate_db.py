@@ -118,7 +118,7 @@ def populate_db():
 
     # Poblar Role
     roles = []
-    role_names = ['Jefe de Flota', 'Mecánico', 'Vendedor', 'Guardia', 'Bodeguero', 'Supervisor', 'Jefe de taller', 'Recepcionista de Vehículos', 'Conductor', 'Administrador']
+    role_names = ['Jefe de Flota', 'Mecánico', 'Vendedor', 'Guardia', 'Bodeguero', 'Supervisor', 'Jefe de taller', 'Recepcionista de Vehículos', 'Administrador']
     for role_name in role_names:
         role = Role.objects.create(
             name=role_name,
@@ -298,7 +298,6 @@ def populate_db():
             patent=random.choice(vehicles),
             service_type=random.choice(service_types),
             start_datetime=fake.date_time_this_year(),
-            end_datetime=fake.date_time_this_year(),
             recurrence_rule=f"RRULE:FREQ={random.choice(['DAILY', 'WEEKLY', 'MONTHLY'])};COUNT={random.randint(1, 10)}" if random.choice([True, False]) else None,
             reminder_minutes=random.randint(10, 60) if random.choice([True, False]) else None,
             assigned_user=random.choice(flota_users) if random.choice([True, False]) else None,

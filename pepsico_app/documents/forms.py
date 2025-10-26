@@ -3,7 +3,7 @@ from .models import (
     Site, SAPEquipment, CECO, VehicleType, VehicleStatus, Vehicle,
     Role, UserStatus, FlotaUser, Route, ServiceType, Ingreso,
     Task, TaskAssignment, Pause, Document, Repuesto, Notification,
-    Report, MaintenanceSchedule, Incident, IncidentImage
+    Report, MaintenanceSchedule, Incident, Diagnostics, IncidentImage
 )
 
 class SiteForm(forms.ModelForm):
@@ -59,32 +59,65 @@ class IncidentForm(forms.ModelForm):
     class Meta:
         model = Incident
         fields = [
-            'vehicle', 'reported_by', 'name', 'incident_type', 'severity', 'category',
-            'description', 'symptoms', 'possible_cause', 'location', 'latitude', 'longitude',
-            'route', 'priority', 'assigned_to', 'estimated_resolution_time',
-            'is_emergency', 'requires_tow', 'affects_operation', 'follow_up_required'
+            'vehicle', 'reported_by', 'name', 'incident_type', 'description', 
+            'location', 'latitude', 'longitude', 'priority', 'is_emergency', 'requires_tow'
         ]
         widgets = {
             'vehicle': forms.Select(attrs={'class': 'form-control'}),
             'reported_by': forms.Select(attrs={'class': 'form-control'}),
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Título de la incidencia'}),
             'incident_type': forms.Select(attrs={'class': 'form-control'}),
-            'severity': forms.Select(attrs={'class': 'form-control'}),
-            'category': forms.Select(attrs={'class': 'form-control'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Descripción detallada'}),
-            'symptoms': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Síntomas observados'}),
-            'possible_cause': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Causa posible'}),
             'location': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ubicación'}),
             'latitude': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.00000001'}),
             'longitude': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.00000001'}),
-            'route': forms.Select(attrs={'class': 'form-control'}),
             'priority': forms.Select(attrs={'class': 'form-control'}),
-            'assigned_to': forms.Select(attrs={'class': 'form-control'}),
-            'estimated_resolution_time': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'ej: 2 horas, 1 día'}),
             'is_emergency': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'requires_tow': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+
+class DiagnosticsForm(forms.ModelForm):
+    class Meta:
+        model = Diagnostics
+        fields = [
+            'severity', 'category', 'symptoms', 'possible_cause', 'route',
+            'status', 'assigned_to', 'resolved_at', 'resolution_notes',
+            'estimated_resolution_time', 'resolution_type', 'auto_resolved',
+            'resolution_source', 'affects_operation', 'follow_up_required',
+            'related_schedule', 'related_ingreso', 'related_work_order',
+            'diagnostic_started_at', 'diagnostic_completed_at', 'diagnostic_by',
+            'diagnostic_method', 'parts_needed', 'estimated_cost', 'photos_taken',
+            'requires_specialist', 'environmental_conditions'
+        ]
+        widgets = {
+            'severity': forms.Select(attrs={'class': 'form-control'}),
+            'category': forms.Select(attrs={'class': 'form-control'}),
+            'symptoms': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Síntomas observados'}),
+            'possible_cause': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Causa posible'}),
+            'route': forms.Select(attrs={'class': 'form-control'}),
+            'status': forms.Select(attrs={'class': 'form-control'}),
+            'assigned_to': forms.Select(attrs={'class': 'form-control'}),
+            'resolved_at': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
+            'resolution_notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Notas de resolución'}),
+            'estimated_resolution_time': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'ej: 2 horas, 1 día'}),
+            'resolution_type': forms.Select(attrs={'class': 'form-control'}),
+            'auto_resolved': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'resolution_source': forms.Select(attrs={'class': 'form-control'}),
             'affects_operation': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'follow_up_required': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'related_schedule': forms.Select(attrs={'class': 'form-control'}),
+            'related_ingreso': forms.Select(attrs={'class': 'form-control'}),
+            'related_work_order': forms.Select(attrs={'class': 'form-control'}),
+            'diagnostic_started_at': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
+            'diagnostic_completed_at': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
+            'diagnostic_by': forms.Select(attrs={'class': 'form-control'}),
+            'diagnostic_method': forms.Select(attrs={'class': 'form-control'}),
+            'parts_needed': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Repuestos necesarios'}),
+            'estimated_cost': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'photos_taken': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'requires_specialist': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'environmental_conditions': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Condiciones ambientales'}),
         }
 
 
@@ -295,7 +328,7 @@ class MaintenanceScheduleForm(forms.ModelForm):
     class Meta:
         model = MaintenanceSchedule
         fields = [
-            'patent', 'service_type', 'start_datetime', 'end_datetime',
+            'patent', 'service_type', 'start_datetime',
             'recurrence_rule', 'reminder_minutes', 'assigned_user',
             'supervisor', 'status', 'observations'
         ]
@@ -303,7 +336,6 @@ class MaintenanceScheduleForm(forms.ModelForm):
             'patent': forms.Select(attrs={'class': 'form-control'}),
             'service_type': forms.Select(attrs={'class': 'form-control'}),
             'start_datetime': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
-            'end_datetime': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
             'recurrence_rule': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Regla de recurrencia'}),
             'reminder_minutes': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Minutos de recordatorio'}),
             'assigned_user': forms.Select(attrs={'class': 'form-control'}),

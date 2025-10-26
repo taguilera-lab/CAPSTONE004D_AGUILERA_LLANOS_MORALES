@@ -208,7 +208,6 @@ class MaintenanceSchedule(models.Model):
     service_type = models.ForeignKey(
         ServiceType, on_delete=models.CASCADE, db_column='service_type_id', null=True, blank=True)
     start_datetime = models.DateTimeField()
-    end_datetime = models.DateTimeField(null=True, blank=True)
     recurrence_rule = models.CharField(max_length=255, null=True, blank=True)
     reminder_minutes = models.IntegerField(null=True, blank=True)
     assigned_user = models.ForeignKey(
@@ -494,39 +493,14 @@ class Incident(models.Model):
         FlotaUser, on_delete=models.CASCADE, db_column='reported_by_id', related_name='reported_incidents')
     name = models.CharField(max_length=200)
     incident_type = models.CharField(max_length=50, choices=INCIDENT_TYPES)
-    severity = models.CharField(max_length=20, choices=SEVERITY_LEVELS, default='Media')
-    category = models.CharField(max_length=50, choices=CATEGORIES, default='Operativo')
     description = models.TextField()
-    symptoms = models.TextField(null=True, blank=True)
-    possible_cause = models.TextField(null=True, blank=True)
     location = models.CharField(max_length=200, null=True, blank=True)
     latitude = models.DecimalField(max_digits=10, decimal_places=8, null=True, blank=True)
     longitude = models.DecimalField(max_digits=11, decimal_places=8, null=True, blank=True)
-    route = models.ForeignKey(
-        Route, on_delete=models.SET_NULL, db_column='route_id', null=True, blank=True, related_name='incidents')
-    status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='Reportada')
-    priority = models.CharField(max_length=20, choices=PRIORITY_LEVELS, default='Normal')
-    assigned_to = models.ForeignKey(
-        FlotaUser, on_delete=models.SET_NULL, db_column='assigned_to_id', null=True, blank=True, related_name='assigned_incidents')
-    reported_at = models.DateTimeField(auto_now_add=True)
-    resolved_at = models.DateTimeField(null=True, blank=True)
-    resolution_notes = models.TextField(null=True, blank=True)
-    estimated_resolution_time = models.CharField(max_length=50, null=True, blank=True)
     is_emergency = models.BooleanField(default=False)
     requires_tow = models.BooleanField(default=False)
-    affects_operation = models.BooleanField(default=False)
-    follow_up_required = models.BooleanField(default=False)
-
-    # Nuevos campos para asociaciones
-    related_schedule = models.ForeignKey(
-        MaintenanceSchedule, on_delete=models.SET_NULL, db_column='related_schedule_id', null=True, blank=True, related_name='incidents')
-    related_ingreso = models.ForeignKey(
-        Ingreso, on_delete=models.SET_NULL, db_column='related_ingreso_id', null=True, blank=True, related_name='incidents')
-    related_work_order = models.ForeignKey(
-        WorkOrder, on_delete=models.SET_NULL, db_column='related_work_order_id', null=True, blank=True, related_name='incidents')
-    resolution_type = models.CharField(max_length=50, choices=RESOLUTION_TYPES, null=True, blank=True)
-    auto_resolved = models.BooleanField(default=False)
-    resolution_source = models.CharField(max_length=50, choices=RESOLUTION_SOURCES, null=True, blank=True)
+    priority = models.CharField(max_length=20, choices=PRIORITY_LEVELS, null=True, blank=True)
+    reported_at = models.DateTimeField(auto_now_add=True)
 
     # Campos de auditoría
     created_at = models.DateTimeField(auto_now_add=True)
@@ -536,11 +510,113 @@ class Incident(models.Model):
     updated_by = models.ForeignKey(
         FlotaUser, on_delete=models.SET_NULL, db_column='updated_by_id', null=True, blank=True, related_name='updated_incidents')
 
+    # ===== CAMPOS MOVIDOS A DIAGNOSTICS (COMENTADOS PARA REFERENCIA) =====
+    # severity = models.CharField(max_length=20, choices=SEVERITY_LEVELS, null=True, blank=True)
+    # category = models.CharField(max_length=50, choices=CATEGORIES, null=True, blank=True)
+    # symptoms = models.TextField(null=True, blank=True)
+    # possible_cause = models.TextField(null=True, blank=True)
+    # route = models.ForeignKey(
+    #     Route, on_delete=models.SET_NULL, db_column='route_id', null=True, blank=True, related_name='incidents')
+    # status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='Reportada')
+    # assigned_to = models.ForeignKey(
+    #     FlotaUser, on_delete=models.SET_NULL, db_column='assigned_to_id', null=True, blank=True, related_name='assigned_incidents')
+    # resolved_at = models.DateTimeField(null=True, blank=True)
+    # resolution_notes = models.TextField(null=True, blank=True)
+    # estimated_resolution_time = models.CharField(max_length=50, null=True, blank=True)
+    # affects_operation = models.BooleanField(default=False)
+    # follow_up_required = models.BooleanField(default=False)
+    # related_schedule = models.ForeignKey(
+    #     MaintenanceSchedule, on_delete=models.SET_NULL, db_column='related_schedule_id', null=True, blank=True, related_name='incidents')
+    # related_ingreso = models.ForeignKey(
+    #     Ingreso, on_delete=models.SET_NULL, db_column='related_ingreso_id', null=True, blank=True, related_name='incidents')
+    # related_work_order = models.ForeignKey(
+    #     WorkOrder, on_delete=models.SET_NULL, db_column='related_work_order_id', null=True, blank=True, related_name='incidents')
+    # resolution_type = models.CharField(max_length=50, choices=RESOLUTION_TYPES, null=True, blank=True)
+    # auto_resolved = models.BooleanField(default=False)
+    # resolution_source = models.CharField(max_length=50, choices=RESOLUTION_SOURCES, null=True, blank=True)
+
     def __str__(self):
         return f"Incidencia #{self.id_incident} - {self.vehicle.patent} - {self.name}"
 
     class Meta:
         db_table = 'Incidents'
+
+
+class Diagnostics(models.Model):
+    """
+    Modelo para diagnóstico y resolución de incidentes.
+    Relación 1-1 con Incident (opcional).
+    """
+    DIAGNOSTIC_METHODS = [
+        ('Visual', 'Visual'),
+        ('Instrumentos', 'Con Instrumentos'),
+        ('Prueba', 'Prueba de Funcionamiento'),
+        ('Otro', 'Otro'),
+    ]
+
+    incident = models.OneToOneField(
+        Incident, on_delete=models.CASCADE, db_column='incident_id', null=True, blank=True, related_name='diagnostics')
+    
+    # Campos de evaluación técnica
+    severity = models.CharField(max_length=20, choices=Incident.SEVERITY_LEVELS, null=True, blank=True)
+    category = models.CharField(max_length=50, choices=Incident.CATEGORIES, null=True, blank=True)
+    symptoms = models.TextField(null=True, blank=True)
+    possible_cause = models.TextField(null=True, blank=True)
+    route = models.ForeignKey(
+        Route, on_delete=models.SET_NULL, db_column='route_id', null=True, blank=True, related_name='diagnostics')
+    
+    # Campos de estado y asignación
+    status = models.CharField(max_length=30, choices=Incident.STATUS_CHOICES, default='Reportada')
+    assigned_to = models.ForeignKey(
+        FlotaUser, on_delete=models.SET_NULL, db_column='assigned_to_id', null=True, blank=True, related_name='assigned_diagnostics')
+    
+    # Campos de resolución
+    resolved_at = models.DateTimeField(null=True, blank=True)
+    resolution_notes = models.TextField(null=True, blank=True)
+    estimated_resolution_time = models.CharField(max_length=50, null=True, blank=True)
+    resolution_type = models.CharField(max_length=50, choices=Incident.RESOLUTION_TYPES, null=True, blank=True)
+    auto_resolved = models.BooleanField(default=False)
+    resolution_source = models.CharField(max_length=50, choices=Incident.RESOLUTION_SOURCES, null=True, blank=True)
+    
+    # Campos booleanos de impacto
+    affects_operation = models.BooleanField(default=False)
+    follow_up_required = models.BooleanField(default=False)
+    
+    # Asociaciones con otros modelos
+    related_schedule = models.ForeignKey(
+        MaintenanceSchedule, on_delete=models.SET_NULL, db_column='related_schedule_id', null=True, blank=True, related_name='diagnostics')
+    related_ingreso = models.ForeignKey(
+        Ingreso, on_delete=models.SET_NULL, db_column='related_ingreso_id', null=True, blank=True, related_name='diagnostics')
+    related_work_order = models.ForeignKey(
+        WorkOrder, on_delete=models.SET_NULL, db_column='related_work_order_id', null=True, blank=True, related_name='diagnostics')
+    
+    # Campos específicos de diagnóstico
+    diagnostic_started_at = models.DateTimeField(null=True, blank=True)
+    diagnostic_completed_at = models.DateTimeField(null=True, blank=True)
+    diagnostic_by = models.ForeignKey(
+        FlotaUser, on_delete=models.SET_NULL, db_column='diagnostic_by_id', null=True, blank=True, related_name='diagnosed_incidents')
+    diagnostic_method = models.CharField(max_length=50, choices=DIAGNOSTIC_METHODS, null=True, blank=True)
+    parts_needed = models.TextField(null=True, blank=True)
+    estimated_cost = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    photos_taken = models.BooleanField(default=False)
+    requires_specialist = models.BooleanField(default=False)
+    environmental_conditions = models.CharField(max_length=200, null=True, blank=True)
+    
+    # Campos de auditoría específicos de diagnostics
+    diagnostics_created_at = models.DateTimeField(auto_now_add=True)
+    diagnostics_updated_at = models.DateTimeField(auto_now=True)
+    diagnostics_created_by = models.ForeignKey(
+        FlotaUser, on_delete=models.SET_NULL, db_column='diagnostics_created_by_id', null=True, blank=True, related_name='created_diagnostics')
+    diagnostics_updated_by = models.ForeignKey(
+        FlotaUser, on_delete=models.SET_NULL, db_column='diagnostics_updated_by_id', null=True, blank=True, related_name='updated_diagnostics')
+
+    def __str__(self):
+        if self.incident:
+            return f"Diagnóstico de Incidencia #{self.incident.id_incident}"
+        return f"Diagnóstico #{self.id}"
+
+    class Meta:
+        db_table = 'Diagnostics'
 
 
 class IncidentImage(models.Model):

@@ -29,12 +29,16 @@
                     <span class="incident-badge status-{{ incident.status|lower|cut:'_' }}">
                         <i class="fas fa-info-circle"></i> {{ incident.get_status_display }}
                     </span>
-                    <span class="incident-badge severity-{{ incident.severity|lower }}">
-                        <i class="fas fa-exclamation-circle"></i> {{ incident.severity }}
+                    {% if incident.diagnostics.severity %}
+                    <span class="incident-badge severity-{{ incident.diagnostics.severity|lower }}">
+                        <i class="fas fa-exclamation-circle"></i> {{ incident.diagnostics.severity }}
                     </span>
+                    {% endif %}
+                    {% if incident.priority %}
                     <span class="incident-badge priority-{{ incident.priority|lower }}">
                         <i class="fas fa-flag"></i> {{ incident.priority }}
                     </span>
+                    {% endif %}
                     {% if incident.is_emergency %}
                     <span class="incident-badge bg-danger">
                         <i class="fas fa-siren"></i> Emergencia
@@ -73,10 +77,12 @@
                         <span class="detail-label">Tipo de Incidente:</span>
                         <span class="detail-value">{{ incident.get_incident_type_display }}</span>
                     </div>
+                    {% if incident.diagnostics.category %}
                     <div class="detail-row">
                         <span class="detail-label">Categoría:</span>
-                        <span class="detail-value">{{ incident.get_category_display }}</span>
+                        <span class="detail-value">{{ incident.diagnostics.get_category_display }}</span>
                     </div>
+                    {% endif %}
                     <div class="detail-row">
                         <span class="detail-label">Reportado por:</span>
                         <span class="detail-value">{{ incident.reported_by.name }}</span>
@@ -85,16 +91,16 @@
                         <span class="detail-label">Fecha de Reporte:</span>
                         <span class="detail-value">{{ incident.reported_at|date:"d/m/Y H:i" }}</span>
                     </div>
-                    {% if incident.assigned_to %}
+                    {% if incident.diagnostics.assigned_to %}
                     <div class="detail-row">
                         <span class="detail-label">Asignado a:</span>
-                        <span class="detail-value">{{ incident.assigned_to.name }}</span>
+                        <span class="detail-value">{{ incident.diagnostics.assigned_to.name }}</span>
                     </div>
                     {% endif %}
-                    {% if incident.resolved_at %}
+                    {% if incident.diagnostics.resolved_at %}
                     <div class="detail-row">
                         <span class="detail-label">Fecha de Resolución:</span>
-                        <span class="detail-value">{{ incident.resolved_at|date:"d/m/Y H:i" }}</span>
+                        <span class="detail-value">{{ incident.diagnostics.resolved_at|date:"d/m/Y H:i" }}</span>
                     </div>
                     {% endif %}
                 </div>
@@ -120,17 +126,17 @@
                     </div>
                     {% endif %}
 
-                    {% if incident.symptoms %}
+                    {% if incident.diagnostics.symptoms %}
                     <div class="mb-3">
                         <h6 class="text-muted mb-2">Síntomas:</h6>
-                        <p class="mb-3">{{ incident.symptoms }}</p>
+                        <p class="mb-3">{{ incident.diagnostics.symptoms }}</p>
                     </div>
                     {% endif %}
 
-                    {% if incident.possible_cause %}
+                    {% if incident.diagnostics.possible_cause %}
                     <div class="mb-3">
                         <h6 class="text-muted mb-2">Causa Posible:</h6>
-                        <p class="mb-3">{{ incident.possible_cause }}</p>
+                        <p class="mb-3">{{ incident.diagnostics.possible_cause }}</p>
                     </div>
                     {% endif %}
 
@@ -141,10 +147,10 @@
                     </div>
                     {% endif %}
 
-                    {% if incident.resolution_notes %}
+                    {% if incident.diagnostics.resolution_notes %}
                     <div class="mb-3">
                         <h6 class="text-muted mb-2">Notas de Resolución:</h6>
-                        <p class="mb-3">{{ incident.resolution_notes }}</p>
+                        <p class="mb-3">{{ incident.diagnostics.resolution_notes }}</p>
                     </div>
                     {% endif %}
                 </div>
@@ -190,27 +196,21 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    {% if incident.driver %}
+                    {% if incident.reported_by.role.name == "Vendedor" %}
                     <div class="text-center mb-3">
                         <div class="driver-avatar">
                             <i class="fas fa-user-circle fa-3x text-muted"></i>
                         </div>
-                        <h6 class="mt-2">{{ incident.driver.name }}</h6>
+                        <h6 class="mt-2">{{ incident.reported_by.name }}</h6>
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Nombre:</span>
-                        <span class="detail-value">{{ incident.driver.name }}</span>
+                        <span class="detail-value">{{ incident.reported_by.name }}</span>
                     </div>
-                    {% if incident.driver.license_number %}
+                    {% if incident.reported_by.patent %}
                     <div class="detail-row">
-                        <span class="detail-label">Licencia:</span>
-                        <span class="detail-value">{{ incident.driver.license_number }}</span>
-                    </div>
-                    {% endif %}
-                    {% if incident.driver.phone %}
-                    <div class="detail-row">
-                        <span class="detail-label">Teléfono:</span>
-                        <span class="detail-value">{{ incident.driver.phone }}</span>
+                        <span class="detail-label">Vehículo asignado:</span>
+                        <span class="detail-value">{{ incident.reported_by.patent.patent }}</span>
                     </div>
                     {% endif %}
                     {% else %}
@@ -265,22 +265,40 @@
                     </h5>
                 </div>
                 <div class="card-body">
+                    {% if incident.requires_tow %}
                     <div class="mb-2">
-                        <i class="fas fa-{% if incident.requires_tow %}check-circle text-success{% else %}times-circle text-muted{% endif %}"></i>
+                        <i class="fas fa-check-circle text-success"></i>
                         Requiere remolque
                     </div>
+                    {% endif %}
+                    {% if incident.diagnostics.affects_operation %}
                     <div class="mb-2">
-                        <i class="fas fa-{% if incident.affects_operation %}check-circle text-warning{% else %}times-circle text-muted{% endif %}"></i>
+                        <i class="fas fa-check-circle text-warning"></i>
                         Afecta operaciones
                     </div>
+                    {% endif %}
+                    {% if incident.diagnostics.follow_up_required %}
                     <div class="mb-2">
-                        <i class="fas fa-{% if incident.follow_up_required %}check-circle text-info{% else %}times-circle text-muted{% endif %}"></i>
+                        <i class="fas fa-check-circle text-info"></i>
                         Seguimiento requerido
                     </div>
-                    {% if incident.estimated_resolution_time %}
+                    {% endif %}
+                    {% if incident.is_emergency %}
+                    <div class="mb-2">
+                        <i class="fas fa-siren text-danger"></i>
+                        Emergencia
+                    </div>
+                    {% endif %}
+                    {% if not incident.requires_tow and not incident.diagnostics.affects_operation and not incident.diagnostics.follow_up_required and not incident.is_emergency %}
+                    <div class="text-muted">
+                        <i class="fas fa-info-circle"></i>
+                        No hay características especiales registradas
+                    </div>
+                    {% endif %}
+                    {% if incident.diagnostics.estimated_resolution_time %}
                     <div class="mt-3">
                         <strong>Tiempo estimado de resolución:</strong><br>
-                        {{ incident.estimated_resolution_time }}
+                        {{ incident.diagnostics.estimated_resolution_time }}
                     </div>
                     {% endif %}
                 </div>

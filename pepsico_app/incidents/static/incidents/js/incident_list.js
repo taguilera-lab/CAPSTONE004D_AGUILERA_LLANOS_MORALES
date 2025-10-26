@@ -5,8 +5,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Elementos del DOM
     const filterForm = document.getElementById('incident-filters');
-    const incidentCards = document.querySelectorAll('.incident-card');
+    const container = document.getElementById('incidents-container');
     const clearFiltersBtn = document.getElementById('clear-filters');
+
+    // Array para mantener todas las tarjetas originales
+    const allCards = Array.from(container.children);
 
     // Función para aplicar filtros
     function applyFilters() {
@@ -17,43 +20,70 @@ document.addEventListener('DOMContentLoaded', function() {
             category: document.getElementById('filter-category')?.value || '',
             status: document.getElementById('filter-status')?.value || '',
             reportedBy: document.getElementById('filter-reported-by')?.value?.toLowerCase().trim() || '',
-            priority: document.getElementById('filter-priority')?.value || ''
+            priority: document.getElementById('filter-priority')?.value || '',
+            month: document.getElementById('filter-month')?.value || '',
+            year: document.getElementById('filter-year')?.value || ''
         };
 
         console.log('Aplicando filtros:', filters);
 
-        let visibleCount = 0;
+        // Limpiar el contenedor
+        container.innerHTML = '';
 
-        incidentCards.forEach(card => {
+        // Filtrar y agregar solo las tarjetas visibles
+        const visibleCards = allCards.filter(card => {
             const cardData = getCardData(card);
-            const isVisible = matchesFilters(cardData, filters);
-
-            card.style.display = isVisible ? 'block' : 'none';
-            if (isVisible) visibleCount++;
+            return matchesFilters(cardData, filters);
         });
 
-        updateResultsCount(visibleCount);
-        console.log(`Mostrando ${visibleCount} de ${incidentCards.length} incidentes`);
+        // Agregar las tarjetas visibles al contenedor
+        visibleCards.forEach(card => {
+            container.appendChild(card);
+        });
+
+        updateResultsCount(visibleCards.length);
+        console.log(`Mostrando ${visibleCards.length} de ${allCards.length} incidentes`);
     }
 
     // Función para obtener datos de una tarjeta
     function getCardData(card) {
         const patentElement = card.querySelector('h6 strong');
-        const statusBadge = card.querySelector('.badge');
-        const reportedByElement = card.querySelector('p:contains("Por:")');
-        const typeElement = card.querySelector('p:contains("Tipo:")');
-        const severityElement = card.querySelector('p:contains("Severidad:") .badge');
-        const categoryElement = card.querySelector('p:contains("Categoría:")');
-        const priorityElement = card.querySelector('p:contains("Prioridad:") .badge');
+        const statusBadge = card.querySelector('.card-header .badge');
+        const allPElements = card.querySelectorAll('p');
+        let reportedBy = '', incidentType = '', severity = '', category = '', priority = '', month = '', year = '';
+
+        allPElements.forEach(p => {
+            const text = p.textContent.trim();
+            if (text.startsWith('Por:')) {
+                reportedBy = text.replace('Por:', '').trim().split(' ')[0].toLowerCase(); // Solo el nombre, sin el badge
+            } else if (text.startsWith('Tipo:')) {
+                incidentType = text.replace('Tipo:', '').trim();
+            } else if (text.startsWith('Severidad:')) {
+                severity = p.querySelector('.badge') ? p.querySelector('.badge').textContent.trim() : '';
+            } else if (text.startsWith('Categoría:')) {
+                category = text.replace('Categoría:', '').trim();
+            } else if (text.startsWith('Prioridad:')) {
+                priority = p.querySelector('.badge') ? p.querySelector('.badge').textContent.trim() : '';
+            } else if (text.startsWith('Reportado:')) {
+                // Extraer fecha del formato "Reportado: DD/MM/YYYY HH:MM"
+                const dateMatch = text.match(/Reportado:\s*(\d{2})\/(\d{2})\/(\d{4})/);
+                if (dateMatch) {
+                    month = dateMatch[2]; // MM
+                    year = dateMatch[3];  // YYYY
+                }
+            }
+        });
 
         return {
             patent: patentElement ? patentElement.textContent.toLowerCase().trim() : '',
             status: statusBadge ? statusBadge.textContent.toLowerCase().trim() : '',
-            reportedBy: reportedByElement ? reportedByElement.textContent.replace('Por:', '').trim().toLowerCase() : '',
-            incidentType: typeElement ? typeElement.textContent.replace('Tipo:', '').trim() : '',
-            severity: severityElement ? severityElement.textContent.trim() : '',
-            category: categoryElement ? categoryElement.textContent.replace('Categoría:', '').trim() : '',
-            priority: priorityElement ? priorityElement.textContent.trim() : ''
+            reportedBy: reportedBy,
+            incidentType: incidentType,
+            severity: severity,
+            category: category,
+            priority: priority,
+            month: month,
+            year: year
         };
     }
 
@@ -96,6 +126,16 @@ document.addEventListener('DOMContentLoaded', function() {
             return false;
         }
 
+        // Filtro por mes
+        if (filters.month && cardData.month !== filters.month) {
+            return false;
+        }
+
+        // Filtro por año
+        if (filters.year && cardData.year !== filters.year) {
+            return false;
+        }
+
         return true;
     }
 
@@ -103,17 +143,30 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateResultsCount(count) {
         const resultsCount = document.getElementById('results-count');
         if (resultsCount) {
-            resultsCount.textContent = `Mostrando ${count} de ${incidentCards.length} incidentes`;
+            resultsCount.textContent = `Mostrando ${count} de ${allCards.length} incidentes`;
         }
     }
 
     // Función para limpiar filtros
     function clearFilters() {
+        console.log('Limpiando filtros');
+
+        // Limpiar el contenedor
+        container.innerHTML = '';
+
+        // Agregar todas las tarjetas de vuelta
+        allCards.forEach(card => {
+            container.appendChild(card);
+        });
+
+        // Limpiar los campos del formulario
         const filterInputs = filterForm.querySelectorAll('input, select');
         filterInputs.forEach(input => {
             input.value = '';
         });
-        applyFilters();
+
+        updateResultsCount(allCards.length);
+        console.log(`Mostrando todos los ${allCards.length} incidentes`);
     }
 
     // Event listeners
@@ -127,7 +180,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Inicializar contador
-    updateResultsCount(incidentCards.length);
+    updateResultsCount(allCards.length);
 
-    console.log(`Sistema de filtros inicializado para ${incidentCards.length} incidentes`);
+    console.log(`Sistema de filtros inicializado para ${allCards.length} incidentes`);
 });

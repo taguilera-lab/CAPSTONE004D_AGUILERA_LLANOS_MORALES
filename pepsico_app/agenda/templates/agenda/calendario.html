@@ -13,7 +13,9 @@
 {% block content %}
 <div class="container mt-4">
   <h1 class="mb-4">Calendario de Agendas</h1>
+  {% if user.is_authenticated and user.flotauser.role.name == 'Vendedor' %}
   <a href="{% url 'agendar_ingreso' %}" class="btn btn-primary mb-3">Agendar Nuevo Ingreso</a>
+  {% endif %}
   <a href="{% url 'ingresos_list' %}" class="btn btn-secondary mb-3">Ver Lista de Ingresos</a>
   <div id='calendar'></div>
 </div>
@@ -31,7 +33,6 @@
         <p><strong>Patente:</strong> <span id="modal-patent"></span></p>
         <p><strong>Tipo de Servicio:</strong> <span id="modal-service-type"></span></p>
         <p><strong>Inicio:</strong> <span id="modal-start"></span></p>
-        <p><strong>Fin:</strong> <span id="modal-end"></span></p>
         <p><strong>Regla de Recurrencia:</strong> <span id="modal-recurrence"></span></p>
         <p><strong>Minutos de Recordatorio:</strong> <span id="modal-reminder"></span></p>
         <p><strong>Usuario Asignado:</strong> <span id="modal-assigned"></span></p>

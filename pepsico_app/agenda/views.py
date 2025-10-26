@@ -1,4 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
 from documents.models import Ingreso, MaintenanceSchedule, Vehicle, Route, WorkOrder, WorkOrderStatus, WorkOrderMechanic, SparePartUsage, Repuesto, Task
 from .forms import IngresoForm, AgendarIngresoForm, WorkOrderForm, WorkOrderMechanicForm, SparePartUsageForm
 import json
@@ -11,7 +12,7 @@ def calendario(request):
             'id': schedule.id_schedule,
             'title': f"{schedule.patent} - {schedule.service_type.name if schedule.service_type else 'Servicio por definir'}",
             'start': schedule.start_datetime.isoformat(),
-            'end': schedule.end_datetime.isoformat() if schedule.end_datetime else None,
+            'end': None,
             'description': schedule.observations or '',
             'patent': str(schedule.patent),
             'service_type': schedule.service_type.name if schedule.service_type else '',
@@ -112,8 +113,8 @@ def ingreso_create(request):
                     ingreso.observations = related_schedule.observations
             
             # Registrar quién creó el ingreso (cuando haya autenticación)
-            if hasattr(request, 'user') and request.user.is_authenticated:
-                ingreso.entry_registered_by = request.user
+            if hasattr(request, 'user') and request.user.is_authenticated and hasattr(request.user, 'flotauser'):
+                ingreso.entry_registered_by = request.user.flotauser
             
             ingreso.save()
             return redirect('ingresos_list')
@@ -147,7 +148,7 @@ def registrar_salida(request):
             ingreso.authorization = True
             ingreso.exit_datetime = exit_datetime
             # Asumir que request.user es FlotaUser o agregar lógica
-            # ingreso.exit_registered_by = request.user  # Ajustar según auth
+            # ingreso.exit_registered_by = request.user.flotauser  # Ajustar según auth
             ingreso.save()
             return redirect('ingresos_list')
         else:
@@ -160,23 +161,24 @@ def registrar_salida(request):
         return render(request, 'agenda/registrar_salida.html', {'ingresos_pendientes': ingresos_pendientes})
 
 
+@login_required
 def agendar_ingreso(request):
+    # Verificar que el usuario tenga rol "vendedor"
+    if not (hasattr(request, 'user') and request.user.is_authenticated and hasattr(request.user, 'flotauser') and request.user.flotauser.role.name == 'Vendedor'):
+        from django.contrib import messages
+        messages.error(request, 'No tienes permisos para agendar ingresos. Solo usuarios con rol Vendedor pueden acceder a esta funcionalidad.')
+        return redirect('calendario')
+    
     vehicles = list(Vehicle.objects.values('patent', 'site__name'))
     routes = list(Route.objects.values('id_route', 'route_code', 'truck'))
     if request.method == 'POST':
-        form = AgendarIngresoForm(request.POST, user=request.user if hasattr(request, 'user') and request.user.is_authenticated else None)
+        form = AgendarIngresoForm(request.POST, user=request.user if hasattr(request, 'user') and request.user.is_authenticated and hasattr(request.user, 'flotauser') else None)
         if form.is_valid():
-            schedule = form.save(commit=False)
-            
-            # Forzar que el chofer esperado sea siempre el usuario logueado
-            if hasattr(request, 'user') and request.user.is_authenticated:
-                schedule.expected_chofer = request.user
-            
-            schedule.save()
+            schedule = form.save()  # El formulario ya asigna assigned_user automáticamente
             return redirect('calendario')
     else:
         # Pre-llenar el chofer con el usuario actual si está disponible
-        form = AgendarIngresoForm(user=request.user if hasattr(request, 'user') and request.user.is_authenticated else None)
+        form = AgendarIngresoForm(user=request.user if hasattr(request, 'user') and request.user.is_authenticated and hasattr(request.user, 'flotauser') else None)
     
         return render(request, 'agenda/agendar_ingreso.html', {'form': form, 'vehicles': json.dumps(vehicles), 'routes': json.dumps(routes)})
 
@@ -194,10 +196,15 @@ def ingreso_create_from_schedule(request):
         # Obtener el agendamiento
         schedule = get_object_or_404(MaintenanceSchedule, id_schedule=schedule_id, ingresos__isnull=True)
         
+        # Validar que el schedule tenga un chofer asignado
+        if not schedule.expected_chofer:
+            from django.contrib import messages
+            messages.error(request, f'No se puede crear el ingreso porque el agendamiento {schedule.patent} no tiene un chofer asignado.')
+            return redirect('ingreso_create_select')
+        
         # Crear el ingreso basado en el agendamiento
         ingreso = Ingreso.objects.create(
             patent=schedule.patent,
-            service_type=schedule.service_type,  # Puede ser None ahora
             entry_datetime=schedule.start_datetime,
             chofer=schedule.expected_chofer,
             observations=schedule.observations,
@@ -206,8 +213,8 @@ def ingreso_create_from_schedule(request):
         )
         
         # Registrar quién creó el ingreso
-        if hasattr(request, 'user') and request.user.is_authenticated:
-            ingreso.entry_registered_by = request.user
+        if hasattr(request, 'user') and request.user.is_authenticated and hasattr(request.user, 'flotauser'):
+            ingreso.entry_registered_by = request.user.flotauser
             ingreso.save()
         
         # Mensaje de éxito

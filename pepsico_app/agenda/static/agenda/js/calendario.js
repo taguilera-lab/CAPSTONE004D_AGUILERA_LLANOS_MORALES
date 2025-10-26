@@ -17,7 +17,6 @@ document.addEventListener('DOMContentLoaded', function() {
       document.getElementById('modal-patent').textContent = info.event.extendedProps.patent;
       document.getElementById('modal-service-type').textContent = info.event.extendedProps.service_type;
       document.getElementById('modal-start').textContent = info.event.start ? info.event.start.toLocaleString('es-ES') : '';
-      document.getElementById('modal-end').textContent = info.event.end ? info.event.end.toLocaleString('es-ES') : '';
       document.getElementById('modal-recurrence').textContent = info.event.extendedProps.recurrence_rule;
       document.getElementById('modal-reminder').textContent = info.event.extendedProps.reminder_minutes;
       document.getElementById('modal-assigned').textContent = info.event.extendedProps.assigned_user;

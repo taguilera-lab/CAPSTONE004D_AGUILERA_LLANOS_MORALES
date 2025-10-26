@@ -36,29 +36,46 @@ class AgendarIngresoForm(forms.ModelForm):
 
     class Meta:
         model = MaintenanceSchedule
-        fields = ['patent', 'start_datetime', 'expected_chofer', 'observations']
+        fields = ['patent', 'service_type', 'start_datetime', 'expected_chofer', 'observations', 'status']
         widgets = {
             'start_datetime': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
-            'end_datetime': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
         }
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user', None)  # Extraer el usuario de kwargs
         super().__init__(*args, **kwargs)
         
+        # Configurar el queryset para el campo status
+        self.fields['status'].queryset = UserStatus.objects.all()
+        
+        # Hacer service_type opcional inicialmente
+        self.fields['service_type'].required = False
+        self.fields['service_type'].help_text = "Selecciona el tipo de servicio de mantenimiento."
+        
         # Establecer un estado por defecto
         if not self.instance.pk:
-            default_status = UserStatus.objects.filter(name='Programado').first()
+            default_status = UserStatus.objects.filter(name='Activo').first()
             if default_status:
-                self.instance.status = default_status
-            else:
-                self.instance.status = UserStatus.objects.first()
+                self.fields['status'].initial = default_status
         
         # Pre-llenar el chofer esperado con el usuario actual
         if self.user and not self.instance.pk:  # Solo para nuevos registros
-            self.fields['expected_chofer'].initial = self.user
-            self.fields['expected_chofer'].widget.attrs['readonly'] = True
-            self.fields['expected_chofer'].help_text = "Este campo se registra automáticamente con tu usuario."
+            if hasattr(self.user, 'flotauser'):
+                self.fields['expected_chofer'].initial = self.user.flotauser
+                self.fields['expected_chofer'].widget.attrs['readonly'] = True
+                self.fields['expected_chofer'].help_text = "Este campo se registra automáticamente con tu usuario."
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        
+        # Asignar automáticamente el usuario que crea el agendamiento como assigned_user
+        if self.user and not instance.pk:  # Solo para nuevos registros
+            if hasattr(self.user, 'flotauser'):
+                instance.assigned_user = self.user.flotauser
+        
+        if commit:
+            instance.save()
+        return instance
 
 
 class WorkOrderForm(forms.ModelForm):

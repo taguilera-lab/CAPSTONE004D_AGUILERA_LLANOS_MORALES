@@ -1,5 +1,33 @@
 /* incident_list.css - Estilos para la lista de incidentes */
 
+/* Contenedor de incidentes - Grid de 3 columnas */
+#incidents-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-top: 0;
+}
+
+/* Los elementos del grid son las tarjetas directamente */
+#incidents-container > .incident-card {
+    margin-bottom: 0;
+}
+
+/* Responsividad */
+@media (max-width: 768px) {
+    #incidents-container {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    #incidents-container {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}
+
 /* Estilos para filtros */
 .card-header {
     background-color: #f8f9fa;
