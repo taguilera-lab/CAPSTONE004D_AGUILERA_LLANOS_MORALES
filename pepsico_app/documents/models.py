@@ -205,15 +205,9 @@ class MaintenanceSchedule(models.Model):
     id_schedule = models.AutoField(primary_key=True)
     patent = models.ForeignKey(
         Vehicle, on_delete=models.CASCADE, db_column='patent')
-    service_type = models.ForeignKey(
-        ServiceType, on_delete=models.CASCADE, db_column='service_type_id', null=True, blank=True)
     start_datetime = models.DateTimeField()
-    recurrence_rule = models.CharField(max_length=255, null=True, blank=True)
-    reminder_minutes = models.IntegerField(null=True, blank=True)
     assigned_user = models.ForeignKey(
         FlotaUser, on_delete=models.SET_NULL, db_column='assigned_user_id', null=True, blank=True)
-    supervisor = models.ForeignKey(FlotaUser, on_delete=models.SET_NULL, db_column='supervisor_id',
-                                   null=True, blank=True, related_name='supervised_schedules')
     expected_chofer = models.ForeignKey(FlotaUser, on_delete=models.SET_NULL, db_column='expected_chofer_id',
                                        null=True, blank=True, related_name='expected_ingresos')
     status = models.ForeignKey(

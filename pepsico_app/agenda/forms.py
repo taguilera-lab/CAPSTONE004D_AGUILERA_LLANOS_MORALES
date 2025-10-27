@@ -47,7 +47,7 @@ class AgendarIngresoForm(forms.ModelForm):
 
     class Meta:
         model = MaintenanceSchedule
-        fields = ['patent', 'service_type', 'start_datetime', 'expected_chofer', 'observations', 'status']
+        fields = ['patent', 'start_datetime', 'expected_chofer', 'observations', 'status']
         widgets = {
             'start_datetime': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
         }
@@ -71,10 +71,6 @@ class AgendarIngresoForm(forms.ModelForm):
         else:
             # Para nuevos registros, incluir todos los incidentes (se filtrarán en JavaScript)
             self.fields['related_incidents'].queryset = Incident.objects.all().order_by('-reported_at')
-        
-        # Hacer service_type opcional inicialmente
-        self.fields['service_type'].required = False
-        self.fields['service_type'].help_text = "Selecciona el tipo de servicio de mantenimiento."
         
         # Establecer un estado por defecto
         if not self.instance.pk:

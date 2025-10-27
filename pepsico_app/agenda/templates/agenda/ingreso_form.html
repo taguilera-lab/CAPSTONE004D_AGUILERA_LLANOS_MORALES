@@ -20,7 +20,6 @@
       <p>Se ha encontrado un agendamiento para este vehículo. La información se ha pre-llenado automáticamente.</p>
       <small>
         <strong>Agendado para:</strong> {{ related_schedule.start_datetime|date:"d/m/Y H:i" }}<br>
-        <strong>Servicio:</strong> {{ related_schedule.service_type.name }}<br>
         {% if related_schedule.observations %}
         <strong>Observaciones:</strong> {{ related_schedule.observations }}
         {% endif %}

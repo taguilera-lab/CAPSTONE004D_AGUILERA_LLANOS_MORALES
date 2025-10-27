@@ -6,7 +6,7 @@ from django.utils.safestring import mark_safe
 import json
 
 def calendario(request):
-    schedules = MaintenanceSchedule.objects.prefetch_related('related_incidents').all()
+    schedules = MaintenanceSchedule.objects.prefetch_related('related_incidents', 'ingresos').all()
     
     # Crear una lista de eventos serializable
     events_list = []
@@ -24,20 +24,20 @@ def calendario(request):
                 'reported_at': incident.reported_at.strftime('%Y-%m-%d %H:%M'),
             })
         
+        # Verificar si ya tiene un ingreso asociado
+        has_ingreso = schedule.ingresos.exists()
+        
         events_list.append({
             'id': schedule.id_schedule,
-            'title': f"{schedule.patent} - {schedule.service_type.name if schedule.service_type else 'Servicio por definir'}",
+            'title': f"{schedule.patent} - Servicio de mantenimiento",
             'start': schedule.start_datetime.isoformat(),
             'end': None,
             'description': schedule.observations or '',
             'patent': str(schedule.patent),
-            'service_type': schedule.service_type.name if schedule.service_type else '',
-            'recurrence_rule': schedule.recurrence_rule or '',
-            'reminder_minutes': schedule.reminder_minutes or 0,
             'assigned_user': schedule.assigned_user.name if schedule.assigned_user else '',
-            'supervisor': schedule.supervisor.name if schedule.supervisor else '',
             'status': schedule.status.name if schedule.status else '',
             'related_incidents': related_incidents,
+            'has_ingreso': has_ingreso,
         })
     
     # Usar json.dumps con manejo de errores
@@ -51,7 +51,7 @@ def calendario(request):
 
 def ingresos_list(request):
     ingresos = Ingreso.objects.select_related(
-        'patent', 'patent__site', 'schedule__service_type', 'entry_registered_by', 'exit_registered_by', 'schedule'
+        'patent', 'patent__site', 'entry_registered_by', 'exit_registered_by', 'schedule'
     ).prefetch_related('work_order').all()
     return render(request, 'agenda/ingresos_list.html', {'ingresos': ingresos})
 
@@ -72,7 +72,7 @@ def ingreso_create_select(request):
     pending_schedules = MaintenanceSchedule.objects.filter(
         ingresos__isnull=True,
         start_datetime__date=selected_date
-    ).select_related('patent', 'service_type').order_by('start_datetime')
+    ).select_related('patent').order_by('start_datetime')
     
     # Fechas disponibles (con agendamientos pendientes)
     available_dates = MaintenanceSchedule.objects.filter(
@@ -248,10 +248,9 @@ def ingreso_create_from_schedule(request):
         from django.contrib import messages
         chofer_name = schedule.expected_chofer.name if schedule.expected_chofer else "Chofer por asignar"
         fecha_formateada = schedule.start_datetime.strftime("%d/%m/%Y %H:%M")
-        service_type_name = schedule.service_type.name if schedule.service_type else "Sin tipo de servicio"
         messages.success(
             request, 
-            f'Ingreso agendado confirmado: {schedule.patent} - {fecha_formateada} - {chofer_name} ({service_type_name})'
+            f'Ingreso agendado confirmado: {schedule.patent} - {fecha_formateada} - {chofer_name}'
         )
         
         return redirect('ingresos_list')

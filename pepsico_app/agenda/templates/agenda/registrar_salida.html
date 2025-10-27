@@ -27,7 +27,7 @@
         <select name="ingreso" id="ingreso" class="custom-select" required>
           <option value="">---------</option>
           {% for ingreso in ingresos_pendientes %}
-          <option value="{{ ingreso.id_ingreso }}">{{ ingreso.patent }} - {{ ingreso.service_type }} (Fin: {{ ingreso.observations|default:"-" }}, Entrada: {{ ingreso.entry_datetime }})</option>
+          <option value="{{ ingreso.id_ingreso }}">{{ ingreso.patent }} (Fin: {{ ingreso.observations|default:"-" }}, Entrada: {{ ingreso.entry_datetime }})</option>
           {% endfor %}
         </select>
       </div>

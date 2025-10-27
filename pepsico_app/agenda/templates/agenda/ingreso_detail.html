@@ -21,9 +21,6 @@
         <strong>Patente:</strong> {{ ingreso.patent }}
       </div>
       <div class="detail-field">
-        <strong>Servicio:</strong> {{ ingreso.service_type|default:"Sin especificar" }}
-      </div>
-      <div class="detail-field">
         <strong>Entrada:</strong> {{ ingreso.entry_datetime }}
       </div>
       <div class="detail-field">
@@ -31,9 +28,6 @@
       </div>
       <div class="detail-field">
         <strong>Chofer:</strong> {{ ingreso.chofer }}
-      </div>
-      <div class="detail-field">
-        <strong>Supervisor:</strong> {{ ingreso.supervisor|default:"-" }}
       </div>
       <div class="detail-field">
         <strong>Observaciones:</strong> {{ ingreso.observations|default:"-" }}

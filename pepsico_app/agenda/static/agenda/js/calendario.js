@@ -61,11 +61,26 @@ document.addEventListener('DOMContentLoaded', function() {
       var modal = new bootstrap.Modal(document.getElementById('eventModal'));
       modal.show();
       
-      // Configurar el botón de crear ingreso
-      document.getElementById('create-ingreso-btn').onclick = function() {
-        var patent = info.event.extendedProps.patent;
-        window.location.href = createIngresoUrl + '?patent=' + encodeURIComponent(patent);
-      };
+      // Configurar los botones basado en si ya tiene ingreso
+      var hasIngreso = info.event.extendedProps.has_ingreso;
+      var createBtn = document.getElementById('create-ingreso-btn');
+      var completedBtn = document.getElementById('ingreso-completed-btn');
+      
+      if (hasIngreso) {
+        // Ya tiene ingreso - mostrar botón verde y ocultar crear ingreso
+        createBtn.style.display = 'none';
+        completedBtn.style.display = 'inline-block';
+      } else {
+        // No tiene ingreso - mostrar botón crear ingreso y ocultar botón verde
+        createBtn.style.display = 'inline-block';
+        completedBtn.style.display = 'none';
+        
+        // Configurar el botón de crear ingreso
+        createBtn.onclick = function() {
+          var patent = info.event.extendedProps.patent;
+          window.location.href = createIngresoUrl + '?patent=' + encodeURIComponent(patent);
+        };
+      }
     },
     dateClick: function(info) {
       console.log('Día clicado:', info.dateStr);

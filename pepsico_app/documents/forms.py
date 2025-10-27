@@ -328,18 +328,14 @@ class MaintenanceScheduleForm(forms.ModelForm):
     class Meta:
         model = MaintenanceSchedule
         fields = [
-            'patent', 'service_type', 'start_datetime',
-            'recurrence_rule', 'reminder_minutes', 'assigned_user',
-            'supervisor', 'status', 'observations'
+            'patent', 'start_datetime', 'assigned_user',
+            'expected_chofer', 'status', 'observations'
         ]
         widgets = {
             'patent': forms.Select(attrs={'class': 'form-control'}),
-            'service_type': forms.Select(attrs={'class': 'form-control'}),
             'start_datetime': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
-            'recurrence_rule': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Regla de recurrencia'}),
-            'reminder_minutes': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Minutos de recordatorio'}),
             'assigned_user': forms.Select(attrs={'class': 'form-control'}),
-            'supervisor': forms.Select(attrs={'class': 'form-control'}),
+            'expected_chofer': forms.Select(attrs={'class': 'form-control'}),
             'status': forms.Select(attrs={'class': 'form-control'}),
             'observations': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Observaciones'}),
         }
