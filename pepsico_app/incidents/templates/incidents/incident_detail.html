@@ -26,13 +26,25 @@
                 </h1>
                 <h4 class="mb-3">{{ incident.name }}</h4>
                 <div class="d-flex gap-2 flex-wrap">
-                    <span class="incident-badge status-{{ incident.status|lower|cut:'_' }}">
-                        <i class="fas fa-info-circle"></i> {{ incident.get_status_display }}
+                    {% if incident.latest_diagnostic %}
+                    {% with latest_diagnostic=incident.latest_diagnostic.0 %}
+                    <span class="incident-badge status-{{ latest_diagnostic.status|lower|cut:'_' }}">
+                        <i class="fas fa-info-circle"></i> {{ latest_diagnostic.get_status_display }}
                     </span>
-                    {% if incident.diagnostics.severity %}
-                    <span class="incident-badge severity-{{ incident.diagnostics.severity|lower }}">
-                        <i class="fas fa-exclamation-circle"></i> {{ incident.diagnostics.severity }}
+                    {% endwith %}
+                    {% else %}
+                    <span class="incident-badge status-reportada">
+                        <i class="fas fa-info-circle"></i> Reportada
                     </span>
+                    {% endif %}
+                    {% if incident.latest_diagnostic %}
+                    {% with latest_diagnostic=incident.latest_diagnostic.0 %}
+                    {% if latest_diagnostic.severity %}
+                    <span class="incident-badge severity-{{ latest_diagnostic.severity|lower }}">
+                        <i class="fas fa-exclamation-circle"></i> {{ latest_diagnostic.severity }}
+                    </span>
+                    {% endif %}
+                    {% endwith %}
                     {% endif %}
                     {% if incident.priority %}
                     <span class="incident-badge priority-{{ incident.priority|lower }}">
@@ -77,11 +89,15 @@
                         <span class="detail-label">Tipo de Incidente:</span>
                         <span class="detail-value">{{ incident.get_incident_type_display }}</span>
                     </div>
-                    {% if incident.diagnostics.category %}
-                    <div class="detail-row">
-                        <span class="detail-label">Categoría:</span>
-                        <span class="detail-value">{{ incident.diagnostics.get_category_display }}</span>
-                    </div>
+                                        {% if incident.latest_diagnostic %}
+                    {% with latest_diagnostic=incident.latest_diagnostic.0 %}
+                    {% if latest_diagnostic.category %}
+                        <dt class="col-sm-4">Categoría:</dt>
+                        <dd class="col-sm-8">
+                            <span class="detail-value">{{ latest_diagnostic.get_category_display }}</span>
+                        </dd>
+                    {% endif %}
+                    {% endwith %}
                     {% endif %}
                     <div class="detail-row">
                         <span class="detail-label">Reportado por:</span>
@@ -91,17 +107,25 @@
                         <span class="detail-label">Fecha de Reporte:</span>
                         <span class="detail-value">{{ incident.reported_at|date:"d/m/Y H:i" }}</span>
                     </div>
-                    {% if incident.diagnostics.assigned_to %}
+                    {% if incident.latest_diagnostic %}
+                    {% with latest_diagnostic=incident.latest_diagnostic.0 %}
+                    {% if latest_diagnostic.assigned_to %}
                     <div class="detail-row">
                         <span class="detail-label">Asignado a:</span>
-                        <span class="detail-value">{{ incident.diagnostics.assigned_to.name }}</span>
+                        <span class="detail-value">{{ latest_diagnostic.assigned_to.name }}</span>
                     </div>
                     {% endif %}
-                    {% if incident.diagnostics.resolved_at %}
+                    {% endwith %}
+                    {% endif %}
+                    {% if incident.latest_diagnostic %}
+                    {% with latest_diagnostic=incident.latest_diagnostic.0 %}
+                    {% if latest_diagnostic.resolved_at %}
                     <div class="detail-row">
                         <span class="detail-label">Fecha de Resolución:</span>
-                        <span class="detail-value">{{ incident.diagnostics.resolved_at|date:"d/m/Y H:i" }}</span>
+                        <span class="detail-value">{{ latest_diagnostic.resolved_at|date:"d/m/Y H:i" }}</span>
                     </div>
+                    {% endif %}
+                    {% endwith %}
                     {% endif %}
                 </div>
             </div>
@@ -126,18 +150,26 @@
                     </div>
                     {% endif %}
 
-                    {% if incident.diagnostics.symptoms %}
+                    {% if incident.latest_diagnostic %}
+                    {% with latest_diagnostic=incident.latest_diagnostic.0 %}
+                    {% if latest_diagnostic.symptoms %}
                     <div class="mb-3">
                         <h6 class="text-muted mb-2">Síntomas:</h6>
-                        <p class="mb-3">{{ incident.diagnostics.symptoms }}</p>
+                        <p class="mb-3">{{ latest_diagnostic.symptoms }}</p>
                     </div>
                     {% endif %}
+                    {% endwith %}
+                    {% endif %}
 
-                    {% if incident.diagnostics.possible_cause %}
+                    {% if incident.latest_diagnostic %}
+                    {% with latest_diagnostic=incident.latest_diagnostic.0 %}
+                    {% if latest_diagnostic.possible_cause %}
                     <div class="mb-3">
                         <h6 class="text-muted mb-2">Causa Posible:</h6>
-                        <p class="mb-3">{{ incident.diagnostics.possible_cause }}</p>
+                        <p class="mb-3">{{ latest_diagnostic.possible_cause }}</p>
                     </div>
+                    {% endif %}
+                    {% endwith %}
                     {% endif %}
 
                     {% if incident.location %}
@@ -147,11 +179,15 @@
                     </div>
                     {% endif %}
 
-                    {% if incident.diagnostics.resolution_notes %}
+                    {% if incident.latest_diagnostic %}
+                    {% with latest_diagnostic=incident.latest_diagnostic.0 %}
+                    {% if latest_diagnostic.resolution_notes %}
                     <div class="mb-3">
                         <h6 class="text-muted mb-2">Notas de Resolución:</h6>
-                        <p class="mb-3">{{ incident.diagnostics.resolution_notes }}</p>
+                        <p class="mb-3">{{ latest_diagnostic.resolution_notes }}</p>
                     </div>
+                    {% endif %}
+                    {% endwith %}
                     {% endif %}
                 </div>
             </div>
@@ -171,11 +207,15 @@
                             <small class="text-muted">Por: {{ incident.reported_by.name }}</small>
                         </div>
 
-                        {% if incident.status != 'Reportada' %}
+                        {% if incident.latest_diagnostic %}
+                        {% with latest_diagnostic=incident.latest_diagnostic.0 %}
+                        {% if latest_diagnostic.status != 'Reportada' %}
                         <div class="timeline-item">
-                            <h6>Estado Actual: {{ incident.get_status_display }}</h6>
+                            <h6>Estado Actual: {{ latest_diagnostic.get_status_display }}</h6>
                             <p class="text-muted mb-0">{{ incident.updated_at|date:"d/m/Y H:i" }}</p>
                         </div>
+                        {% endif %}
+                        {% endwith %}
                         {% endif %}
 
                         {% if incident.resolved_at %}
@@ -359,35 +399,49 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    {% if user.flotauser.role.name == 'Supervisor' %}
-                        {% if incident.status != 'Resuelta' and incident.status != 'Cerrada' %}
-                        <a href="{% url 'supervisor_edit_incident' incident.id_incident %}" class="btn btn-outline-primary btn-sm w-100 mb-2">
-                            <i class="fas fa-edit"></i> Editar Incidente
-                        </a>
-                        <button class="btn btn-success btn-sm w-100 mb-2" onclick="changeStatus({{ incident.id_incident }}, 'Resuelta')">
-                            <i class="fas fa-check"></i> Marcar como Resuelta
-                        </button>
-                        {% else %}
-                        <div class="alert alert-info mb-0">
-                            <i class="fas fa-info-circle"></i> Este incidente ya está {{ incident.get_status_display|lower }}
-                        </div>
-                        {% endif %}
-                    {% elif user.flotauser.role.name == 'Jefe de Flota' %}
-                        {% if incident.status == 'Reportada' %}
-                        <button class="btn btn-info btn-sm w-100 mb-2" onclick="changeStatus({{ incident.id_incident }}, 'En_revision')">
-                            <i class="fas fa-search"></i> Enviar a Revisión
-                        </button>
-                        {% endif %}
-                        <button class="btn btn-danger btn-sm w-100" onclick="changeStatus({{ incident.id_incident }}, 'Cerrada')">
-                            <i class="fas fa-times"></i> Cerrar Incidente
-                        </button>
-                    {% elif user.flotauser.role.name == 'Recepcionista de Vehículos' %}
-                        <a href="{% url 'recepcionista_generate_ot' incident.id_incident %}" class="btn btn-warning btn-sm w-100">
-                            <i class="fas fa-tools"></i> Generar Orden de Trabajo
-                        </a>
+                    {% comment %} Determinar el estado actual {% endcomment %}
+                    {% if incident.latest_diagnostic %}
+                        {% with current_status=incident.latest_diagnostic.0.status %}
+                            {% if user.flotauser.role.name == 'Mecánico' and current_status == 'Reportada' %}
+                                <a href="{% url 'mechanic_diagnose_incident' incident.id_incident %}" class="btn btn-outline-primary btn-sm w-100 mb-2">
+                                    <i class="fas fa-stethoscope"></i> Realizar Diagnóstico In Situ
+                                </a>
+                            {% elif user.flotauser.role.name == 'Recepcionista de Vehículos' and current_status == 'Diagnostico_Mecanica_In_Situ' %}
+                                <a href="{% url 'recepcionista_generate_ot' incident.id_incident %}" class="btn btn-outline-warning btn-sm w-100 mb-2">
+                                    <i class="fas fa-tools"></i> Generar Orden de Trabajo
+                                </a>
+                            {% elif current_status == 'OT_Generada' %}
+                                <a href="{% url 'resolve_incident' incident.id_incident %}" class="btn btn-outline-success btn-sm w-100 mb-2">
+                                    <i class="fas fa-check"></i> Marcar como Resuelto
+                                </a>
+                            {% endif %}
+
+                            {% if user.flotauser.role.name == 'Supervisor' %}
+                                <a href="{% url 'supervisor_edit_incident' incident.id_incident %}" class="btn btn-outline-primary btn-sm w-100 mb-2">
+                                    <i class="fas fa-edit"></i> Editar Incidente
+                                </a>
+                            {% endif %}
+
+                            <div class="alert alert-info mb-0 mt-3">
+                                <i class="fas fa-info-circle"></i> Estado actual: <strong>{{ current_status|title|cut:"_" }}</strong>
+                            </div>
+                        {% endwith %}
                     {% else %}
-                        <div class="alert alert-secondary mb-0">
-                            <i class="fas fa-user"></i> Como {{ user.flotauser.role.name }}, no tienes acciones disponibles para este incidente.
+                        {% comment %} No hay diagnóstico aún, estado inicial "Reportada" {% endcomment %}
+                        {% if user.flotauser.role.name == 'Mecánico' %}
+                            <a href="{% url 'mechanic_diagnose_incident' incident.id_incident %}" class="btn btn-outline-primary btn-sm w-100 mb-2">
+                                <i class="fas fa-stethoscope"></i> Realizar Diagnóstico In Situ
+                            </a>
+                        {% endif %}
+
+                        {% if user.flotauser.role.name == 'Supervisor' %}
+                            <a href="{% url 'supervisor_edit_incident' incident.id_incident %}" class="btn btn-outline-primary btn-sm w-100 mb-2">
+                                <i class="fas fa-edit"></i> Editar Incidente
+                            </a>
+                        {% endif %}
+
+                        <div class="alert alert-info mb-0 mt-3">
+                            <i class="fas fa-info-circle"></i> Estado actual: <strong>Reportada</strong>
                         </div>
                     {% endif %}
                 </div>

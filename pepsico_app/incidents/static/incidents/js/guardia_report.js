@@ -143,7 +143,31 @@ function getLocation() {
 }
 
 // Obtener ubicación al cargar la página
-document.addEventListener('DOMContentLoaded', getLocation);
+document.addEventListener('DOMContentLoaded', function() {
+    getLocation();
+    
+    // Debug: Verificar que los checkboxes existen y son funcionales
+    const emergencyCheckbox = document.getElementById('id_is_emergency');
+    const towCheckbox = document.getElementById('id_requires_tow');
+    
+    if (emergencyCheckbox) {
+        console.log('Checkbox is_emergency encontrado:', emergencyCheckbox.checked);
+        emergencyCheckbox.addEventListener('change', function() {
+            console.log('is_emergency cambió a:', this.checked);
+        });
+    } else {
+        console.warn('Checkbox is_emergency NO encontrado');
+    }
+    
+    if (towCheckbox) {
+        console.log('Checkbox requires_tow encontrado:', towCheckbox.checked);
+        towCheckbox.addEventListener('change', function() {
+            console.log('requires_tow cambió a:', this.checked);
+        });
+    } else {
+        console.warn('Checkbox requires_tow NO encontrado');
+    }
+});
 
 // Limpiar recursos cuando se cierra la página
 window.addEventListener('beforeunload', () => {

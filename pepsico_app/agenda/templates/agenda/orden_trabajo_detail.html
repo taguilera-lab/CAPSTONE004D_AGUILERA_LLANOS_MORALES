@@ -223,8 +223,11 @@
           <a href="{% url 'orden_trabajo_update' work_order.id_work_order %}" class="btn btn-outline-primary me-2">
             <i class="fas fa-edit"></i> Editar
           </a>
+          <a href="{% url 'ingresos_list' %}" class="btn btn-outline-info me-2">
+            <i class="fas fa-list"></i> Volver a Ingresos
+          </a>
           <a href="{% url 'orden_trabajo_list' %}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left"></i> Volver
+            <i class="fas fa-arrow-left"></i> Volver a Órdenes de Trabajo
           </a>
         </div>
       </div>
@@ -319,6 +322,124 @@
       </div>
     </div>
   </div>
+
+  <!-- Diagnósticos e Incidentes Asociados -->
+  {% if related_diagnostics %}
+  <div class="card mb-4">
+    <div class="card-header">
+      <h5 class="mb-0">
+        <i class="fas fa-stethoscope"></i> Diagnósticos e Incidentes Asociados
+      </h5>
+    </div>
+    <div class="card-body">
+      {% for diagnostic in related_diagnostics %}
+      <div class="diagnostic-item mb-4 p-3 border rounded">
+        <div class="row">
+          <div class="col-md-8">
+            <h6 class="text-primary mb-2">
+              <i class="fas fa-exclamation-triangle"></i> Incidente #{{ diagnostic.incident.id_incident }}
+              <span class="badge bg-secondary ms-2">{{ diagnostic.incident.name }}</span>
+            </h6>
+            <div class="row">
+              <div class="col-sm-6">
+                <small class="text-muted">
+                  <strong>Vehículo:</strong> {{ diagnostic.incident.vehicle.patent }}
+                </small>
+              </div>
+              <div class="col-sm-6">
+                <small class="text-muted">
+                  <strong>Reportado por:</strong> {{ diagnostic.incident.reported_by.name }}
+                </small>
+              </div>
+            </div>
+            <div class="row mt-1">
+              <div class="col-sm-6">
+                <small class="text-muted">
+                  <strong>Reportado:</strong> {{ diagnostic.incident.reported_at|date:"d/m/Y H:i" }}
+                </small>
+              </div>
+              <div class="col-sm-6">
+                <small class="text-muted">
+                  <strong>Estado:</strong> {{ diagnostic.get_status_display }}
+                </small>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4 text-end">
+            <a href="{% url 'incident_detail' diagnostic.incident.id_incident %}" class="btn btn-sm btn-outline-info">
+              <i class="fas fa-external-link-alt"></i> Ver Incidente
+            </a>
+          </div>
+        </div>
+
+        {% if diagnostic.symptoms or diagnostic.possible_cause or diagnostic.diagnostic_method %}
+        <div class="mt-3">
+          <h6 class="text-info mb-2">Información del Diagnóstico</h6>
+          <div class="row">
+            {% if diagnostic.diagnostic_method %}
+            <div class="col-md-4">
+              <small class="text-muted">
+                <strong>Método:</strong> {{ diagnostic.diagnostic_method }}
+              </small>
+            </div>
+            {% endif %}
+            {% if diagnostic.diagnostic_started_at %}
+            <div class="col-md-4">
+              <small class="text-muted">
+                <strong>Inicio:</strong> {{ diagnostic.diagnostic_started_at|date:"d/m/Y H:i" }}
+              </small>
+            </div>
+            {% endif %}
+            {% if diagnostic.diagnostic_by %}
+            <div class="col-md-4">
+              <small class="text-muted">
+                <strong>Realizado por:</strong> {{ diagnostic.diagnostic_by.name }}
+              </small>
+            </div>
+            {% endif %}
+          </div>
+
+          {% if diagnostic.symptoms %}
+          <div class="mt-2">
+            <small class="text-muted">
+              <strong>Síntomas:</strong> {{ diagnostic.symptoms }}
+            </small>
+          </div>
+          {% endif %}
+
+          {% if diagnostic.possible_cause %}
+          <div class="mt-1">
+            <small class="text-muted">
+              <strong>Causa posible:</strong> {{ diagnostic.possible_cause }}
+            </small>
+          </div>
+          {% endif %}
+
+          {% if diagnostic.parts_needed %}
+          <div class="mt-1">
+            <small class="text-muted">
+              <strong>Repuestos necesarios:</strong> {{ diagnostic.parts_needed }}
+            </small>
+          </div>
+          {% endif %}
+
+          {% if diagnostic.resolution_notes %}
+          <div class="mt-1">
+            <small class="text-muted">
+              <strong>Notas de resolución:</strong> {{ diagnostic.resolution_notes }}
+            </small>
+          </div>
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
+      {% if not forloop.last %}
+      <hr>
+      {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
 
   <!-- Acciones rápidas -->
   <div class="row mb-4">

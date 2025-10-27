@@ -1,14 +1,30 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
-from documents.models import Ingreso, MaintenanceSchedule, Vehicle, Route, WorkOrder, WorkOrderStatus, WorkOrderMechanic, SparePartUsage, Repuesto, Task
+from documents.models import Ingreso, MaintenanceSchedule, Vehicle, Route, WorkOrder, WorkOrderStatus, WorkOrderMechanic, SparePartUsage, Repuesto, Task, Incident
 from .forms import IngresoForm, AgendarIngresoForm, WorkOrderForm, WorkOrderMechanicForm, SparePartUsageForm
+from django.utils.safestring import mark_safe
 import json
 
 def calendario(request):
-    schedules = MaintenanceSchedule.objects.all()
-    events = []
+    schedules = MaintenanceSchedule.objects.prefetch_related('related_incidents').all()
+    
+    # Crear una lista de eventos serializable
+    events_list = []
     for schedule in schedules:
-        events.append({
+        # Obtener incidentes relacionados
+        related_incidents = []
+        for incident in schedule.related_incidents.all():
+            related_incidents.append({
+                'id': incident.id_incident,
+                'name': incident.name,
+                'type': incident.incident_type,
+                'description': incident.description or '',
+                'priority': incident.priority or 'Normal',
+                'is_emergency': incident.is_emergency,
+                'reported_at': incident.reported_at.strftime('%Y-%m-%d %H:%M'),
+            })
+        
+        events_list.append({
             'id': schedule.id_schedule,
             'title': f"{schedule.patent} - {schedule.service_type.name if schedule.service_type else 'Servicio por definir'}",
             'start': schedule.start_datetime.isoformat(),
@@ -21,11 +37,22 @@ def calendario(request):
             'assigned_user': schedule.assigned_user.name if schedule.assigned_user else '',
             'supervisor': schedule.supervisor.name if schedule.supervisor else '',
             'status': schedule.status.name if schedule.status else '',
+            'related_incidents': related_incidents,
         })
-    return render(request, 'agenda/calendario.html', {'events': json.dumps(events)})
+    
+    # Usar json.dumps con manejo de errores
+    try:
+        events_json = json.dumps(events_list, ensure_ascii=True, default=str)
+        return render(request, 'agenda/calendario.html', {'events': mark_safe(events_json)})
+    except (TypeError, ValueError) as e:
+        # Si hay error, devolver lista vacía
+        print(f"Error serializando eventos: {e}")
+        return render(request, 'agenda/calendario.html', {'events': mark_safe('[]')})
 
 def ingresos_list(request):
-    ingresos = Ingreso.objects.all()
+    ingresos = Ingreso.objects.select_related(
+        'patent', 'patent__site', 'schedule__service_type', 'entry_registered_by', 'exit_registered_by', 'schedule'
+    ).prefetch_related('work_order').all()
     return render(request, 'agenda/ingresos_list.html', {'ingresos': ingresos})
 
 def ingreso_create_select(request):
@@ -287,14 +314,14 @@ def orden_trabajo_create(request, ingreso_id):
                 work_order.status = default_status
 
             # Asignar usuario creador si está disponible
-            if hasattr(request, 'user') and request.user.is_authenticated:
-                work_order.created_by = request.user
+            if hasattr(request, 'user') and request.user.is_authenticated and hasattr(request.user, 'flotauser'):
+                work_order.created_by = request.user.flotauser
 
             work_order.save()
 
             from django.contrib import messages
             messages.success(request, f'Orden de trabajo OT-{work_order.id_work_order} creada exitosamente')
-            return redirect('orden_trabajo_detail', work_order_id=work_order.id_work_order)
+            return redirect('ingresos_list')
     else:
         form = WorkOrderForm()
 
@@ -319,6 +346,12 @@ def orden_trabajo_detail(request, work_order_id):
     spare_part_usages = work_order.spare_part_usages.select_related('repuesto')
     tasks = Task.objects.filter(work_order=work_order).select_related('service_type', 'supervisor')
 
+    # Obtener diagnósticos e incidentes asociados
+    from documents.models import Diagnostics
+    related_diagnostics = Diagnostics.objects.filter(
+        related_work_order=work_order
+    ).select_related('incident__vehicle', 'incident__reported_by', 'diagnostic_by').order_by('-diagnostic_started_at')
+
     # Formularios para agregar elementos
     mechanic_form = WorkOrderMechanicForm()
     spare_part_form = SparePartUsageForm()
@@ -332,6 +365,7 @@ def orden_trabajo_detail(request, work_order_id):
         'mechanic_assignments': mechanic_assignments,
         'spare_part_usages': spare_part_usages,
         'tasks': tasks,
+        'related_diagnostics': related_diagnostics,
         'mechanic_form': mechanic_form,
         'spare_part_form': spare_part_form,
         'total_mechanic_hours': total_mechanic_hours,
@@ -519,3 +553,35 @@ def orden_trabajo_complete(request, work_order_id):
     return render(request, 'agenda/orden_trabajo_complete.html', {
         'work_order': work_order,
     })
+
+
+def get_incidents_by_vehicle(request):
+    """Vista AJAX para obtener incidentes de un vehículo específico"""
+    from django.http import JsonResponse
+    
+    patent = request.GET.get('patent')
+    if not patent:
+        return JsonResponse({'error': 'Patente requerida'}, status=400)
+    
+    try:
+        vehicle = Vehicle.objects.get(patent=patent)
+        incidents = Incident.objects.filter(vehicle=vehicle).order_by('-reported_at')
+        
+        incidents_data = []
+        for incident in incidents:
+            incidents_data.append({
+                'id': incident.id_incident,
+                'name': incident.name,
+                'incident_type': incident.incident_type,
+                'description': incident.description[:100] + '...' if len(incident.description) > 100 else incident.description,
+                'reported_at': incident.reported_at.strftime('%Y-%m-%d %H:%M'),
+                'priority': incident.priority or 'Normal',
+                'is_emergency': incident.is_emergency,
+            })
+        
+        return JsonResponse({'incidents': incidents_data})
+    
+    except Vehicle.DoesNotExist:
+        return JsonResponse({'error': 'Vehículo no encontrado'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)

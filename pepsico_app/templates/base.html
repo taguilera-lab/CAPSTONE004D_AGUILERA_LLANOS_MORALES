@@ -30,12 +30,16 @@
         <a href="{% url 'busqueda_patente' %}" class="icon-home">Inicio</a>
         <a href="{% url 'ingresos_list' %}" class="icon-truck">Ingresos</a>
         <a href="{% url 'calendario' %}" class="icon-doc">Calendario</a>
-        <a href="{% url 'orden_trabajo_list' %}" class="icon-doc-text">Órdenes de Trabajo</a>
-        <a href="#" class="icon-pause">Pausas</a>
-        <a href="{% url 'datos' %}" class="icon-doc-text-inv">Datos</a>
+        <a href="{% url 'orden_trabajo_list' %}" class="icon-doc-text-inv">Órdenes de Trabajo</a>
+        <a href="{% url 'incident_list' %}" class="icon-pause">Incidentes</a>
+        <a href="{% url 'datos' %}" class="icon-doc">Datos</a>
         <a href="#" class="icon-doc">Reportes</a>
-        <a href="#" class="icon-user">Mi Perfil</a>
-        <a href="login.html" class="icon-logout">Salir</a>
+        {% if user.is_authenticated %}
+          <a href="{% url 'user_dashboard' %}" class="icon-user">Mi Perfil</a>
+          <a href="{% url 'logout' %}" class="icon-logout">Salir</a>
+        {% else %}
+          <a href="{% url 'login' %}" class="icon-user">Iniciar Sesión</a>
+        {% endif %}
       </nav>
     </div>
   </div>

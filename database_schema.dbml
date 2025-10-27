@@ -1,0 +1,308 @@
+// Database Schema for Pepsico Fleet Management System
+// Generated from Django models in documents/models.py
+
+Table Sites {
+  id_site int [pk, increment]
+  name varchar(100) [not null]
+  patent_count int [not null]
+}
+
+Table SAPEquipment {
+  id_equipment int [pk, increment]
+  code varchar(20) [not null]
+  description text [null]
+}
+
+Table CECO {
+  id_ceco int [pk, increment]
+  code varchar(20) [not null]
+  name varchar(100) [not null]
+  type varchar(50) [not null]
+  description text [null]
+}
+
+Table VehicleTypes {
+  id_type int [pk, increment]
+  name varchar(100) [not null]
+  site_id int [ref: > Sites.id_site, not null]
+  data varchar(50) [not null]
+}
+
+Table VehicleStatus {
+  id_status int [pk, increment]
+  name varchar(50) [not null]
+  description text [null]
+}
+
+Table Vehicles {
+  patent varchar(10) [pk]
+  equipment_id int [ref: > SAPEquipment.id_equipment, not null]
+  ceco_id int [ref: > CECO.id_ceco, not null]
+  brand varchar(50) [not null]
+  model varchar(50) [not null]
+  year int [not null]
+  age int [not null]
+  useful_life int [not null]
+  mileage int [null]
+  site_id int [ref: > Sites.id_site, not null]
+  operational boolean [not null]
+  backup boolean [not null]
+  out_of_service boolean [not null]
+  type_id int [ref: > VehicleTypes.id_type, not null]
+  plan boolean [not null]
+  sinister boolean [not null]
+  observations text [not null]
+  compliance varchar(50) [not null]
+  tct varchar(50) [null]
+  geotab_confirm boolean [not null]
+  auction boolean [not null]
+  status_id int [ref: > VehicleStatus.id_status, null]
+}
+
+Table Role {
+  id_role int [pk, increment]
+  name varchar(100) [not null]
+  description text [null]
+  is_supervisor_role boolean [default: false]
+}
+
+Table UserStatus {
+  id_status int [pk, increment]
+  name varchar(50) [not null]
+  description text [null]
+}
+
+Table FlotaUsers {
+  id_user int [pk, increment]
+  user_id int [not null] // Django User reference
+  name varchar(100) [not null]
+  role_id int [ref: > Role.id_role, not null]
+  patent varchar(10) [ref: > Vehicles.patent, not null]
+  status_id int [ref: > UserStatus.id_status, not null]
+  observations text [not null]
+  gpid varchar(20) [not null]
+}
+
+Table Routes {
+  id_route int [pk, increment]
+  route_code varchar(50) [not null]
+  gtm varchar(50) [not null]
+  driver_id int [ref: > FlotaUsers.id_user, null]
+  truck_patent varchar(10) [ref: > Vehicles.patent, not null]
+  comment text [not null]
+}
+
+Table ServiceTypes {
+  id_service_type int [pk, increment]
+  name varchar(100) [not null]
+  description text [null]
+  site_id int [ref: > Sites.id_site, not null]
+}
+
+Table MaintenanceSchedules {
+  id_schedule int [pk, increment]
+  patent varchar(10) [ref: > Vehicles.patent, not null]
+  service_type_id int [ref: > ServiceTypes.id_service_type, null]
+  start_datetime datetime [not null]
+  recurrence_rule varchar(255) [null]
+  reminder_minutes int [null]
+  assigned_user_id int [ref: > FlotaUsers.id_user, null]
+  supervisor_id int [ref: > FlotaUsers.id_user, null]
+  expected_chofer_id int [ref: > FlotaUsers.id_user, null]
+  status_id int [ref: > UserStatus.id_status, not null]
+  observations text [null]
+}
+
+Table Ingresos {
+  id_ingreso int [pk, increment]
+  patent varchar(10) [ref: > Vehicles.patent, not null]
+  entry_datetime datetime [not null]
+  exit_datetime datetime [null]
+  chofer_id int [ref: > FlotaUsers.id_user, not null]
+  observations text [null]
+  authorization boolean [not null]
+  entry_registered_by_id int [ref: > FlotaUsers.id_user, null]
+  exit_registered_by_id int [ref: > FlotaUsers.id_user, null]
+  schedule_id int [ref: > MaintenanceSchedules.id_schedule, null]
+}
+
+Table WorkOrderStatuses {
+  id_status int [pk, increment]
+  name varchar(50) [not null]
+  description text [null]
+  color varchar(7) [default: '#6c757d']
+}
+
+Table WorkOrders {
+  id_work_order int [pk, increment]
+  ingreso_id int [ref: > Ingresos.id_ingreso, not null, unique]
+  service_type_id int [ref: > ServiceTypes.id_service_type, null]
+  status_id int [ref: > WorkOrderStatuses.id_status, not null]
+  created_datetime datetime [not null]
+  estimated_completion datetime [null]
+  actual_completion datetime [null]
+  total_cost decimal(10,2) [default: 0]
+  observations text [null]
+  created_by_id int [ref: > FlotaUsers.id_user, null]
+  supervisor_id int [ref: > FlotaUsers.id_user, null]
+}
+
+Table Tasks {
+  id_task int [pk, increment]
+  work_order_id int [ref: > WorkOrders.id_work_order, null]
+  description text [not null]
+  urgency varchar(20) [not null]
+  start_datetime datetime [not null]
+  end_datetime datetime [null]
+  service_type_id int [ref: > ServiceTypes.id_service_type, null]
+  supervisor_id int [ref: > FlotaUsers.id_user, null]
+}
+
+Table TaskAssignments {
+  id_assignment int [pk, increment]
+  task_id int [ref: > Tasks.id_task, not null]
+  user_id int [ref: > FlotaUsers.id_user, not null]
+}
+
+Table Pauses {
+  id_pause int [pk, increment]
+  assignment_id int [ref: > TaskAssignments.id_assignment, not null]
+  motivo varchar(100) [not null]
+  duration int [not null]
+  authorization boolean [not null]
+  start_datetime datetime [not null]
+  end_datetime datetime [not null]
+}
+
+Table Documents {
+  id_document int [pk, increment]
+  ingreso_id int [ref: > Ingresos.id_ingreso, not null]
+  type varchar(50) [not null]
+  file_path varchar(255) [not null]
+  upload_datetime datetime [not null]
+  user_id int [ref: > FlotaUsers.id_user, not null]
+}
+
+Table Repuestos {
+  id_repuesto int [pk, increment]
+  name varchar(100) [not null]
+  quantity int [not null]
+  task_id int [ref: > Tasks.id_task, null]
+  delivery_datetime datetime [not null]
+}
+
+Table Notifications {
+  id_notification int [pk, increment]
+  recipient_id int [ref: > FlotaUsers.id_user, not null]
+  message text [not null]
+  sent_datetime datetime [not null]
+  type varchar(50) [not null]
+}
+
+Table Reports {
+  id_report int [pk, increment]
+  type varchar(50) [not null]
+  generated_datetime datetime [not null]
+  data json [not null]
+  user_id int [ref: > FlotaUsers.id_user, not null]
+}
+
+Table WorkOrderMechanics {
+  id_assignment int [pk, increment]
+  work_order_id int [ref: > WorkOrders.id_work_order, not null]
+  mechanic_id int [ref: > FlotaUsers.id_user, not null]
+  assigned_datetime datetime [not null]
+  hours_worked decimal(5,2) [default: 0]
+  is_active boolean [default: true]
+}
+
+Table SparePartUsages {
+  id_usage int [pk, increment]
+  work_order_id int [ref: > WorkOrders.id_work_order, not null]
+  repuesto_id int [ref: > Repuestos.id_repuesto, not null]
+  quantity_used int [not null]
+  unit_cost decimal(8,2) [not null]
+  total_cost decimal(10,2) [not null]
+  used_datetime datetime [not null]
+  notes text [null]
+}
+
+Table Incidents {
+  id_incident int [pk, increment]
+  vehicle_id varchar(10) [ref: > Vehicles.patent, not null]
+  reported_by_id int [ref: > FlotaUsers.id_user, not null]
+  name varchar(200) [not null]
+  incident_type varchar(50) [not null]
+  description text [not null]
+  location varchar(200) [null]
+  latitude decimal(10,8) [null]
+  longitude decimal(11,8) [null]
+  is_emergency boolean [default: false]
+  requires_tow boolean [default: false]
+  priority varchar(20) [null]
+  reported_at datetime [not null]
+  created_at datetime [not null]
+  updated_at datetime [not null]
+  created_by_id int [ref: > FlotaUsers.id_user, null]
+  updated_by_id int [ref: > FlotaUsers.id_user, null]
+}
+
+Table Diagnostics {
+  id int [pk, increment]
+  incident_id int [ref: > Incidents.id_incident, null]
+  severity varchar(20) [null]
+  category varchar(50) [null]
+  symptoms text [null]
+  possible_cause text [null]
+  route_id int [ref: > Routes.id_route, null]
+  status varchar(30) [default: 'Reportada']
+  assigned_to_id int [ref: > FlotaUsers.id_user, null]
+  resolved_at datetime [null]
+  resolution_notes text [null]
+  estimated_resolution_time varchar(50) [null]
+  resolution_type varchar(50) [null]
+  auto_resolved boolean [default: false]
+  resolution_source varchar(50) [null]
+  affects_operation boolean [default: false]
+  follow_up_required boolean [default: false]
+  related_schedule_id int [ref: > MaintenanceSchedules.id_schedule, null]
+  related_ingreso_id int [ref: > Ingresos.id_ingreso, null]
+  related_work_order_id int [ref: > WorkOrders.id_work_order, null]
+  diagnostic_started_at datetime [null]
+  diagnostic_completed_at datetime [null]
+  diagnostic_by_id int [ref: > FlotaUsers.id_user, null]
+  diagnostic_method varchar(50) [null]
+  parts_needed text [null]
+  estimated_cost decimal(10,2) [null]
+  photos_taken boolean [default: false]
+  requires_specialist boolean [default: false]
+  environmental_conditions varchar(200) [null]
+  diagnostics_created_at datetime [not null]
+  diagnostics_updated_at datetime [not null]
+  diagnostics_created_by_id int [ref: > FlotaUsers.id_user, null]
+  diagnostics_updated_by_id int [ref: > FlotaUsers.id_user, null]
+}
+
+Table IncidentImages {
+  id_image int [pk, increment]
+  incident_id int [ref: > Incidents.id_incident, not null]
+  name varchar(100) [not null]
+  image varchar(100) [not null] // Django ImageField path
+  uploaded_at datetime [not null]
+}
+
+Table IngresoImages {
+  id_image int [pk, increment]
+  ingreso_id int [ref: > Ingresos.id_ingreso, not null]
+  name varchar(100) [not null]
+  image varchar(100) [not null] // Django ImageField path
+  uploaded_by_id int [ref: > FlotaUsers.id_user, null]
+  uploaded_at datetime [not null]
+}
+
+// Tabla intermedia para relación ManyToMany entre MaintenanceSchedules e Incidents
+Table maintenanceschedule_related_incidents {
+  id int [pk, increment]
+  maintenanceschedule_id int [ref: > MaintenanceSchedules.id_schedule, not null]
+  incident_id int [ref: > Incidents.id_incident, not null]
+}

@@ -189,16 +189,22 @@ function changeStatus(incidentId, newStatus) {
           <h6 class="mb-0">
             <i class="fas fa-car"></i> <strong>{{ incident.vehicle.patent }}</strong>
           </h6>
-          {% if incident.status == 'Reportada' %}
+          {% if incident.latest_diagnostic %}
+          {% with latest_diagnostic=incident.latest_diagnostic.0 %}
+          {% if latest_diagnostic.status == 'Reportada' %}
             <span class="badge bg-warning">Reportada</span>
-          {% elif incident.status == 'En_revision' %}
+          {% elif latest_diagnostic.status == 'En_revision' %}
             <span class="badge bg-info">En revisión</span>
-          {% elif incident.status == 'Resuelta' %}
+          {% elif latest_diagnostic.status == 'Resuelta' %}
             <span class="badge bg-success">Resuelta</span>
-          {% elif incident.status == 'Cerrada' %}
+          {% elif latest_diagnostic.status == 'Cerrada' %}
             <span class="badge bg-secondary">Cerrada</span>
           {% else %}
-            <span class="badge bg-light">{{ incident.status }}</span>
+            <span class="badge bg-light">{{ latest_diagnostic.get_status_display|default:"Sin estado" }}</span>
+          {% endif %}
+          {% endwith %}
+          {% else %}
+            <span class="badge bg-light">Sin diagnóstico</span>
           {% endif %}
         </div>
       </div>
@@ -211,22 +217,35 @@ function changeStatus(incidentId, newStatus) {
                   <strong>Tipo:</strong> {{ incident.get_incident_type_display }}
                 </p>
                 <p class="mb-1">
-                  <strong>Severidad:</strong>
-                  <span class="badge bg-{% if incident.diagnostics.severity == 'Baja' %}secondary{% elif incident.diagnostics.severity == 'Media' %}warning{% elif incident.diagnostics.severity == 'Alta' %}danger{% else %}dark{% endif %}">
-                    {{ incident.diagnostics.severity }}
+                  <strong>Prioridad:</strong>
+                  <span class="badge bg-{% if incident.priority == 'Baja' %}light text-dark{% elif incident.priority == 'Normal' %}info{% elif incident.priority == 'Alta' %}warning{% else %}danger{% endif %}">
+                    {{ incident.priority|default:"Sin prioridad" }}
                   </span>
                 </p>
               </div>
               <div class="col-6">
+                {% if incident.requires_tow %}
                 <p class="mb-1">
-                  <strong>Categoría:</strong> {{ incident.diagnostics.get_category_display }}
+                  <strong>🔧 Requiere remolque</strong>
                 </p>
+                {% endif %}
+                {% if incident.is_emergency %}
                 <p class="mb-1">
-                  <strong>Prioridad:</strong>
-                  <span class="badge bg-{% if incident.priority == 'Baja' %}light text-dark{% elif incident.priority == 'Normal' %}info{% elif incident.priority == 'Alta' %}warning{% else %}danger{% endif %}">
-                    {{ incident.priority }}
+                  <strong>🚨 Es una emergencia</strong>
+                </p>
+                {% endif %}
+                {% if incident.latest_diagnostic %}
+                {% with latest_diagnostic=incident.latest_diagnostic.0 %}
+                {% if latest_diagnostic.severity %}
+                <p class="mb-1">
+                  <strong>Severidad:</strong>
+                  <span class="badge bg-{% if latest_diagnostic.severity == 'Baja' %}secondary{% elif latest_diagnostic.severity == 'Media' %}warning{% elif latest_diagnostic.severity == 'Alta' %}danger{% else %}dark{% endif %}">
+                    {{ latest_diagnostic.severity }}
                   </span>
                 </p>
+                {% endif %}
+                {% endwith %}
+                {% endif %}
               </div>
             </div>
             <p class="mb-1">
@@ -235,6 +254,11 @@ function changeStatus(incidentId, newStatus) {
             <p class="mb-1">
               <strong>Por:</strong> {{ incident.reported_by.name }} <span class="badge bg-primary">{{ incident.reported_by.role.name }}</span>
             </p>
+            {% if incident.location %}
+            <p class="mb-1">
+              <strong>Ubicación:</strong> {{ incident.location }}
+            </p>
+            {% endif %}
             {% if incident.description %}
             <p class="mb-1 text-truncate" title="{{ incident.description }}">
               <strong>Descripción:</strong> {{ incident.description|truncatechars:50 }}

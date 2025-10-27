@@ -7,7 +7,7 @@ from django.utils import timezone
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'pepsico_app.settings')
 django.setup()
 
-from documents.models import Site, SAPEquipment, CECO, VehicleType, VehicleStatus, Vehicle, Role, UserStatus, FlotaUser, Route, ServiceType, Ingreso, Task, TaskAssignment, Pause, Document, Repuesto, Notification, Report, MaintenanceSchedule, WorkOrder, WorkOrderStatus, Incident
+from documents.models import Site, SAPEquipment, CECO, VehicleType, VehicleStatus, Vehicle, Role, UserStatus, FlotaUser, Route, ServiceType, Ingreso, Task, TaskAssignment, Pause, Document, Repuesto, Notification, Report, MaintenanceSchedule, WorkOrder, WorkOrderStatus, Incident, WorkOrderMechanic, SparePartUsage, Diagnostics, IncidentImage, IngresoImage
 from django.contrib.auth.models import User
 
 fake = Faker('es_ES')
@@ -38,6 +38,11 @@ def populate_db():
     WorkOrder.objects.all().delete()
     WorkOrderStatus.objects.all().delete()
     Incident.objects.all().delete()
+    WorkOrderMechanic.objects.all().delete()
+    SparePartUsage.objects.all().delete()
+    Diagnostics.objects.all().delete()
+    IncidentImage.objects.all().delete()
+    IngresoImage.objects.all().delete()
 
     # Poblar Sites
     sites = []
@@ -80,10 +85,10 @@ def populate_db():
 
     # Poblar VehicleStatus
     vehicle_statuses = []
-    for status_name in ['Operativo', 'Estacionado', 'En reparación', 'Fuera de servicio']:
+    for status_name in ['Operativo', 'Estacionado', 'En reparación', 'Fuera de servicio', 'Disponible']:
         status = VehicleStatus.objects.create(
             name=status_name,
-            description=fake.text(max_nb_chars=200) if random.choice([True, False]) else None
+            description=fake.text(max_nb_chars=200)
         )
         vehicle_statuses.append(status)
 
@@ -99,7 +104,7 @@ def populate_db():
             year=random.randint(2010, 2023),
             age=random.randint(1, 15),
             useful_life=random.randint(5, 20),
-            mileage=random.randint(10000, 200000) if random.choice([True, False]) else None,
+            mileage=random.randint(10000, 200000),
             site=random.choice(sites),
             operational=random.choice([True, False]),
             backup=random.choice([True, False]),
@@ -109,10 +114,10 @@ def populate_db():
             sinister=random.choice([True, False]),
             observations=fake.text(max_nb_chars=200),
             compliance=fake.word(),
-            tct=fake.word() if random.choice([True, False]) else None,
+            tct=fake.word(),
             geotab_confirm=random.choice([True, False]),
             auction=random.choice([True, False]),
-            status=random.choice(vehicle_statuses) if random.choice([True, False]) else None
+            status=random.choice(vehicle_statuses)
         )
         vehicles.append(vehicle)
 
@@ -338,18 +343,144 @@ def populate_db():
     incidents = []
     for _ in range(20):
         incident = Incident.objects.create(
-            incident_type=random.choice(['Accidente', 'Falla Mecánica', 'Robo', 'Otro']),
-            name=fake.sentence(),
-            description=fake.text(max_nb_chars=300),
-            reported_by=random.choice(flota_users),
             vehicle=random.choice(vehicles),
-            status=random.choice(['Reportada', 'En_revision', 'Resuelta', 'Cerrada']),
+            reported_by=random.choice(flota_users),
+            name=fake.sentence(),
+            incident_type=random.choice(['Mecanica', 'Electrica', 'Carroceria', 'Neumaticos', 'Otro']),
+            description=fake.text(max_nb_chars=300),
             location=fake.address() if random.choice([True, False]) else None,
-            severity=random.choice(['Baja', 'Media', 'Alta', 'Critica'])
+            latitude=fake.latitude() if random.choice([True, False]) else None,
+            longitude=fake.longitude() if random.choice([True, False]) else None,
+            is_emergency=random.choice([True, False]),
+            requires_tow=random.choice([True, False]),
+            priority=random.choice(['Baja', 'Normal', 'Alta', 'Urgente']) if random.choice([True, False]) else None,
+            created_by=random.choice(flota_users) if random.choice([True, False]) else None,
+            updated_by=random.choice(flota_users) if random.choice([True, False]) else None
         )
         incidents.append(incident)
 
     print(f"Incidentes poblados: {len(incidents)}")
+
+    # Poblar Reports
+    reports = []
+    for _ in range(10):
+        report = Report.objects.create(
+            type=random.choice(['Vehículos', 'Mantenimiento', 'Incidentes', 'Órdenes de Trabajo', 'Repuestos']),
+            generated_datetime=fake.date_time_this_year(),
+            data={
+                'total_records': random.randint(10, 100),
+                'period': fake.date_this_year().strftime('%Y-%m'),
+                'summary': fake.text(max_nb_chars=200)
+            },
+            user=random.choice(flota_users)
+        )
+        reports.append(report)
+
+    print(f"Reportes poblados: {len(reports)}")
+
+    # Poblar WorkOrderMechanics
+    work_order_mechanics = []
+    mechanics = [user for user in flota_users if user.role.name == 'Mecánico']
+    work_orders_list = list(WorkOrder.objects.all())
+    if mechanics and work_orders_list:
+        for work_order in work_orders_list[:10]:  # Asignar mecánicos a las primeras 10 OT
+            mechanic = random.choice(mechanics)
+            assignment = WorkOrderMechanic.objects.create(
+                work_order=work_order,
+                mechanic=mechanic,
+                hours_worked=round(random.uniform(1, 8), 2),
+                is_active=random.choice([True, False])
+            )
+            work_order_mechanics.append(assignment)
+
+    print(f"Asignaciones de mecánicos pobladas: {len(work_order_mechanics)}")
+
+    # Poblar SparePartUsages
+    spare_part_usages = []
+    repuestos_list = list(Repuesto.objects.all())
+    if work_orders_list and repuestos_list:
+        for work_order in work_orders_list[:15]:  # Usar repuestos en las primeras 15 OT
+            repuesto = random.choice(repuestos_list)
+            quantity = random.randint(1, 5)
+            unit_cost = round(random.uniform(10, 500), 2)
+            total_cost = quantity * unit_cost
+            usage = SparePartUsage.objects.create(
+                work_order=work_order,
+                repuesto=repuesto,
+                quantity_used=quantity,
+                unit_cost=unit_cost,
+                total_cost=total_cost,
+                notes=fake.text(max_nb_chars=100) if random.choice([True, False]) else None
+            )
+            spare_part_usages.append(usage)
+
+    print(f"Uso de repuestos poblado: {len(spare_part_usages)}")
+
+    # Poblar Diagnostics
+    diagnostics = []
+    for incident in incidents[:15]:  # Crear diagnósticos para las primeras 15 incidencias
+        diagnostic = Diagnostics.objects.create(
+            incident=incident,
+            severity=random.choice(['Baja', 'Media', 'Alta', 'Critica']) if random.choice([True, False]) else None,
+            category=random.choice(['Seguridad', 'Operativo', 'Mantenimiento']) if random.choice([True, False]) else None,
+            symptoms=fake.text(max_nb_chars=200) if random.choice([True, False]) else None,
+            possible_cause=fake.text(max_nb_chars=200) if random.choice([True, False]) else None,
+            route=random.choice(routes) if random.choice([True, False]) else None,
+            status=random.choice(['Reportada', 'Diagnostico_In_Situ', 'OT_Generada', 'Resuelta']),
+            assigned_to=random.choice(mechanics) if mechanics and random.choice([True, False]) else None,
+            resolved_at=fake.date_time_this_year() if random.choice([True, False]) else None,
+            resolution_notes=fake.text(max_nb_chars=300) if random.choice([True, False]) else None,
+            estimated_resolution_time=f"{random.randint(1, 24)} horas" if random.choice([True, False]) else None,
+            resolution_type=random.choice(['Taller', 'Campo', 'No_aplica']) if random.choice([True, False]) else None,
+            auto_resolved=random.choice([True, False]),
+            resolution_source=random.choice(['OT_Completada', 'Ingreso_Cerrado', 'Manual']) if random.choice([True, False]) else None,
+            affects_operation=random.choice([True, False]),
+            follow_up_required=random.choice([True, False]),
+            related_schedule=random.choice(list(MaintenanceSchedule.objects.all())) if MaintenanceSchedule.objects.exists() and random.choice([True, False]) else None,
+            related_ingreso=random.choice(ingresos) if random.choice([True, False]) else None,
+            related_work_order=random.choice(work_orders_list) if random.choice([True, False]) else None,
+            diagnostic_started_at=fake.date_time_this_year() if random.choice([True, False]) else None,
+            diagnostic_completed_at=fake.date_time_this_year() if random.choice([True, False]) else None,
+            diagnostic_by=random.choice(mechanics) if mechanics and random.choice([True, False]) else None,
+            diagnostic_method=random.choice(['Visual', 'Instrumentos', 'Prueba', 'Otro']) if random.choice([True, False]) else None,
+            parts_needed=fake.text(max_nb_chars=200) if random.choice([True, False]) else None,
+            estimated_cost=round(random.uniform(50, 2000), 2) if random.choice([True, False]) else None,
+            photos_taken=random.choice([True, False]),
+            requires_specialist=random.choice([True, False]),
+            environmental_conditions=fake.word() if random.choice([True, False]) else None,
+            diagnostics_created_by=random.choice(flota_users) if random.choice([True, False]) else None,
+            diagnostics_updated_by=random.choice(flota_users) if random.choice([True, False]) else None
+        )
+        diagnostics.append(diagnostic)
+
+    print(f"Diagnósticos poblados: {len(diagnostics)}")
+
+    # Poblar IncidentImages
+    incident_images = []
+    for incident in incidents[:10]:  # Agregar imágenes a las primeras 10 incidencias
+        for _ in range(random.randint(1, 3)):  # 1-3 imágenes por incidencia
+            image = IncidentImage.objects.create(
+                incident=incident,
+                name=fake.word().capitalize(),
+                image=f"incident_images/{fake.file_name(extension='jpg')}"
+            )
+            incident_images.append(image)
+
+    print(f"Imágenes de incidentes pobladas: {len(incident_images)}")
+
+    # Poblar IngresoImages
+    ingreso_images = []
+    for ingreso in ingresos[:10]:  # Agregar imágenes a los primeros 10 ingresos
+        for _ in range(random.randint(1, 3)):  # 1-3 imágenes por ingreso
+            image = IngresoImage.objects.create(
+                ingreso=ingreso,
+                name=fake.word().capitalize(),
+                image=f"ingreso_images/{fake.file_name(extension='jpg')}",
+                uploaded_by=random.choice(flota_users) if random.choice([True, False]) else None
+            )
+            ingreso_images.append(image)
+
+    print(f"Imágenes de ingresos pobladas: {len(ingreso_images)}")
 
     print("Base de datos poblada con éxito.")
 

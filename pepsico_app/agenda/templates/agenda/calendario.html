@@ -31,14 +31,18 @@
       <div class="modal-body">
         <p><strong>ID:</strong> <span id="modal-id"></span></p>
         <p><strong>Patente:</strong> <span id="modal-patent"></span></p>
-        <p><strong>Tipo de Servicio:</strong> <span id="modal-service-type"></span></p>
-        <p><strong>Inicio:</strong> <span id="modal-start"></span></p>
-        <p><strong>Regla de Recurrencia:</strong> <span id="modal-recurrence"></span></p>
-        <p><strong>Minutos de Recordatorio:</strong> <span id="modal-reminder"></span></p>
+        <p><strong>Hora Agendada:</strong> <span id="modal-start"></span></p>
         <p><strong>Usuario Asignado:</strong> <span id="modal-assigned"></span></p>
-        <p><strong>Supervisor:</strong> <span id="modal-supervisor"></span></p>
         <p><strong>Estado:</strong> <span id="modal-status"></span></p>
         <p><strong>Observaciones:</strong> <span id="modal-description"></span></p>
+        
+        <!-- Incidentes relacionados -->
+        <div id="modal-incidents-section">
+          <h6><strong>Incidentes Relacionados:</strong></h6>
+          <div id="modal-incidents-list">
+            <p class="text-muted">No hay incidentes relacionados</p>
+          </div>
+        </div>
       </div>
       <div class="modal-footer">
         <a href="#" id="create-ingreso-btn" class="btn btn-primary">Crear Ingreso</a>
@@ -51,6 +55,8 @@
 </div>
 
 <script>
+  // Datos de eventos pasados desde Django
   var eventsData = {{ events|safe }};
+  var createIngresoUrl = "{% url 'ingreso_create_select' %}";
 </script>
 {% endblock %}

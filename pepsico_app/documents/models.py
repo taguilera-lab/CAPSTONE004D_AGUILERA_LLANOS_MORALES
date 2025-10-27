@@ -108,7 +108,7 @@ class Vehicle(models.Model):
         Si hay incidencias no resueltas, cambia a 'Fuera de servicio'.
         Si no hay, vuelve a 'Disponible' (asumiendo que no hay otros factores).
         """
-        active_incidents = self.incidents.filter(status__in=['Reportada', 'En_revision'])
+        active_incidents = self.incidents.filter(diagnostics__status__in=['Reportada', 'En_revision'])
         if active_incidents.exists():
             # Asumir que hay un VehicleStatus con name='Fuera de servicio'
             out_of_service_status = VehicleStatus.objects.filter(name='Fuera de servicio').first()
@@ -219,6 +219,11 @@ class MaintenanceSchedule(models.Model):
     status = models.ForeignKey(
         UserStatus, on_delete=models.CASCADE, db_column='status_id')
     observations = models.TextField(null=True, blank=True)
+
+    # Asociación con incidentes - permite 1 o más incidentes por agenda
+    related_incidents = models.ManyToManyField(
+        'Incident', blank=True, related_name='maintenance_schedules',
+        help_text='Incidentes asociados a esta agenda de mantenimiento')
 
     def __str__(self):
         return f"{self.id_schedule} - {self.patent}"
@@ -462,9 +467,9 @@ class Incident(models.Model):
 
     STATUS_CHOICES = [
         ('Reportada', 'Reportada'),
-        ('En_revision', 'En revisión'),
+        ('Diagnostico_In_Situ', 'Diagnóstico In Situ'),
+        ('OT_Generada', 'OT Generada'),
         ('Resuelta', 'Resuelta'),
-        ('Cerrada', 'Cerrada'),
     ]
 
     PRIORITY_LEVELS = [
@@ -554,7 +559,7 @@ class Diagnostics(models.Model):
         ('Otro', 'Otro'),
     ]
 
-    incident = models.OneToOneField(
+    incident = models.ForeignKey(
         Incident, on_delete=models.CASCADE, db_column='incident_id', null=True, blank=True, related_name='diagnostics')
     
     # Campos de evaluación técnica

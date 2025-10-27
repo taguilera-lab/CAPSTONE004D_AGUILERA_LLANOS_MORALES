@@ -35,16 +35,22 @@ input[type="date"],
 input[type="time"],
 input[type="datetime-local"],
 input[type="password"],
+input[type="number"],
 select,
-textarea {
+textarea,
+.custom-input,
+.custom-select,
+.custom-textarea {
   width: 100%;
   padding: 8px;
   border: 2px solid black;
   border-radius: 15px;
   font-family: system-ui, Arial;
+  box-sizing: border-box;
 }
 
-textarea {
+textarea,
+.custom-textarea {
   resize: vertical;
   min-height: 80px;
 }
@@ -193,4 +199,84 @@ a.btn-programar {
     height: 20px;
     cursor: pointer;
     font-size: 12px;
+}
+
+/* Nuevos estilos para formulario estructurado */
+.form-section {
+    margin-bottom: 30px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.form-section h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #333;
+    font-size: 1.1em;
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 5px;
+}
+
+.form-row {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.form-row .form-group {
+    flex: 1;
+}
+
+/* Bootstrap form-check styling */
+.form-check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 5px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.form-check input[type="checkbox"],
+.form-check input.custom-checkbox {
+    width: 18px !important;
+    height: 18px !important;
+    margin: 0 !important;
+    cursor: pointer !important;
+    accent-color: #007bff;
+    position: relative !important;
+    z-index: 10 !important;
+}
+
+.form-check label {
+    margin: 0;
+    font-weight: normal;
+    cursor: pointer;
+    user-select: none;
+}
+
+.error {
+    color: #dc3545;
+    font-size: 0.875em;
+    margin-top: 5px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .contenedor {
+        padding: 15px;
+    }
+
+    .formulario {
+        padding: 20px;
+    }
 }

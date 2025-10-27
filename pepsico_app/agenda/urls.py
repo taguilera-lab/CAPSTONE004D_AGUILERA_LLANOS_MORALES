@@ -10,6 +10,7 @@ urlpatterns = [
     path('ingresos/<int:pk>/', views.ingreso_detail, name='ingreso_detail'),
     path('salidas/registrar/', views.registrar_salida, name='registrar_salida'),
     path('calendario/agendar/', views.agendar_ingreso, name='agendar_ingreso'),
+    path('api/incidents-by-vehicle/', views.get_incidents_by_vehicle, name='get_incidents_by_vehicle'),
     # URLs para órdenes de trabajo
     path('ordenes-trabajo/', views.orden_trabajo_list, name='orden_trabajo_list'),
     path('ordenes-trabajo/crear/<int:ingreso_id>/', views.orden_trabajo_create, name='orden_trabajo_create'),

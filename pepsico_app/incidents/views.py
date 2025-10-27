@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from documents.models import Incident, IncidentImage, WorkOrder, Ingreso
+from django.db.models import Prefetch
+from documents.models import Incident, IncidentImage, WorkOrder, Ingreso, Diagnostics
 from .forms import ChoferIncidentForm, GuardiaIncidentForm, RecepcionistaIncidentForm, SupervisorIncidentForm, IncidentImageForm
 
 @login_required
@@ -50,7 +51,6 @@ def guardia_report_incident(request):
         if form.is_valid():
             incident = form.save(commit=False)
             incident.reported_by = request.user.flotauser
-            incident.name = f"Incidente reportado por guardia - {incident.vehicle.patent}"
             incident.save()
 
             # Guardar imágenes capturadas desde la cámara
@@ -93,6 +93,21 @@ def recepcionista_generate_ot(request, incident_id):
             created_by=request.user.flotauser,
             observations=f'OT móvil para incidente #{incident.id_incident}'
         )
+        
+        # Actualizar el estado del diagnóstico a "OT Generada"
+        diagnostic, created = Diagnostics.objects.get_or_create(
+            incident=incident,
+            defaults={
+                'status': 'OT_Generada',
+                'assigned_to': request.user.flotauser,
+                'related_work_order': work_order
+            }
+        )
+        if not created:
+            diagnostic.status = 'OT_Generada'
+            diagnostic.related_work_order = work_order
+            diagnostic.save()
+        
         incident.related_work_order = work_order
         incident.save()
         messages.success(request, 'OT de mecánica in situ generada.')
@@ -134,13 +149,17 @@ def incident_list(request):
     if request.user.is_authenticated and hasattr(request.user, 'flotauser'):
         if request.user.flotauser.role.name == 'Vendedor':
             # Vendedor solo ve las incidencias que él mismo reportó
-            incidents = Incident.objects.filter(reported_by=request.user.flotauser).select_related('reported_by__role', 'vehicle')
+            incidents = Incident.objects.filter(reported_by=request.user.flotauser).select_related('reported_by__role', 'vehicle').prefetch_related(
+                Prefetch('diagnostics', queryset=Diagnostics.objects.order_by('-diagnostics_created_at'), to_attr='latest_diagnostic')
+            )
         elif request.user.flotauser.role.name == 'Bodeguero':
             # Bodeguero no puede acceder a incidencias
             incidents = Incident.objects.none()
         else:
             # Otros roles ven todas las incidencias
-            incidents = Incident.objects.all().select_related('reported_by__role', 'vehicle')
+            incidents = Incident.objects.all().select_related('reported_by__role', 'vehicle').prefetch_related(
+                Prefetch('diagnostics', queryset=Diagnostics.objects.order_by('-diagnostics_created_at'), to_attr='latest_diagnostic')
+            )
     else:
         # Usuario sin rol asignado, no mostrar incidencias
         incidents = Incident.objects.none()
@@ -149,5 +168,78 @@ def incident_list(request):
 
 @login_required
 def incident_detail(request, incident_id):
-    incident = get_object_or_404(Incident, id_incident=incident_id)
+    incident = get_object_or_404(
+        Incident.objects.select_related('reported_by__role', 'vehicle').prefetch_related(
+            Prefetch('diagnostics', queryset=Diagnostics.objects.order_by('-diagnostics_created_at'), to_attr='latest_diagnostic')
+        ), 
+        id_incident=incident_id
+    )
     return render(request, 'incidents/incident_detail.html', {'incident': incident})
+
+@login_required
+def mechanic_diagnose_incident(request, incident_id):
+    """Vista para que un mecánico realice diagnóstico in situ"""
+    incident = get_object_or_404(Incident, id_incident=incident_id)
+    
+    # Verificar que el usuario sea mecánico
+    if not (hasattr(request.user, 'flotauser') and request.user.flotauser.role.name == 'Mecánico'):
+        messages.error(request, 'Solo los mecánicos pueden realizar diagnósticos.')
+        return redirect('incident_detail', incident_id=incident.id_incident)
+    
+    if request.method == 'POST':
+        # Crear o actualizar diagnóstico
+        diagnostic, created = Diagnostics.objects.get_or_create(
+            incident=incident,
+            defaults={
+                'status': 'Diagnostico_Mecanica_In_Situ',
+                'diagnostic_by': request.user.flotauser,
+                'diagnostic_started_at': request.POST.get('diagnostic_started_at'),
+                'diagnostic_method': request.POST.get('diagnostic_method'),
+                'symptoms': request.POST.get('symptoms'),
+                'possible_cause': request.POST.get('possible_cause'),
+                'parts_needed': request.POST.get('parts_needed'),
+                'estimated_cost': request.POST.get('estimated_cost'),
+                'assigned_to': request.user.flotauser
+            }
+        )
+        
+        if not created:
+            # Actualizar diagnóstico existente
+            diagnostic.status = 'Diagnostico_Mecanica_In_Situ'
+            diagnostic.diagnostic_by = request.user.flotauser
+            diagnostic.diagnostic_started_at = request.POST.get('diagnostic_started_at')
+            diagnostic.diagnostic_method = request.POST.get('diagnostic_method')
+            diagnostic.symptoms = request.POST.get('symptoms')
+            diagnostic.possible_cause = request.POST.get('possible_cause')
+            diagnostic.parts_needed = request.POST.get('parts_needed')
+            diagnostic.estimated_cost = request.POST.get('estimated_cost')
+            diagnostic.save()
+        
+        messages.success(request, 'Diagnóstico realizado exitosamente.')
+        return redirect('incident_detail', incident_id=incident.id_incident)
+    
+    return render(request, 'incidents/mechanic_diagnose.html', {'incident': incident})
+
+@login_required
+def resolve_incident(request, incident_id):
+    """Vista para marcar un incidente como resuelto"""
+    incident = get_object_or_404(Incident, id_incident=incident_id)
+    
+    if request.method == 'POST':
+        # Obtener o crear diagnóstico
+        diagnostic, created = Diagnostics.objects.get_or_create(
+            incident=incident,
+            defaults={'status': 'Resuelta'}
+        )
+        
+        if not created:
+            diagnostic.status = 'Resuelta'
+            diagnostic.resolved_at = request.POST.get('resolved_at')
+            diagnostic.resolution_notes = request.POST.get('resolution_notes')
+            diagnostic.resolution_type = request.POST.get('resolution_type')
+            diagnostic.save()
+        
+        messages.success(request, 'Incidente marcado como resuelto.')
+        return redirect('incident_detail', incident_id=incident.id_incident)
+    
+    return render(request, 'incidents/resolve_incident.html', {'incident': incident})

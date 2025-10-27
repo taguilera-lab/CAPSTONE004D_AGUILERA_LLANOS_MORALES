@@ -49,6 +49,33 @@ def login_view(request):
     return render(request, 'login/login.html', {'form': form})
 
 @login_required
+def user_dashboard(request):
+    """Redirige al dashboard correspondiente según el rol del usuario"""
+    try:
+        flota_user = request.user.flotauser
+        role_name = flota_user.role.name
+        if role_name == 'Jefe de Flota':
+            return redirect('jefe_flota_dashboard')
+        elif role_name == 'Mecánico':
+            return redirect('mecanico_dashboard')
+        elif role_name == 'Vendedor':
+            return redirect('vendedor_dashboard')
+        elif role_name == 'Guardia':
+            return redirect('guardia_dashboard')
+        elif role_name == 'Bodeguero':
+            return redirect('bodeguero_dashboard')
+        elif role_name == 'Supervisor':
+            return redirect('supervisor_dashboard')
+        elif role_name == 'Jefe de taller':
+            return redirect('jefe_taller_dashboard')
+        elif role_name == 'Recepcionista de Vehículos':
+            return redirect('recepcionista_dashboard')
+        else:
+            return redirect('busqueda_patente')  # fallback
+    except FlotaUser.DoesNotExist:
+        return redirect('busqueda_patente')  # fallback
+
+@login_required
 def logout_view(request):
     logout(request)
     messages.info(request, "Has cerrado sesión.")

@@ -22,12 +22,14 @@
     {% endfor %}
   {% endif %}
   
-  <a href="{% url 'ingreso_create_select' %}" class="btn btn-primary mb-3">Crear Nuevo Ingreso</a>
-  <a href="{% url 'orden_trabajo_list' %}" class="btn btn-success mb-3">
-    <i class="fas fa-tools"></i> Gestionar Órdenes de Trabajo
-  </a>
-  <a href="{% url 'registrar_salida' %}" class="btn btn-secondary mb-3">Registrar Salida</a>
-  <a href="{% url 'calendario' %}" class="btn btn-info mb-3">Ver Calendario</a>
+  <div class="d-flex justify-content-end gap-2 mb-3">
+    <a href="{% url 'ingreso_create_select' %}" class="btn btn-outline-primary">Crear Nuevo Ingreso</a>
+    <a href="{% url 'orden_trabajo_list' %}" class="btn btn-outline-success">
+      <i class="fas fa-tools"></i> Gestionar Órdenes de Trabajo
+    </a>
+    <a href="{% url 'registrar_salida' %}" class="btn btn-outline-secondary">Registrar Salida</a>
+    <a href="{% url 'calendario' %}" class="btn btn-outline-info">Ver Calendario</a>
+  </div>
 
   <!-- Filtros -->
   <div class="card mb-4">
@@ -47,6 +49,10 @@
         <div class="col-md-2">
           <label for="filter-entry" class="form-label">Entrada</label>
           <input type="date" class="form-control" id="filter-entry">
+        </div>
+        <div class="col-md-2">
+          <label for="filter-month-year" class="form-label">Mes/Año</label>
+          <input type="month" class="form-control" id="filter-month-year">
         </div>
         <div class="col-md-2">
           <label for="filter-exit" class="form-label">Salida</label>
@@ -92,54 +98,90 @@
     </div>
   </div>
   <div class="table-responsive">
-    <table class="table table-striped table-hover">
-      <thead class="table-dark">
-        <tr>
-          <th>ID</th>
-          <th>Patente</th>
-          <th>Servicio</th>
-          <th>Entrada</th>
-          <th>Salida</th>
-          <th>Chofer</th>
-          <th>Sucursal</th>
-          <th>Agendado</th>
-          <th>Autorización para salir</th>
-          <th>Entrada Registrada Por</th>
-          <th>Salida Registrada Por</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for ingreso in ingresos %}
-        <tr>
-          <td>{{ ingreso.id_ingreso }}</td>
-          <td>{{ ingreso.patent }}</td>
-          <td>{{ ingreso.service_type|default:"Sin especificar" }}</td>
-          <td>{{ ingreso.entry_datetime }}</td>
-          <td>{{ ingreso.exit_datetime|default:"-" }}</td>
-          <td>{{ ingreso.chofer }}</td>
-          <td>{{ ingreso.patent.site.name }}</td>
-          <td>
-            {% if ingreso.schedule %}
-              <span class="badge bg-info">Agendado</span>
-            {% else %}
-              <span class="badge bg-secondary">Directo</span>
-            {% endif %}
-          </td>
-          <td>
-            {% if ingreso.authorization %}
-              <span class="badge bg-success">Sí</span>
-            {% else %}
-              <span class="badge bg-danger">No</span>
-            {% endif %}
-          </td>
-          <td>{{ ingreso.entry_registered_by|default:"-" }}</td>
-          <td>{{ ingreso.exit_registered_by|default:"-" }}</td>
-          <td><a href="{% url 'ingreso_detail' ingreso.id_ingreso %}" class="btn btn-sm btn-info">Ver</a></td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <div class="ingresos-grid" id="ingresos-container">
+      {% for ingreso in ingresos %}
+      <div class="ingreso-card" data-ingreso-id="{{ ingreso.id_ingreso }}">
+        <div class="card-header">
+          <div class="card-title">
+            <h5 class="mb-1">Ingreso #{{ ingreso.id_ingreso }}</h5>
+            <span class="patent-badge">{{ ingreso.patent }}</span>
+          </div>
+          <div class="card-indicators">
+            <div class="ot-indicator">
+              {% if ingreso.work_order %}
+                <span class="ot-light ot-green"></span>
+                <span class="ot-text">Con OT</span>
+              {% else %}
+                <span class="ot-light ot-red"></span>
+                <span class="ot-text">Sin OT</span>
+              {% endif %}
+            </div>
+            <div class="card-status">
+              {% if ingreso.schedule %}
+                <span class="badge bg-info">Agendado</span>
+              {% else %}
+                <span class="badge bg-secondary">Directo</span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <div class="ingreso-info">
+            <div class="info-row">
+              <span class="info-label">Servicio:</span>
+              <span class="info-value">{{ ingreso.schedule.service_type|default:"Sin especificar" }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Entrada:</span>
+              <span class="info-value">{{ ingreso.entry_datetime|date:"d/m/Y H:i" }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Salida:</span>
+              <span class="info-value">{{ ingreso.exit_datetime|date:"d/m/Y H:i"|default:"Pendiente" }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Chofer:</span>
+              <span class="info-value">{{ ingreso.chofer|default:"-" }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Sucursal:</span>
+              <span class="info-value">{{ ingreso.patent.site.name }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Autorización:</span>
+              <span class="info-value">
+                {% if ingreso.authorization %}
+                  <span class="badge bg-success">Sí</span>
+                {% else %}
+                  <span class="badge bg-danger">No</span>
+                {% endif %}
+              </span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Registrado por:</span>
+              <span class="info-value">{{ ingreso.entry_registered_by|default:"-" }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-actions">
+          <a href="{% url 'ingreso_detail' ingreso.id_ingreso %}" class="btn btn-sm btn-info">
+            <i class="fas fa-eye"></i> Ver Detalle
+          </a>
+          {% if ingreso.work_order %}
+            <a href="{% url 'orden_trabajo_detail' ingreso.work_order.id_work_order %}" class="btn btn-sm btn-success">
+              <i class="fas fa-eye"></i> Ver OT
+            </a>
+          {% else %}
+            <a href="{% url 'orden_trabajo_create' ingreso.id_ingreso %}" class="btn btn-sm btn-primary">
+              <i class="fas fa-plus"></i> Crear OT
+            </a>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
   </div>
 </div>
 {% endblock %}

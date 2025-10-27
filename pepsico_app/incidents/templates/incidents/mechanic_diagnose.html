@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Diagnóstico Mecánica In Situ{% endblock %}
+
+{% block static %}
+<link rel="stylesheet" href="{% static 'incidents/css/mechanic_diagnose.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="contenedor">
+    <div class="formulario">
+        <h2>Diagnóstico Mecánica In Situ</h2>
+        <p><strong>Incidente:</strong> {{ incident.name }}</p>
+        <p><strong>Vehículo:</strong> {{ incident.vehicle.patent }}</p>
+        <p><strong>Reportado por:</strong> {{ incident.reported_by.name }}</p>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="campo">
+                <label for="diagnostic_started_at">Fecha y hora de diagnóstico:</label>
+                <input type="datetime-local" id="diagnostic_started_at" name="diagnostic_started_at" required>
+            </div>
+
+            <div class="campo">
+                <label for="diagnostic_method">Método de diagnóstico:</label>
+                <select id="diagnostic_method" name="diagnostic_method" required>
+                    <option value="">Seleccionar método</option>
+                    <option value="Visual">Visual</option>
+                    <option value="Instrumentos">Con Instrumentos</option>
+                    <option value="Prueba">Prueba de Funcionamiento</option>
+                    <option value="Otro">Otro</option>
+                </select>
+            </div>
+
+            <div class="campo">
+                <label for="symptoms">Síntomas observados:</label>
+                <textarea id="symptoms" name="symptoms" rows="3" placeholder="Describa los síntomas observados..."></textarea>
+            </div>
+
+            <div class="campo">
+                <label for="possible_cause">Causa posible:</label>
+                <textarea id="possible_cause" name="possible_cause" rows="3" placeholder="Describa la causa posible del problema..."></textarea>
+            </div>
+
+            <div class="campo">
+                <label for="parts_needed">Repuestos necesarios:</label>
+                <textarea id="parts_needed" name="parts_needed" rows="2" placeholder="Liste los repuestos necesarios..."></textarea>
+            </div>
+
+            <div class="campo">
+                <label for="estimated_cost">Costo estimado:</label>
+                <input type="number" id="estimated_cost" name="estimated_cost" step="0.01" placeholder="0.00">
+            </div>
+
+            <div class="botones">
+                <a href="{% url 'incident_detail' incident.id_incident %}" class="btn-cancelar">Cancelar</a>
+                <button type="submit" class="btn-diagnosticar">Realizar Diagnóstico</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

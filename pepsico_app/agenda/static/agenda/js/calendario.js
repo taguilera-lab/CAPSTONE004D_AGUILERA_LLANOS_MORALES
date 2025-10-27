@@ -15,14 +15,47 @@ document.addEventListener('DOMContentLoaded', function() {
       // Poblar el modal con los datos del evento
       document.getElementById('modal-id').textContent = info.event.id;
       document.getElementById('modal-patent').textContent = info.event.extendedProps.patent;
-      document.getElementById('modal-service-type').textContent = info.event.extendedProps.service_type;
       document.getElementById('modal-start').textContent = info.event.start ? info.event.start.toLocaleString('es-ES') : '';
-      document.getElementById('modal-recurrence').textContent = info.event.extendedProps.recurrence_rule;
-      document.getElementById('modal-reminder').textContent = info.event.extendedProps.reminder_minutes;
       document.getElementById('modal-assigned').textContent = info.event.extendedProps.assigned_user;
-      document.getElementById('modal-supervisor').textContent = info.event.extendedProps.supervisor;
       document.getElementById('modal-status').textContent = info.event.extendedProps.status;
       document.getElementById('modal-description').textContent = info.event.extendedProps.description;
+
+      // Poblar incidentes relacionados
+      var incidentsList = document.getElementById('modal-incidents-list');
+      var incidentsSection = document.getElementById('modal-incidents-section');
+      var relatedIncidents = info.event.extendedProps.related_incidents || [];
+
+      if (relatedIncidents.length > 0) {
+        var incidentsHtml = '<div class="incidents-list">';
+        relatedIncidents.forEach(function(incident) {
+          var emergencyClass = incident.is_emergency ? 'text-danger' : '';
+          var priorityBadge = incident.priority === 'Alta' ? 
+            '<span class="badge bg-danger">Alta</span>' : 
+            '<span class="badge bg-warning text-dark">' + incident.priority + '</span>';
+          
+          incidentsHtml += `
+            <div class="incident-item mb-2 p-2 border rounded ${emergencyClass}">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <strong>${incident.name}</strong>
+                  <br>
+                  <small class="text-muted">${incident.type} • Reportado: ${incident.reported_at}</small>
+                </div>
+                <div>
+                  ${priorityBadge}
+                </div>
+              </div>
+              <p class="mb-0 mt-1 small">${incident.description}</p>
+            </div>
+          `;
+        });
+        incidentsHtml += '</div>';
+        incidentsList.innerHTML = incidentsHtml;
+        incidentsSection.style.display = 'block';
+      } else {
+        incidentsList.innerHTML = '<p class="text-muted">No hay incidentes relacionados</p>';
+        incidentsSection.style.display = 'block';
+      }
 
       // Mostrar el modal con Bootstrap
       var modal = new bootstrap.Modal(document.getElementById('eventModal'));
@@ -31,7 +64,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // Configurar el botón de crear ingreso
       document.getElementById('create-ingreso-btn').onclick = function() {
         var patent = info.event.extendedProps.patent;
-        window.location.href = '/agenda/ingresos/crear/?patent=' + encodeURIComponent(patent);
+        window.location.href = createIngresoUrl + '?patent=' + encodeURIComponent(patent);
       };
     },
     dateClick: function(info) {

@@ -1,5 +1,5 @@
 from django import forms
-from documents.models import Ingreso, Vehicle, ServiceType, FlotaUser, Route, Site, MaintenanceSchedule, UserStatus, WorkOrder, WorkOrderStatus, WorkOrderMechanic, SparePartUsage, Repuesto
+from documents.models import Ingreso, Vehicle, ServiceType, FlotaUser, Route, Site, MaintenanceSchedule, UserStatus, WorkOrder, WorkOrderStatus, WorkOrderMechanic, SparePartUsage, Repuesto, Incident
 
 class IngresoForm(forms.ModelForm):
     route = forms.ModelChoiceField(queryset=Route.objects.all(), required=False, label="Ruta")
@@ -33,6 +33,17 @@ class IngresoForm(forms.ModelForm):
 
 
 class AgendarIngresoForm(forms.ModelForm):
+    # Campo para seleccionar incidentes relacionados
+    related_incidents = forms.ModelMultipleChoiceField(
+        queryset=Incident.objects.none(),  # Se poblará dinámicamente basado en el vehículo
+        required=False,
+        widget=forms.SelectMultiple(attrs={
+            'class': 'form-control',
+            'size': '5',  # Mostrar 5 opciones a la vez
+        }),
+        label="Incidentes Relacionados",
+        help_text="Selecciona los incidentes que se resolverán en este mantenimiento (opcional)"
+    )
 
     class Meta:
         model = MaintenanceSchedule
@@ -47,6 +58,19 @@ class AgendarIngresoForm(forms.ModelForm):
         
         # Configurar el queryset para el campo status
         self.fields['status'].queryset = UserStatus.objects.all()
+        
+        # Configurar incidentes relacionados
+        if self.instance.pk:
+            # Si estamos editando, mostrar todos los incidentes del vehículo
+            if self.instance.patent:
+                self.fields['related_incidents'].queryset = Incident.objects.filter(
+                    vehicle=self.instance.patent
+                ).order_by('-reported_at')
+                # Pre-seleccionar incidentes ya relacionados
+                self.fields['related_incidents'].initial = self.instance.related_incidents.all()
+        else:
+            # Para nuevos registros, incluir todos los incidentes (se filtrarán en JavaScript)
+            self.fields['related_incidents'].queryset = Incident.objects.all().order_by('-reported_at')
         
         # Hacer service_type opcional inicialmente
         self.fields['service_type'].required = False
@@ -75,6 +99,11 @@ class AgendarIngresoForm(forms.ModelForm):
         
         if commit:
             instance.save()
+            # Guardar los incidentes relacionados
+            related_incidents = self.cleaned_data.get('related_incidents')
+            if related_incidents:
+                instance.related_incidents.set(related_incidents)
+        
         return instance
 
 
