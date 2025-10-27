@@ -1,8 +1,9 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
-from documents.models import Ingreso, MaintenanceSchedule, Vehicle, Route, WorkOrder, WorkOrderStatus, WorkOrderMechanic, SparePartUsage, Repuesto, Task, Incident
+from documents.models import Ingreso, MaintenanceSchedule, Vehicle, Route, WorkOrder, WorkOrderStatus, WorkOrderMechanic, SparePartUsage, Repuesto, Task, Incident, IngresoImage
 from .forms import IngresoForm, AgendarIngresoForm, WorkOrderForm, WorkOrderMechanicForm, SparePartUsageForm
 from django.utils.safestring import mark_safe
+from django.utils import timezone
 import json
 
 def calendario(request):
@@ -58,7 +59,7 @@ def ingresos_list(request):
 def ingreso_create_select(request):
     from datetime import date, datetime
     
-    # Obtener la fecha seleccionada o usar hoy por defecto
+    # Obtener la fecha seleccionada
     selected_date = request.GET.get('date')
     if selected_date:
         try:
@@ -68,6 +69,20 @@ def ingreso_create_select(request):
     else:
         selected_date = date.today()
     
+    # Si se especifica un parámetro 'date', mostrar formulario con captura de fotos
+    if request.GET.get('date'):
+        # Filtrar agendamientos pendientes para la fecha seleccionada
+        pending_schedules = MaintenanceSchedule.objects.filter(
+            ingresos__isnull=True,
+            start_datetime__date=selected_date
+        ).select_related('patent', 'expected_chofer', 'assigned_user', 'patent__site').order_by('start_datetime')
+        
+        return render(request, 'agenda/ingreso_create_with_photos.html', {
+            'pending_schedules': pending_schedules,
+            'selected_date': selected_date,
+        })
+    
+    # Comportamiento original: mostrar lista de agendamientos
     # Filtrar agendamientos pendientes para la fecha seleccionada
     pending_schedules = MaintenanceSchedule.objects.filter(
         ingresos__isnull=True,
@@ -89,7 +104,33 @@ def ingreso_detail(request, pk):
     ingreso = get_object_or_404(Ingreso, pk=pk)
     # Relacionar con agendamientos por patent
     schedules = MaintenanceSchedule.objects.filter(patent=ingreso.patent)
-    return render(request, 'agenda/ingreso_detail.html', {'ingreso': ingreso, 'schedules': schedules})
+    # Obtener imágenes relacionadas con el ingreso
+    images = ingreso.images.all().order_by('-uploaded_at')
+    # Obtener incidentes relacionados con el agendamiento (si existe) y con el ingreso directamente
+    related_incidents = []
+    
+    # Incidentes relacionados con el schedule del ingreso
+    if ingreso.schedule:
+        related_incidents.extend(ingreso.schedule.related_incidents.all())
+    
+    # Incidentes relacionados directamente con el ingreso
+    direct_incidents = ingreso.incidents.all()
+    related_incidents.extend(direct_incidents)
+    
+    # Eliminar duplicados y ordenar por fecha de reporte (más reciente primero)
+    seen_ids = set()
+    unique_incidents = []
+    for incident in sorted(related_incidents, key=lambda x: x.reported_at, reverse=True):
+        if incident.id_incident not in seen_ids:
+            unique_incidents.append(incident)
+            seen_ids.add(incident.id_incident)
+    
+    return render(request, 'agenda/ingreso_detail.html', {
+        'ingreso': ingreso, 
+        'schedules': schedules, 
+        'images': images,
+        'related_incidents': unique_incidents
+    })
 
 def ingreso_create(request):
     vehicles = list(Vehicle.objects.values('patent', 'site__name'))
@@ -223,16 +264,16 @@ def ingreso_create_from_schedule(request):
         # Obtener el agendamiento
         schedule = get_object_or_404(MaintenanceSchedule, id_schedule=schedule_id, ingresos__isnull=True)
         
-        # Validar que el schedule tenga un chofer asignado
+        # Validar que el schedule tenga un vendedor asignado
         if not schedule.expected_chofer:
             from django.contrib import messages
-            messages.error(request, f'No se puede crear el ingreso porque el agendamiento {schedule.patent} no tiene un chofer asignado.')
+            messages.error(request, f'No se puede crear el ingreso porque el agendamiento {schedule.patent} no tiene un vendedor asignado.')
             return redirect('ingreso_create_select')
         
         # Crear el ingreso basado en el agendamiento
         ingreso = Ingreso.objects.create(
             patent=schedule.patent,
-            entry_datetime=schedule.start_datetime,
+            entry_datetime=timezone.now(),
             chofer=schedule.expected_chofer,
             observations=schedule.observations,
             schedule=schedule,
@@ -244,13 +285,29 @@ def ingreso_create_from_schedule(request):
             ingreso.entry_registered_by = request.user.flotauser
             ingreso.save()
         
+        # Procesar imágenes si se subieron
+        images = request.FILES.getlist('images')
+        for i, image_file in enumerate(images):
+            # Generar nombre automático para la imagen
+            from datetime import datetime
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            image_name = f"Ingreso_{ingreso.id_ingreso}_{timestamp}_{i+1}"
+            
+            # Crear la instancia de IngresoImage
+            ingreso_image = IngresoImage.objects.create(
+                ingreso=ingreso,
+                name=image_name,
+                image=image_file,
+                uploaded_by=request.user.flotauser if hasattr(request, 'user') and request.user.is_authenticated and hasattr(request.user, 'flotauser') else None
+            )
+        
         # Mensaje de éxito
         from django.contrib import messages
-        chofer_name = schedule.expected_chofer.name if schedule.expected_chofer else "Chofer por asignar"
-        fecha_formateada = schedule.start_datetime.strftime("%d/%m/%Y %H:%M")
+        vendedor_name = schedule.expected_chofer.name if schedule.expected_chofer else "Vendedor por asignar"
+        fecha_formateada = timezone.now().strftime("%d/%m/%Y %H:%M")
         messages.success(
             request, 
-            f'Ingreso agendado confirmado: {schedule.patent} - {fecha_formateada} - {chofer_name}'
+            f'Ingreso creado exitosamente: {schedule.patent} - {fecha_formateada} - {vendedor_name}'
         )
         
         return redirect('ingresos_list')

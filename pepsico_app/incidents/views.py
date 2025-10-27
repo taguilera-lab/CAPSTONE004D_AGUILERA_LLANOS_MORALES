@@ -45,12 +45,36 @@ def chofer_report_incident(request):
 
 @login_required
 def guardia_report_incident(request):
+    # Obtener la patente y el ID del ingreso del parámetro GET si existen
+    patent = request.GET.get('patent')
+    ingreso_id = request.GET.get('ingreso_id')
+    initial_data = {}
+    related_ingreso = None
+    
+    if patent:
+        try:
+            from documents.models import Vehicle, Ingreso
+            vehicle = Vehicle.objects.get(patent=patent)
+            initial_data['vehicle'] = vehicle
+            
+            # Si se proporcionó un ID de ingreso específico, usarlo
+            if ingreso_id:
+                related_ingreso = Ingreso.objects.get(id_ingreso=ingreso_id)
+            # Si no se proporcionó ingreso_id, no asociar con ningún ingreso específico
+            # (solo prepoblar el vehículo)
+            
+        except (Vehicle.DoesNotExist, Ingreso.DoesNotExist):
+            messages.warning(request, f'No se encontró el vehículo o ingreso especificado')
+    
     if request.method == 'POST':
         form = GuardiaIncidentForm(request.POST)
         image_form = IncidentImageForm(request.POST, request.FILES)
         if form.is_valid():
             incident = form.save(commit=False)
             incident.reported_by = request.user.flotauser
+            # Asignar el ingreso relacionado si existe
+            if related_ingreso:
+                incident.related_ingreso = related_ingreso
             incident.save()
 
             # Guardar imágenes capturadas desde la cámara
@@ -72,9 +96,14 @@ def guardia_report_incident(request):
                     )
 
             messages.success(request, 'Incidente reportado exitosamente.')
-            return redirect('incident_list')
+            # Redirigir según el origen: si vino con patent (desde lista de ingresos), volver a lista de ingresos
+            patent = request.GET.get('patent')  # El parámetro patent sigue disponible en POST
+            if patent:
+                return redirect('ingresos_list')
+            else:
+                return redirect('incident_list')
     else:
-        form = GuardiaIncidentForm()
+        form = GuardiaIncidentForm(initial=initial_data)
         image_form = IncidentImageForm()
     return render(request, 'incidents/guardia_report.html', {
         'form': form,

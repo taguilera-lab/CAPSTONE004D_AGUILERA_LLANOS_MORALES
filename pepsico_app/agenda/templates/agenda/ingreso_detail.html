@@ -27,7 +27,7 @@
         <strong>Salida:</strong> {{ ingreso.exit_datetime|default:"Pendiente" }}
       </div>
       <div class="detail-field">
-        <strong>Chofer:</strong> {{ ingreso.chofer }}
+        <strong>Vendedor:</strong> {{ ingreso.chofer }}
       </div>
       <div class="detail-field">
         <strong>Observaciones:</strong> {{ ingreso.observations|default:"-" }}
@@ -60,6 +60,66 @@
       </div>
       {% endif %}
     </div>
+
+    <!-- Sección de Imágenes -->
+    <h3 class="related-title">Imágenes del Ingreso</h3>
+    <div class="images-section">
+      <!-- Galería de imágenes existentes -->
+      <div class="images-gallery" id="images-gallery">
+        {% for image in images %}
+        <div class="image-item">
+          <img src="{{ image.image.url }}" alt="{{ image.name }}" class="image-preview">
+          <div class="image-info">
+            <strong>{{ image.name }}</strong>
+            <br>
+            <small>Subido: {{ image.uploaded_at|date:"d/m/Y H:i" }}</small>
+            {% if image.uploaded_by %}
+            <br>
+            <small>Por: {{ image.uploaded_by.name }}</small>
+            {% endif %}
+          </div>
+        </div>
+        {% empty %}
+        <div class="no-images">
+          <p>No hay imágenes subidas para este ingreso.</p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Sección de Incidentes Relacionados -->
+    {% if related_incidents %}
+    <h3 class="related-title">Incidentes Relacionados</h3>
+    <div class="incidents-section">
+      {% for incident in related_incidents %}
+      <div class="incident-item {% if incident.is_emergency %}emergency{% endif %}">
+        <div class="incident-header">
+          <h4>{{ incident.name }}</h4>
+          <div class="incident-meta">
+            <span class="incident-type">{{ incident.incident_type }}</span>
+            <span class="incident-priority priority-{{ incident.priority|lower|default:'normal' }}">{{ incident.priority|default:'Normal' }}</span>
+            {% if incident.is_emergency %}
+            <span class="emergency-badge">EMERGENCIA</span>
+            {% endif %}
+          </div>
+        </div>
+        <div class="incident-details">
+          <p class="incident-description">{{ incident.description|default:'Sin descripción' }}</p>
+          <div class="incident-info">
+            <small><strong>Reportado:</strong> {{ incident.reported_at|date:"d/m/Y H:i" }}</small>
+            <br>
+            <small><strong>ID Incidente:</strong> {{ incident.id_incident }}</small>
+          </div>
+          <div class="incident-actions">
+            <a href="{% url 'incident_detail' incident.id_incident %}" class="btn btn-sm btn-info incident-detail-btn">
+              <i class="fas fa-eye"></i> Detalles
+            </a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
 
     <h3 class="related-title">Agendamientos Relacionados</h3>
     {% if schedules %}

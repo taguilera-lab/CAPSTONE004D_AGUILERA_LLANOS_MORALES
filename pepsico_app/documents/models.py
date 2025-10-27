@@ -526,8 +526,8 @@ class Incident(models.Model):
     # follow_up_required = models.BooleanField(default=False)
     # related_schedule = models.ForeignKey(
     #     MaintenanceSchedule, on_delete=models.SET_NULL, db_column='related_schedule_id', null=True, blank=True, related_name='incidents')
-    # related_ingreso = models.ForeignKey(
-    #     Ingreso, on_delete=models.SET_NULL, db_column='related_ingreso_id', null=True, blank=True, related_name='incidents')
+    related_ingreso = models.ForeignKey(
+        Ingreso, on_delete=models.SET_NULL, db_column='related_ingreso_id', null=True, blank=True, related_name='incidents')
     # related_work_order = models.ForeignKey(
     #     WorkOrder, on_delete=models.SET_NULL, db_column='related_work_order_id', null=True, blank=True, related_name='incidents')
     # resolution_type = models.CharField(max_length=50, choices=RESOLUTION_TYPES, null=True, blank=True)

@@ -165,6 +165,9 @@
           <a href="{% url 'ingreso_detail' ingreso.id_ingreso %}" class="btn btn-sm btn-info">
             <i class="fas fa-eye"></i> Ver Detalle
           </a>
+          <a href="{% url 'guardia_report_incident' %}?patent={{ ingreso.patent }}&ingreso_id={{ ingreso.id_ingreso }}" class="btn btn-sm btn-warning">
+            <i class="fas fa-exclamation-triangle"></i> Registrar Incidente
+          </a>
           {% if ingreso.work_order %}
             <a href="{% url 'orden_trabajo_detail' ingreso.work_order.id_work_order %}" class="btn btn-sm btn-success">
               <i class="fas fa-eye"></i> Ver OT
