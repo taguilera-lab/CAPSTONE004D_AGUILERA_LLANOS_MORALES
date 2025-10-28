@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Detalle de Agenda de Mantenimiento{% endblock %}
+
+{% block static %}
+<link rel="stylesheet" href="{% static 'agenda/css/formulario.css' %}">
+<link rel="stylesheet" href="{% static 'agenda/css/ingreso_detail.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="contenedor">
+  <div class="formulario">
+    <h2>Detalle de Agenda de Mantenimiento</h2>
+
+    <div class="detail-container">
+      <div class="detail-field">
+        <strong>ID Agenda:</strong> {{ schedule.id_schedule }}
+      </div>
+      <div class="detail-field">
+        <strong>Patente:</strong> {{ schedule.patent }}
+      </div>
+      <div class="detail-field">
+        <strong>Fecha y Hora Programada:</strong> {{ schedule.start_datetime }}
+      </div>
+      <div class="detail-field">
+        <strong>Usuario Asignado:</strong> {{ schedule.assigned_user|default:"-" }}
+      </div>
+      <div class="detail-field">
+        <strong>Chofer Esperado:</strong> {{ schedule.expected_chofer|default:"-" }}
+      </div>
+      <div class="detail-field">
+        <strong>Estado:</strong> {{ schedule.status.name }}
+      </div>
+      <div class="detail-field">
+        <strong>Observaciones:</strong> {{ schedule.observations|default:"-" }}
+      </div>
+    </div>
+
+    <!-- Ingresos Relacionados -->
+    {% if related_ingresos %}
+    <div class="related-section">
+      <h3>Ingresos Relacionados</h3>
+      <div class="related-items">
+        {% for ingreso in related_ingresos %}
+        <div class="related-item">
+          <div class="item-header">
+            <strong>Ingreso #{{ ingreso.id_ingreso }}</strong>
+            <span class="item-date">{{ ingreso.entry_datetime }}</span>
+          </div>
+          <div class="item-details">
+            <span>Chofer: {{ ingreso.chofer }}</span>
+            <span>Estado: {% if ingreso.exit_datetime %}Completado{% else %}En Progreso{% endif %}</span>
+          </div>
+          <div class="item-actions">
+            <a href="{% url 'ingreso_detail' ingreso.id_ingreso %}" class="btn btn-primary btn-sm">Ver Detalle</a>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Incidentes Relacionados -->
+    {% if related_incidents %}
+    <div class="related-section">
+      <h3>Incidentes Relacionados</h3>
+      <div class="related-items">
+        {% for incident in related_incidents %}
+        <div class="incident-card {% if incident.is_emergency %}emergency{% endif %}">
+          <div class="incident-header">
+            <h4>{{ incident.name }}</h4>
+            <span class="incident-priority priority-{{ incident.priority|lower }}">{{ incident.priority }}</span>
+          </div>
+          <div class="incident-details">
+            <p><strong>Tipo:</strong> {{ incident.incident_type }}</p>
+            <p><strong>Descripción:</strong> {{ incident.description|truncatechars:100 }}</p>
+            <p><strong>Reportado:</strong> {{ incident.reported_at }}</p>
+            {% if incident.is_emergency %}
+            <span class="emergency-indicator">🚨 EMERGENCIA</span>
+            {% endif %}
+          </div>
+          <div class="incident-actions">
+            <a href="{% url 'incident_detail' incident.id_incident %}" class="btn btn-info btn-sm">Ver Detalle</a>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="form-actions">
+      <a href="{% url 'calendario' %}" class="btn btn-secondary">Volver al Calendario</a>
+      <a href="{% url 'ingresos_list' %}" class="btn btn-secondary">Ver Ingresos</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

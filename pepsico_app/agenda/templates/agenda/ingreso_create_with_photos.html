@@ -24,8 +24,10 @@
       <div class="schedule-card">
         <div class="schedule-header">
           <h4>{{ schedule.patent }}</h4>
+          <div class="schedule-datetime">
+            <strong>Agendado para:</strong> {{ schedule.start_datetime|date:"l, d F Y - H:i" }}
+          </div>
           <div class="schedule-meta">
-            <span class="schedule-time">{{ schedule.start_datetime|date:"d/m/Y H:i" }}</span>
             <span class="schedule-chofer">Chofer: {{ schedule.expected_chofer.name|default:"Por asignar" }}</span>
           </div>
         </div>

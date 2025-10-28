@@ -131,6 +131,7 @@
     background-color: #f8f9fa;
     border-top: 1px solid #dee2e6;
     display: flex;
+    flex-wrap: wrap;
     gap: 0.5rem;
     justify-content: flex-end;
 }
@@ -195,11 +196,12 @@
     }
 
     .card-actions {
-        flex-direction: column;
+        justify-content: center;
     }
 
     .card-actions .btn {
-        width: 100%;
+        flex: 1;
+        min-width: 120px;
         justify-content: center;
     }
 }

@@ -11,7 +11,12 @@
 {% block content %}
 <div class="contenedor">
   <div class="formulario">
-    <h2>Detalle de Ingreso</h2>
+    <div class="header-actions">
+      <h2>Detalle de Ingreso</h2>
+      <button class="btn-diagnostico">
+        <i class="fas fa-stethoscope"></i> Realizar Diagnóstico
+      </button>
+    </div>
 
     <div class="detail-container">
       <div class="detail-field">
@@ -39,11 +44,19 @@
         <strong>Ruta:</strong> {% for route in ingreso.patent.route_set.all %}{{ route.route_code }}{% if not forloop.last %}, {% endif %}{% endfor %}
       </div>
       <div class="detail-field">
-        <strong>Autorización:</strong>
+        <strong>Autorización para salir:</strong>
         {% if ingreso.authorization %}
           <span class="authorization-yes">Sí</span>
         {% else %}
           <span class="authorization-no">No</span>
+        {% endif %}
+      </div>
+      <div class="detail-field">
+        <strong>Ingreso Técnico:</strong>
+        {% if ingreso.es_ingreso_tecnico %}
+          <span class="authorization-yes"><i class="fas fa-check-circle"></i> Completado</span>
+        {% else %}
+          <span class="authorization-no">Pendiente</span>
         {% endif %}
       </div>
       <div class="detail-field">
@@ -106,6 +119,8 @@
         <div class="incident-details">
           <p class="incident-description">{{ incident.description|default:'Sin descripción' }}</p>
           <div class="incident-info">
+            <small><strong>Reportado por:</strong> {{ incident.reported_by.name }}</small>
+            <br>
             <small><strong>Reportado:</strong> {{ incident.reported_at|date:"d/m/Y H:i" }}</small>
             <br>
             <small><strong>ID Incidente:</strong> {{ incident.id_incident }}</small>

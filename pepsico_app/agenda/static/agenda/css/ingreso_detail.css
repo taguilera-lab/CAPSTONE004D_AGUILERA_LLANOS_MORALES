@@ -250,9 +250,10 @@
 }
 
 .incident-actions {
-  margin-top: 15px;
+  margin-top: 20px;
   padding-top: 10px;
   border-top: 1px solid #eee;
+  margin-bottom: 10px;
 }
 
 .incident-detail-btn {
@@ -266,6 +267,13 @@
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
+/* Estilos para acciones de items relacionados (ingresos) */
+.item-actions {
+  margin-top: 20px;
+  padding-top: 10px;
+  text-align: center;
+}
+
 /* Responsive para incidentes */
 @media (max-width: 768px) {
   .incident-header {
@@ -275,5 +283,77 @@
 
   .incident-meta {
     align-self: flex-start;
+  }
+}
+
+/* Estilos para los botones de acciones del formulario */
+.form-actions {
+  margin-top: 30px;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.form-actions .btn {
+  min-width: 150px;
+}
+
+/* Estilos para el header con botón de diagnóstico */
+.header-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.header-actions h2 {
+  margin: 0;
+  flex: 1;
+}
+
+.btn-diagnostico {
+  background-color: #17a2b8;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.3s ease;
+}
+
+.btn-diagnostico:hover {
+  background-color: #138496;
+  color: white;
+  text-decoration: none;
+}
+
+.btn-diagnostico i {
+  font-size: 16px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .header-actions h2 {
+    text-align: center;
+    margin-bottom: 15px;
+  }
+
+  .btn-diagnostico {
+    width: 100%;
+    justify-content: center;
   }
 }

@@ -122,6 +122,9 @@
               {% else %}
                 <span class="badge bg-secondary">Directo</span>
               {% endif %}
+              {% if ingreso.exit_datetime %}
+                <span class="badge bg-success">Completado</span>
+              {% endif %}
             </div>
           </div>
         </div>
@@ -145,12 +148,22 @@
               <span class="info-value">{{ ingreso.patent.site.name }}</span>
             </div>
             <div class="info-row">
-              <span class="info-label">Autorización:</span>
+              <span class="info-label">Autorización para salir:</span>
               <span class="info-value">
                 {% if ingreso.authorization %}
                   <span class="badge bg-success">Sí</span>
                 {% else %}
                   <span class="badge bg-danger">No</span>
+                {% endif %}
+              </span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Ingreso Técnico:</span>
+              <span class="info-value">
+                {% if ingreso.es_ingreso_tecnico %}
+                  <span class="badge bg-success"><i class="fas fa-check-circle"></i> Completado</span>
+                {% else %}
+                  <span class="badge bg-secondary">Pendiente</span>
                 {% endif %}
               </span>
             </div>
@@ -165,9 +178,25 @@
           <a href="{% url 'ingreso_detail' ingreso.id_ingreso %}" class="btn btn-sm btn-info">
             <i class="fas fa-eye"></i> Ver Detalle
           </a>
+          {% if ingreso.schedule %}
+          <a href="{% url 'schedule_detail' ingreso.schedule.id_schedule %}" class="btn btn-sm btn-secondary">
+            <i class="fas fa-calendar"></i> Ver Agenda
+          </a>
+          {% endif %}
           <a href="{% url 'guardia_report_incident' %}?patent={{ ingreso.patent }}&ingreso_id={{ ingreso.id_ingreso }}" class="btn btn-sm btn-warning">
             <i class="fas fa-exclamation-triangle"></i> Registrar Incidente
           </a>
+          {% if user.is_authenticated and user.flotauser and user.flotauser.role.name == 'Recepcionista de Vehículos' %}
+          {% if ingreso.es_ingreso_tecnico %}
+          <a href="{% url 'recepcionista_ingreso_tecnico' %}?ingreso_id={{ ingreso.id_ingreso }}" class="btn btn-sm btn-success" title="Ingreso técnico completado">
+            <i class="fas fa-check-circle"></i> Técnico OK
+          </a>
+          {% else %}
+          <a href="{% url 'recepcionista_ingreso_tecnico' %}?ingreso_id={{ ingreso.id_ingreso }}" class="btn btn-sm btn-info">
+            <i class="fas fa-camera"></i> Ingreso Técnico
+          </a>
+          {% endif %}
+          {% endif %}
           {% if ingreso.work_order %}
             <a href="{% url 'orden_trabajo_detail' ingreso.work_order.id_work_order %}" class="btn btn-sm btn-success">
               <i class="fas fa-eye"></i> Ver OT

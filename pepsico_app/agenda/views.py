@@ -1,4 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
+from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from documents.models import Ingreso, MaintenanceSchedule, Vehicle, Route, WorkOrder, WorkOrderStatus, WorkOrderMechanic, SparePartUsage, Repuesto, Task, Incident, IngresoImage
 from .forms import IngresoForm, AgendarIngresoForm, WorkOrderForm, WorkOrderMechanicForm, SparePartUsageForm
@@ -69,7 +70,41 @@ def ingreso_create_select(request):
     else:
         selected_date = date.today()
     
-    # Si se especifica un parámetro 'date', mostrar formulario con captura de fotos
+    # Si se especifica un parámetro 'date' y 'schedule_id', mostrar captura de fotos para ese agendamiento específico
+    if request.GET.get('date') and request.GET.get('schedule_id'):
+        schedule_id = request.GET.get('schedule_id')
+        # Filtrar solo el agendamiento específico
+        pending_schedules = MaintenanceSchedule.objects.filter(
+            id_schedule=schedule_id,
+            ingresos__isnull=True,
+            start_datetime__date=selected_date
+        ).select_related('patent', 'expected_chofer', 'assigned_user', 'patent__site')
+        
+        return render(request, 'agenda/ingreso_create_with_photos.html', {
+            'pending_schedules': pending_schedules,
+            'selected_date': selected_date,
+        })
+    
+    # Si se especifica un parámetro 'date' y 'show_schedules', mostrar lista de selección filtrada
+    if request.GET.get('date') and request.GET.get('show_schedules'):
+        # Filtrar agendamientos pendientes para la fecha seleccionada
+        pending_schedules = MaintenanceSchedule.objects.filter(
+            ingresos__isnull=True,
+            start_datetime__date=selected_date
+        ).select_related('patent', 'expected_chofer', 'assigned_user', 'patent__site').order_by('start_datetime')
+        
+        # Fechas disponibles (con agendamientos pendientes)
+        available_dates = MaintenanceSchedule.objects.filter(
+            ingresos__isnull=True
+        ).dates('start_datetime', 'day')
+        
+        return render(request, 'agenda/ingreso_create_select.html', {
+            'pending_schedules': pending_schedules,
+            'selected_date': selected_date,
+            'available_dates': available_dates,
+        })
+    
+    # Si se especifica un parámetro 'date', mostrar lista de agendamientos para esa fecha
     if request.GET.get('date'):
         # Filtrar agendamientos pendientes para la fecha seleccionada
         pending_schedules = MaintenanceSchedule.objects.filter(
@@ -77,9 +112,15 @@ def ingreso_create_select(request):
             start_datetime__date=selected_date
         ).select_related('patent', 'expected_chofer', 'assigned_user', 'patent__site').order_by('start_datetime')
         
-        return render(request, 'agenda/ingreso_create_with_photos.html', {
+        # Fechas disponibles (con agendamientos pendientes)
+        available_dates = MaintenanceSchedule.objects.filter(
+            ingresos__isnull=True
+        ).dates('start_datetime', 'day')
+        
+        return render(request, 'agenda/ingreso_create_select.html', {
             'pending_schedules': pending_schedules,
             'selected_date': selected_date,
+            'available_dates': available_dates,
         })
     
     # Comportamiento original: mostrar lista de agendamientos
@@ -130,80 +171,6 @@ def ingreso_detail(request, pk):
         'schedules': schedules, 
         'images': images,
         'related_incidents': unique_incidents
-    })
-
-def ingreso_create(request):
-    vehicles = list(Vehicle.objects.values('patent', 'site__name'))
-    routes = list(Route.objects.values('id_route', 'route_code', 'truck'))
-    
-    # Buscar agendamiento relacionado
-    related_schedule = None
-    schedule_id = request.GET.get('schedule_id')
-    patent_param = request.GET.get('patent')
-    
-    if schedule_id:
-        # Si se proporciona schedule_id específico
-        related_schedule = get_object_or_404(MaintenanceSchedule, id_schedule=schedule_id, ingresos__isnull=True)
-    elif patent_param:
-        # Si se proporciona patente (desde calendario)
-        try:
-            vehicle = Vehicle.objects.get(patent=patent_param)
-            # Buscar agendamiento más reciente sin ingreso asociado
-            related_schedule = MaintenanceSchedule.objects.filter(
-                patent=vehicle,
-                ingresos__isnull=True
-            ).order_by('-start_datetime').first()
-        except Vehicle.DoesNotExist:
-            pass
-    
-    if request.method == 'POST':
-        form = IngresoForm(request.POST)
-        if form.is_valid():
-            ingreso = form.save(commit=False)
-            
-            # Buscar agendamiento para esta patente en un rango de tiempo razonable
-            from datetime import timedelta
-            start_time = ingreso.entry_datetime - timedelta(hours=2)
-            end_time = ingreso.entry_datetime + timedelta(hours=2)
-            
-            related_schedule = MaintenanceSchedule.objects.filter(
-                patent=ingreso.patent,
-                start_datetime__range=(start_time, end_time),
-                ingresos__isnull=True  # Solo agendamientos sin ingreso asociado
-            ).first()
-            
-            if related_schedule:
-                ingreso.schedule = related_schedule
-                # Pre-llenar información del agendamiento
-                if not ingreso.chofer and related_schedule.expected_chofer:
-                    ingreso.chofer = related_schedule.expected_chofer
-                if not ingreso.observations and related_schedule.observations:
-                    ingreso.observations = related_schedule.observations
-            
-            # Registrar quién creó el ingreso (cuando haya autenticación)
-            if hasattr(request, 'user') and request.user.is_authenticated and hasattr(request.user, 'flotauser'):
-                ingreso.entry_registered_by = request.user.flotauser
-            
-            ingreso.save()
-            return redirect('ingresos_list')
-    else:
-        # Pre-llenar formulario si hay agendamiento relacionado
-        if related_schedule:
-            initial_data = {
-                'patent': related_schedule.patent,
-                'entry_datetime': related_schedule.start_datetime,
-                'chofer': related_schedule.expected_chofer,  # Pre-llenar chofer con el esperado
-                'observations': related_schedule.observations,
-            }
-            form = IngresoForm(initial=initial_data)
-        else:
-            form = IngresoForm()
-    
-    return render(request, 'agenda/ingreso_form.html', {
-        'form': form, 
-        'vehicles': json.dumps(vehicles), 
-        'routes': json.dumps(routes),
-        'related_schedule': related_schedule
     })
 
 def registrar_salida(request):
@@ -641,3 +608,131 @@ def get_incidents_by_vehicle(request):
         return JsonResponse({'error': 'Vehículo no encontrado'}, status=404)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+def schedule_detail(request, pk):
+    schedule = get_object_or_404(MaintenanceSchedule, pk=pk)
+    
+    # Obtener ingresos relacionados con este schedule
+    related_ingresos = schedule.ingresos.all().order_by('-entry_datetime')
+    
+    # Obtener incidentes relacionados con este schedule
+    related_incidents = schedule.related_incidents.all().order_by('-reported_at')
+    
+    return render(request, 'agenda/schedule_detail.html', {
+        'schedule': schedule,
+        'related_ingresos': related_ingresos,
+        'related_incidents': related_incidents
+    })
+
+
+@login_required
+def search_vehicle_api(request):
+    """
+    API para buscar información de un vehículo por patente
+    """
+    patent = request.GET.get('patent', '').strip().upper()
+    
+    if not patent:
+        return JsonResponse({'found': False, 'error': 'Patente requerida'})
+    
+    try:
+        vehicle = Vehicle.objects.select_related('site').prefetch_related('route_set').get(patent=patent)
+        
+        # Obtener la ruta principal (primera ruta asociada)
+        route_code = None
+        routes = vehicle.route_set.all()
+        if routes.exists():
+            route_code = routes.first().route_code
+        
+        vehicle_data = {
+            'patent': vehicle.patent,
+            'brand': vehicle.brand,
+            'model': vehicle.model,
+            'site_name': vehicle.site.name if vehicle.site else None,
+            'route_code': route_code
+        }
+        
+        return JsonResponse({'found': True, 'vehicle': vehicle_data})
+        
+    except Vehicle.DoesNotExist:
+        return JsonResponse({'found': False, 'error': 'Vehículo no encontrado'})
+    except Exception as e:
+        return JsonResponse({'found': False, 'error': str(e)})
+
+
+@login_required
+def recepcionista_ingreso_tecnico(request):
+    """
+    Vista para que recepcionistas registren fotos técnicas de un ingreso existente
+    """
+    # Verificar que el usuario sea recepcionista
+    if not (hasattr(request.user, 'flotauser') and request.user.flotauser.role.name == 'Recepcionista de Vehículos'):
+        return redirect('home')
+
+    # Obtener el ingreso_id de los parámetros
+    ingreso_id = request.GET.get('ingreso_id')
+    if not ingreso_id:
+        return render(request, 'agenda/ingreso_tecnico.html', {
+            'error': 'Debe especificar un ingreso válido.'
+        })
+
+    # Obtener el ingreso
+    try:
+        ingreso = Ingreso.objects.select_related('patent', 'patent__site', 'schedule').get(id_ingreso=ingreso_id)
+    except Ingreso.DoesNotExist:
+        return render(request, 'agenda/ingreso_tecnico.html', {
+            'error': 'El ingreso especificado no existe.'
+        })
+
+    if request.method == 'POST':
+        # Procesar las imágenes subidas para el ingreso existente
+        photo_descriptions = [
+            'Estado frontal del vehículo',
+            'Estado lateral izquierdo',
+            'Estado lateral derecho',
+            'Estado trasero',
+            'Estado del motor',
+            'Estado de neumáticos',
+            'Daños externos visibles'
+        ]
+
+        uploaded_images = []
+        for i, description in enumerate(photo_descriptions):
+            photo_key = f'photo_{i}'
+            if photo_key in request.FILES:
+                image_file = request.FILES[photo_key]
+                ingreso_image = IngresoImage.objects.create(
+                    ingreso=ingreso,
+                    name=f"Foto {i+1} - {description}",
+                    description=description,
+                    image=image_file,
+                    uploaded_by=request.user.flotauser
+                )
+                uploaded_images.append(ingreso_image)
+
+        # Marcar que el ingreso tiene fotos técnicas completadas
+        ingreso.es_ingreso_tecnico = True
+        ingreso.save()
+
+        # Actualizar las observaciones del ingreso para indicar que es técnico
+        if not ingreso.observations or "Ingreso técnico" not in ingreso.observations:
+            ingreso.observations = f"{ingreso.observations or ''}\n[Ingreso técnico registrado por {request.user.flotauser.name}]".strip()
+            ingreso.save()
+
+        # Redireccionar al detalle del ingreso
+        return redirect('ingreso_detail', pk=ingreso.id_ingreso)
+
+    # GET request - mostrar detalles del ingreso y formulario de fotos
+    # Obtener rutas del vehículo
+    routes = ingreso.patent.route_set.all()
+
+    context = {
+        'ingreso': ingreso,
+        'vehicle': ingreso.patent,
+        'routes': routes,
+        'has_schedule': ingreso.schedule is not None,
+    }
+
+    return render(request, 'agenda/ingreso_tecnico.html', context)

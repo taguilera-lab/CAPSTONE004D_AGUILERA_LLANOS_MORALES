@@ -242,6 +242,7 @@ class Ingreso(models.Model):
         FlotaUser, on_delete=models.SET_NULL, db_column='exit_registered_by_id', null=True, blank=True, related_name='exit_registered_ingresos')
     schedule = models.ForeignKey(
         MaintenanceSchedule, on_delete=models.SET_NULL, null=True, blank=True, related_name='ingresos')
+    es_ingreso_tecnico = models.BooleanField(default=False, verbose_name='Es ingreso técnico')
 
     def __str__(self):
         return f"{self.id_ingreso} - {self.patent}"
@@ -638,6 +639,7 @@ class IngresoImage(models.Model):
     ingreso = models.ForeignKey(
         Ingreso, on_delete=models.CASCADE, db_column='ingreso_id', related_name='images')
     name = models.CharField(max_length=100)
+    description = models.CharField(max_length=200, null=True, blank=True, help_text='Descripción del tipo de foto (ej. "Estado frontal", "Daño en neumático")')
     image = models.ImageField(upload_to='ingreso_images/')
     uploaded_by = models.ForeignKey(
         FlotaUser, on_delete=models.SET_NULL, db_column='uploaded_by_id', null=True, blank=True, related_name='uploaded_ingreso_images')

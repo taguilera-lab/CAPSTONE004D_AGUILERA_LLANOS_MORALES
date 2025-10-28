@@ -125,11 +125,17 @@ class PhotoCaptureManager {
     }
 
     cancelForm() {
+        console.log('Cancel form called');
         if (confirm('¿Está seguro de que desea cancelar? Se perderán todas las fotos capturadas.')) {
+            console.log('User confirmed cancel, redirecting...');
             this.stopCamera();
             this.capturedPhotos = [];
             this.photosGrid.innerHTML = '';
             this.updateFormInput();
+            // Redirigir a la página principal de crear ingreso
+            window.location.href = '/ingresos/crear/';
+        } else {
+            console.log('User cancelled the cancel action');
         }
     }
 }

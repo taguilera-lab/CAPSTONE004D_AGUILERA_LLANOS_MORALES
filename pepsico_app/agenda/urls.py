@@ -5,7 +5,6 @@ urlpatterns = [
     path('calendario/', views.calendario, name='calendario'),
     path('ingresos/', views.ingresos_list, name='ingresos_list'),
     path('ingresos/crear/', views.ingreso_create_select, name='ingreso_create_select'),
-    path('ingresos/crear/directo/', views.ingreso_create, name='ingreso_create'),
     path('ingresos/crear/confirmar/', views.ingreso_create_from_schedule, name='ingreso_create_from_schedule'),
     path('ingresos/<int:pk>/', views.ingreso_detail, name='ingreso_detail'),
     path('salidas/registrar/', views.registrar_salida, name='registrar_salida'),
@@ -21,4 +20,7 @@ urlpatterns = [
     path('ordenes-trabajo/<int:work_order_id>/delete-mechanics/', views.orden_trabajo_delete_mechanics, name='orden_trabajo_delete_mechanics'),
     path('ordenes-trabajo/<int:work_order_id>/delete-spare_parts/', views.orden_trabajo_delete_spare_parts, name='orden_trabajo_delete_spare_parts'),
     path('ordenes-trabajo/<int:work_order_id>/completar/', views.orden_trabajo_complete, name='orden_trabajo_complete'),
+    path('schedule/<int:pk>/', views.schedule_detail, name='schedule_detail'),
+    path('recepcionista/ingreso-tecnico/', views.recepcionista_ingreso_tecnico, name='recepcionista_ingreso_tecnico'),
+    path('api/search-vehicle/', views.search_vehicle_api, name='search_vehicle_api'),
 ]

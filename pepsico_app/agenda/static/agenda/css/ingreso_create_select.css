@@ -72,19 +72,25 @@
 }
 
 .schedule-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
   margin-bottom: 10px;
 }
 
 .schedule-header h5 {
-  margin: 0;
+  margin: 0 0 8px 0;
   color: #333;
 }
 
-.schedule-time {
-  color: #666;
+.schedule-datetime {
+  background-color: #e3f2fd;
+  color: #1565c0;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  border-left: 3px solid #2196f3;
+}
+
+.schedule-datetime strong {
+  color: #0d47a1;
 }
 
 .schedule-observations {
@@ -153,4 +159,14 @@
 .back-btn {
   margin-top: 30px;
   text-align: center;
+}
+
+/* Estilos para navegación de fecha */
+.date-navigation {
+  margin-bottom: 20px;
+}
+
+.date-navigation .btn-secondary {
+  font-size: 14px;
+  padding: 6px 12px;
 }
