@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Prefetch
-from documents.models import Incident, IncidentImage, WorkOrder, Ingreso, Diagnostics
+from documents.models import Incident, IncidentImage, WorkOrder, Ingreso, Diagnostics, Vehicle, FlotaUser, Route
 from .forms import ChoferIncidentForm, GuardiaIncidentForm, RecepcionistaIncidentForm, SupervisorIncidentForm, IncidentImageForm
 
 @login_required
@@ -109,39 +109,6 @@ def guardia_report_incident(request):
         'form': form,
         'image_form': image_form
     })
-
-@login_required
-def recepcionista_generate_ot(request, incident_id):
-    incident = get_object_or_404(Incident, id_incident=incident_id)
-    if request.method == 'POST':
-        # Crear OT móvil (sin ingreso)
-        work_order = WorkOrder.objects.create(
-            ingreso=None,  # OT móvil
-            service_type=None,
-            status='Pendiente',
-            created_by=request.user.flotauser,
-            observations=f'OT móvil para incidente #{incident.id_incident}'
-        )
-        
-        # Actualizar el estado del diagnóstico a "OT Generada"
-        diagnostic, created = Diagnostics.objects.get_or_create(
-            incident=incident,
-            defaults={
-                'status': 'OT_Generada',
-                'assigned_to': request.user.flotauser,
-                'related_work_order': work_order
-            }
-        )
-        if not created:
-            diagnostic.status = 'OT_Generada'
-            diagnostic.related_work_order = work_order
-            diagnostic.save()
-        
-        incident.related_work_order = work_order
-        incident.save()
-        messages.success(request, 'OT de mecánica in situ generada.')
-        return redirect('incident_detail', incident_id=incident.id_incident)
-    return render(request, 'incidents/recepcionista_ot.html', {'incident': incident})
 
 @login_required
 def supervisor_edit_incident(request, incident_id):
@@ -272,3 +239,47 @@ def resolve_incident(request, incident_id):
         return redirect('incident_detail', incident_id=incident.id_incident)
     
     return render(request, 'incidents/resolve_incident.html', {'incident': incident})
+
+@login_required
+def recepcionista_escalar_mecanica(request, incident_id):
+    """Vista para que la recepcionista asigne mecánica in situ a un incidente"""
+    incident = get_object_or_404(Incident, id_incident=incident_id)
+    
+    # Obtener mecánicos disponibles
+    mechanics = FlotaUser.objects.filter(role__name='Mecánico').select_related('role')
+    
+    if request.method == 'POST':
+        mechanic_id = request.POST.get('mechanic_id')
+        if mechanic_id:
+            mechanic = get_object_or_404(FlotaUser, id_user=mechanic_id, role__name='Mecánico')
+            
+            # Crear o actualizar diagnóstico
+            diagnostic, created = Diagnostics.objects.get_or_create(
+                incident=incident,
+                defaults={
+                    'status': 'Diagnostico_In_Situ',
+                    'assigned_to': mechanic,
+                }
+            )
+            
+            if not created:
+                diagnostic.status = 'Diagnostico_In_Situ'
+                diagnostic.assigned_to = mechanic
+                diagnostic.save()
+            
+            # Actualizar estado del incidente
+            incident.status = 'Diagnostico_In_Situ'
+            incident.save()
+            
+            messages.success(request, f'Mecánico {mechanic.name} asignado para diagnóstico in situ.')
+            return redirect('incident_detail', incident_id=incident.id_incident)
+        else:
+            messages.error(request, 'Debe seleccionar un mecánico.')
+    
+    context = {
+        'incident': incident,
+        'vehicle': incident.vehicle,
+        'mechanics': mechanics,
+    }
+    
+    return render(request, 'incidents/recepcionista_escalar_mecanica.html', context)

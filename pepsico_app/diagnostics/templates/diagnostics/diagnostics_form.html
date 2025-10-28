@@ -1,0 +1,231 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if is_create %}Crear Diagnóstico{% else %}Editar Diagnóstico{% endif %}{% endblock %}
+
+{% block static %}
+<link rel="stylesheet" href="{% static 'diagnostics/css/diagnostics_form.css' %}">
+<script src="{% static 'diagnostics/js/diagnostics_form.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-12">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'diagnostics:diagnostics_list' %}">Diagnósticos</a></li>
+          {% if incident %}
+            <li class="breadcrumb-item"><a href="{% url 'incident_detail' incident.id_incident %}">Incidente #{{ incident.id_incident }}</a></li>
+          {% endif %}
+          <li class="breadcrumb-item active">
+            {% if is_create %}Crear Diagnóstico{% else %}Editar Diagnóstico{% endif %}
+          </li>
+        </ol>
+      </nav>
+
+      <div class="card">
+        <div class="card-header">
+          <h2 class="mb-0">
+            <i class="fas fa-stethoscope text-primary"></i>
+            {% if is_create %}Crear Nuevo Diagnóstico{% else %}Editar Diagnóstico{% endif %}
+          </h2>
+        </div>
+
+        <div class="card-body">
+          <!-- Mostrar mensajes -->
+          {% if messages %}
+            {% for message in messages %}
+              <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+
+          <!-- Información del incidente si existe -->
+          {% if incident %}
+          <div class="incident-info mb-4">
+            <h5 class="text-primary">
+              <i class="fas fa-exclamation-triangle"></i> Información del Incidente
+            </h5>
+            <div class="row">
+              <div class="col-md-6">
+                <p><strong>ID:</strong> #{{ incident.id_incident }}</p>
+                <p><strong>Tipo:</strong> {{ incident.get_incident_type_display }}</p>
+                <p><strong>Vehículo:</strong> {{ incident.vehicle.patent }} - {{ incident.vehicle.brand }} {{ incident.vehicle.model }}</p>
+              </div>
+              <div class="col-md-6">
+                <p><strong>Reportado por:</strong> {{ incident.reported_by.name }}</p>
+                <p><strong>Fecha:</strong> {{ incident.reported_at|date:"d/m/Y H:i" }}</p>
+                <p><strong>Descripción:</strong> {{ incident.description|truncatechars:100 }}</p>
+              </div>
+            </div>
+          </div>
+          {% endif %}
+
+          <form method="post" id="diagnostics-form">
+            {% csrf_token %}
+
+            <!-- Sección de Evaluación Técnica -->
+            <div class="form-section">
+              <h5 class="section-title">
+                <i class="fas fa-search"></i> Evaluación Técnica
+              </h5>
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    {{ form.severity.label_tag }}
+                    {{ form.severity }}
+                    {% if form.severity.errors %}
+                      <div class="text-danger">{{ form.severity.errors }}</div>
+                    {% endif %}
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    {{ form.category.label_tag }}
+                    {{ form.category }}
+                    {% if form.category.errors %}
+                      <div class="text-danger">{{ form.category.errors }}</div>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                {{ form.symptoms.label_tag }}
+                {{ form.symptoms }}
+                {% if form.symptoms.errors %}
+                  <div class="text-danger">{{ form.symptoms.errors }}</div>
+                {% endif %}
+              </div>
+
+              <div class="mb-3">
+                {{ form.possible_cause.label_tag }}
+                {{ form.possible_cause }}
+                {% if form.possible_cause.errors %}
+                  <div class="text-danger">{{ form.possible_cause.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Sección de Asignación y Estado -->
+            <div class="form-section">
+              <h5 class="section-title">
+                <i class="fas fa-user-cog"></i> Asignación y Estado
+              </h5>
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    {{ form.assigned_to.label_tag }}
+                    {{ form.assigned_to }}
+                    {% if form.assigned_to.errors %}
+                      <div class="text-danger">{{ form.assigned_to.errors }}</div>
+                    {% endif %}
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    {{ form.route.label_tag }}
+                    {{ form.route }}
+                    {% if form.route.errors %}
+                      <div class="text-danger">{{ form.route.errors }}</div>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    {{ form.status.label_tag }}
+                    {{ form.status }}
+                    {% if form.status.errors %}
+                      <div class="text-danger">{{ form.status.errors }}</div>
+                    {% endif %}
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="id_diagnostic_method">Método de Diagnóstico</label>
+                    <select class="form-select" id="id_diagnostic_method" name="diagnostic_method">
+                      <option value="">Seleccionar método...</option>
+                      <option value="Visual">Visual</option>
+                      <option value="Instrumentos">Con Instrumentos</option>
+                      <option value="Prueba">Prueba de Funcionamiento</option>
+                      <option value="Otro">Otro</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sección de Resolución -->
+            <div class="form-section">
+              <h5 class="section-title">
+                <i class="fas fa-check-circle"></i> Resolución
+              </h5>
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    {{ form.estimated_resolution_time.label_tag }}
+                    {{ form.estimated_resolution_time }}
+                    {% if form.estimated_resolution_time.errors %}
+                      <div class="text-danger">{{ form.estimated_resolution_time.errors }}</div>
+                    {% endif %}
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    {{ form.resolution_type.label_tag }}
+                    {{ form.resolution_type }}
+                    {% if form.resolution_type.errors %}
+                      <div class="text-danger">{{ form.resolution_type.errors }}</div>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                {{ form.resolution_notes.label_tag }}
+                {{ form.resolution_notes }}
+                {% if form.resolution_notes.errors %}
+                  <div class="text-danger">{{ form.resolution_notes.errors }}</div>
+                {% endif %}
+              </div>
+
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-check mb-3">
+                    {{ form.affects_operation }}
+                    {{ form.affects_operation.label_tag }}
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-check mb-3">
+                    {{ form.follow_up_required }}
+                    {{ form.follow_up_required.label_tag }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Botones de acción -->
+            <div class="form-actions mt-4">
+              <button type="submit" class="btn btn-success btn-lg">
+                <i class="fas fa-save"></i>
+                {% if is_create %}Crear Diagnóstico{% else %}Actualizar Diagnóstico{% endif %}
+              </button>
+              <a href="{% if incident %}{% url 'incident_detail' incident.id_incident %}{% else %}{% url 'diagnostics:diagnostics_list' %}{% endif %}"
+                 class="btn btn-secondary btn-lg">
+                <i class="fas fa-arrow-left"></i> Cancelar
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

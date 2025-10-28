@@ -273,8 +273,8 @@ function changeStatus(incidentId, newStatus) {
             {% if user.is_authenticated %}
               {% if user.flotauser %}
                 {% if user.flotauser.role.name == 'Recepcionista de Vehículos' %}
-                  <a href="{% url 'recepcionista_generate_ot' incident.id_incident %}" class="btn btn-warning btn-sm">
-                    <i class="fas fa-tools"></i> Generar OT
+                  <a href="{% url 'recepcionista_escalar_mecanica' incident.id_incident %}" class="btn btn-info btn-sm">
+                    <i class="fas fa-wrench"></i> Escalar Mecánica In Situ
                   </a>
                 {% elif user.flotauser.role.name == 'Supervisor' %}
                   <a href="{% url 'supervisor_edit_incident' incident.id_incident %}" class="btn btn-outline-primary btn-sm">
