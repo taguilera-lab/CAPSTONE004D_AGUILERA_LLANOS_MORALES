@@ -81,7 +81,7 @@
             {% endif %}
           </div>
           <div class="incident-actions">
-            <a href="{% url 'incident_detail' incident.id_incident %}" class="btn btn-info btn-sm">Ver Detalle</a>
+            <a href="{% url 'incidents:incident_detail' incident.id_incident %}" class="btn btn-info btn-sm">Ver Detalle</a>
           </div>
         </div>
         {% endfor %}

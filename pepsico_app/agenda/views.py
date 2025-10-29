@@ -205,7 +205,7 @@ def agendar_ingreso(request):
         return redirect('calendario')
     
     vehicles = list(Vehicle.objects.values('patent', 'site__name'))
-    routes = list(Route.objects.values('id_route', 'route_code', 'truck'))
+    routes = list(Route.objects.values('id_route', 'route_code'))
     if request.method == 'POST':
         form = AgendarIngresoForm(request.POST, user=request.user if hasattr(request, 'user') and request.user.is_authenticated and hasattr(request.user, 'flotauser') else None)
         if form.is_valid():

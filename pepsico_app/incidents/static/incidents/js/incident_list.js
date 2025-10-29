@@ -184,3 +184,70 @@ document.addEventListener('DOMContentLoaded', function() {
 
     console.log(`Sistema de filtros inicializado para ${allCards.length} incidentes`);
 });
+
+// Funcionalidad de selección múltiple para diagnósticos
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Multiple selection functionality loaded');
+
+    const checkboxes = document.querySelectorAll('.incident-checkbox');
+    const createMultipleBtn = document.getElementById('create-multiple-diagnostic-btn');
+    const selectAllBtn = document.getElementById('select-all-btn');
+    const clearSelectionBtn = document.getElementById('clear-selection-btn');
+    const form = document.getElementById('multiple-diagnostic-form');
+
+    // Función para actualizar el estado del botón de crear diagnóstico múltiple
+    function updateCreateButton() {
+        const checkedBoxes = document.querySelectorAll('.incident-checkbox:checked');
+        if (createMultipleBtn) {
+            createMultipleBtn.disabled = checkedBoxes.length === 0;
+            createMultipleBtn.textContent = checkedBoxes.length === 0
+                ? 'Crear Diagnóstico Múltiple'
+                : `Crear Diagnóstico Múltiple (${checkedBoxes.length})`;
+        }
+    }
+
+    // Event listener para checkboxes individuales
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateCreateButton);
+    });
+
+    // Event listener para seleccionar todos
+    if (selectAllBtn) {
+        selectAllBtn.addEventListener('click', function() {
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = true;
+            });
+            updateCreateButton();
+        });
+    }
+
+    // Event listener para limpiar selección
+    if (clearSelectionBtn) {
+        clearSelectionBtn.addEventListener('click', function() {
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            updateCreateButton();
+        });
+    }
+
+    // Event listener para el formulario
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const checkedBoxes = document.querySelectorAll('.incident-checkbox:checked');
+            if (checkedBoxes.length === 0) {
+                e.preventDefault();
+                alert('Por favor selecciona al menos un incidente para crear un diagnóstico.');
+                return false;
+            }
+
+            if (!confirm(`¿Estás seguro de crear un diagnóstico para ${checkedBoxes.length} incidente(s)?`)) {
+                e.preventDefault();
+                return false;
+            }
+        });
+    }
+
+    // Inicializar estado del botón
+    updateCreateButton();
+});

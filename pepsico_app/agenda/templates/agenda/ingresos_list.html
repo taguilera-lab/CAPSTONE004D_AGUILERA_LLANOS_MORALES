@@ -183,7 +183,7 @@
             <i class="fas fa-calendar"></i> Ver Agenda
           </a>
           {% endif %}
-          <a href="{% url 'guardia_report_incident' %}?patent={{ ingreso.patent }}&ingreso_id={{ ingreso.id_ingreso }}" class="btn btn-sm btn-warning">
+          <a href="{% url 'incidents:guardia_report_incident' %}?patent={{ ingreso.patent }}&ingreso_id={{ ingreso.id_ingreso }}" class="btn btn-sm btn-warning">
             <i class="fas fa-exclamation-triangle"></i> Registrar Incidente
           </a>
           {% if user.is_authenticated and user.flotauser and user.flotauser.role.name == 'Recepcionista de Vehículos' %}

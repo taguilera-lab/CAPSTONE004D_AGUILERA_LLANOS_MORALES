@@ -101,6 +101,14 @@ function showLoadingState() {
 }
 
 function setupDynamicFields() {
+    // Actualizar información del vehículo cuando se selecciona un incidente
+    const incidentField = document.getElementById('id_incident');
+    if (incidentField) {
+        incidentField.addEventListener('change', function() {
+            updateVehicleInfo(this.value);
+        });
+    }
+
     // Mostrar/ocultar campos de resolución según el estado
     const statusField = document.getElementById('id_status');
     const resolutionFields = document.querySelectorAll('[id^="id_resolution_"], #id_estimated_resolution_time');
@@ -308,11 +316,71 @@ function setupRealTimeValidation() {
                 if (this.value) {
                     this.classList.remove('is-invalid');
                     this.style.borderColor = '#28a745';
-                } else {
-                    this.classList.add('is-invalid');
-                    this.style.borderColor = '#dc3545';
                 }
             });
         }
+    });
+}
+
+function updateVehicleInfo(incidentId) {
+    const vehicleFields = {
+        'vehicle-patent': 'Indefinido',
+        'vehicle-brand': 'Indefinido',
+        'vehicle-model': 'Indefinido',
+        'vehicle-year': 'Indefinido',
+        'vehicle-type': 'Indefinido',
+        'vehicle-mileage': 'Indefinido',
+        'vehicle-status': 'Indefinido'
+    };
+
+    if (!incidentId) {
+        // Si no hay incidente seleccionado, mostrar "Indefinido"
+        Object.keys(vehicleFields).forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            if (field) {
+                field.value = vehicleFields[fieldId];
+            }
+        });
+        return;
+    }
+
+    // Hacer petición AJAX para obtener información del vehículo
+    fetch(`/api/incidents/${incidentId}/vehicle/`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const vehicle = data.vehicle;
+            document.getElementById('vehicle-patent').value = vehicle.patent || 'Indefinido';
+            document.getElementById('vehicle-brand').value = vehicle.brand || 'Indefinido';
+            document.getElementById('vehicle-model').value = vehicle.model || 'Indefinido';
+            document.getElementById('vehicle-year').value = vehicle.year || 'Indefinido';
+            document.getElementById('vehicle-type').value = vehicle.type_name || 'Indefinido';
+            document.getElementById('vehicle-mileage').value = vehicle.mileage ? `${vehicle.mileage} km` : 'Indefinido';
+            document.getElementById('vehicle-status').value = vehicle.status_name || 'Indefinido';
+        } else {
+            // Si hay error, mostrar "Indefinido"
+            Object.keys(vehicleFields).forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                if (field) {
+                    field.value = vehicleFields[fieldId];
+                }
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error al obtener información del vehículo:', error);
+        // En caso de error, mostrar "Indefinido"
+        Object.keys(vehicleFields).forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            if (field) {
+                field.value = vehicleFields[fieldId];
+            }
+        });
     });
 }

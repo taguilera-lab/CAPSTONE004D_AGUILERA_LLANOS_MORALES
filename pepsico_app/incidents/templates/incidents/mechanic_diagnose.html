@@ -55,7 +55,7 @@
             </div>
 
             <div class="botones">
-                <a href="{% url 'incident_detail' incident.id_incident %}" class="btn-cancelar">Cancelar</a>
+                <a href="{% url 'incidents:incident_detail' incident.id_incident %}" class="btn-cancelar">Cancelar</a>
                 <button type="submit" class="btn-diagnosticar">Realizar Diagnóstico</button>
             </div>
         </form>

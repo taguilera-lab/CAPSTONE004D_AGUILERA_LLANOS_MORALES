@@ -202,12 +202,11 @@ class FlotaUserForm(forms.ModelForm):
 class RouteForm(forms.ModelForm):
     class Meta:
         model = Route
-        fields = ['route_code', 'gtm', 'driver', 'truck', 'comment']
+        fields = ['route_code', 'gtm', 'vehicles', 'comment']
         widgets = {
             'route_code': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Código de ruta'}),
             'gtm': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'GTM'}),
-            'driver': forms.Select(attrs={'class': 'form-control'}),
-            'truck': forms.Select(attrs={'class': 'form-control'}),
+            'vehicles': forms.SelectMultiple(attrs={'class': 'form-control'}),
             'comment': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Comentario'}),
         }
 

@@ -25,7 +25,7 @@ class IngresoForm(forms.ModelForm):
         if self.instance and self.instance.pk:
             # Para edición, poblar site y route
             self.fields['site'].initial = self.instance.patent.site.name if self.instance.patent.site else ''
-            self.fields['route'].initial = Route.objects.filter(truck=self.instance.patent).first()
+            self.fields['route'].initial = Route.objects.filter(vehicles=self.instance.patent).first()
         else:
             # Para creación, deshabilitar hasta seleccionar patent
             self.fields['site'].widget.attrs['readonly'] = True

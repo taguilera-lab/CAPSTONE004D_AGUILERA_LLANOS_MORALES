@@ -15,11 +15,14 @@
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
           <li class="breadcrumb-item"><a href="{% url 'diagnostics:diagnostics_list' %}">Diagnósticos</a></li>
-          {% if incident %}
-            <li class="breadcrumb-item"><a href="{% url 'incident_detail' incident.id_incident %}">Incidente #{{ incident.id_incident }}</a></li>
+          {% if incidents and incidents|length == 1 %}
+            <li class="breadcrumb-item"><a href="{% url 'incidents:incident_detail' incidents.0.id_incident %}">Incidente #{{ incidents.0.id_incident }}</a></li>
+          {% elif incidents and incidents|length > 1 %}
+            <li class="breadcrumb-item"><a href="{% url 'incidents:incident_list' %}">Lista de Incidentes</a></li>
           {% endif %}
           <li class="breadcrumb-item active">
             {% if is_create %}Crear Diagnóstico{% else %}Editar Diagnóstico{% endif %}
+            {% if incidents and incidents|length > 1 %} (Múltiple){% endif %}
           </li>
         </ol>
       </nav>
@@ -29,6 +32,7 @@
           <h2 class="mb-0">
             <i class="fas fa-stethoscope text-primary"></i>
             {% if is_create %}Crear Nuevo Diagnóstico{% else %}Editar Diagnóstico{% endif %}
+            {% if incidents and incidents|length > 1 %} ({{ incidents|length }} Incidentes){% endif %}
           </h2>
         </div>
 
@@ -36,38 +40,102 @@
           <!-- Mostrar mensajes -->
           {% if messages %}
             {% for message in messages %}
-              <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+              <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
                 {{ message }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
               </div>
             {% endfor %}
           {% endif %}
 
-          <!-- Información del incidente si existe -->
-          {% if incident %}
-          <div class="incident-info mb-4">
+          <!-- Selección de Incidentes -->
+          <div class="incident-selection mb-4">
             <h5 class="text-primary">
-              <i class="fas fa-exclamation-triangle"></i> Información del Incidente
+              <i class="fas fa-exclamation-triangle"></i> 
+              {% if incidents and incidents|length == 1 %}Incidente Relacionado{% else %}Incidentes Relacionados{% endif %}
+              {% if incidents %}({{ incidents|length }}){% endif %}
             </h5>
-            <div class="row">
-              <div class="col-md-6">
-                <p><strong>ID:</strong> #{{ incident.id_incident }}</p>
-                <p><strong>Tipo:</strong> {{ incident.get_incident_type_display }}</p>
-                <p><strong>Vehículo:</strong> {{ incident.vehicle.patent }} - {{ incident.vehicle.brand }} {{ incident.vehicle.model }}</p>
+            <div class="mb-3">
+              {{ form.incidents }}
+              {% if form.incidents.errors %}
+                <div class="text-danger">
+                  {% for error in form.incidents.errors %}
+                    {{ error }}
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+            
+            <!-- Mostrar incidentes seleccionados -->
+            <div id="selected-incidents" class="mt-3">
+              {% for incident in incidents %}
+              <div class="incident-summary card mb-2">
+                <div class="card-body p-2">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <small><strong>ID:</strong> #{{ incident.id_incident }}</small><br>
+                      <small><strong>Vehículo:</strong> {{ incident.vehicle.patent }} - {{ incident.vehicle.brand }} {{ incident.vehicle.model }}</small>
+                    </div>
+                    <div class="col-md-6">
+                      <small><strong>Tipo:</strong> {{ incident.get_incident_type_display }}</small><br>
+                      <small><strong>Reportado:</strong> {{ incident.reported_at|date:"d/m/Y H:i" }}</small>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div class="col-md-6">
-                <p><strong>Reportado por:</strong> {{ incident.reported_by.name }}</p>
-                <p><strong>Fecha:</strong> {{ incident.reported_at|date:"d/m/Y H:i" }}</p>
-                <p><strong>Descripción:</strong> {{ incident.description|truncatechars:100 }}</p>
-              </div>
+              {% endfor %}
             </div>
           </div>
-          {% endif %}
+
+          <!-- Información del Vehículo -->
+          <div class="vehicle-info mb-4" id="vehicle-info-section">
+          <!-- Información de los Vehículos -->
+          <div class="vehicle-info mb-4" id="vehicle-info-section">
+            <h5 class="text-primary">
+              <i class="fas fa-car"></i> Vehículos Involucrados
+            </h5>
+            {% if unique_vehicles %}
+              {% for vehicle in unique_vehicles %}
+              <div class="vehicle-card card mb-2">
+                <div class="card-body p-3">
+                  <div class="row">
+                    <div class="col-md-3">
+                      <strong>Patente:</strong> {{ vehicle.patent }}
+                    </div>
+                    <div class="col-md-3">
+                      <strong>Marca:</strong> {{ vehicle.brand }}
+                    </div>
+                    <div class="col-md-3">
+                      <strong>Modelo:</strong> {{ vehicle.model }}
+                    </div>
+                    <div class="col-md-3">
+                      <strong>Año:</strong> {{ vehicle.year }}
+                    </div>
+                  </div>
+                  <div class="row mt-2">
+                    <div class="col-md-4">
+                      <strong>Tipo:</strong> {{ vehicle.type.name|default:"No definido" }}
+                    </div>
+                    <div class="col-md-4">
+                      <strong>Kilometraje:</strong> {% if vehicle.mileage %}{{ vehicle.mileage|floatformat:0 }} km{% else %}No registrado{% endif %}
+                    </div>
+                    <div class="col-md-4">
+                      <strong>Estado:</strong> {{ vehicle.get_status_display|default:"No definido" }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+            {% else %}
+              <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> Selecciona uno o más incidentes para ver la información de los vehículos.
+              </div>
+            {% endif %}
 
           <form method="post" id="diagnostics-form">
             {% csrf_token %}
 
             <!-- Sección de Evaluación Técnica -->
+            {% if is_create or diagnostic.assigned_to or user.flotauser.role.name != 'Jefe de taller' %}
             <div class="form-section">
               <h5 class="section-title">
                 <i class="fas fa-search"></i> Evaluación Técnica
@@ -109,19 +177,35 @@
                 {% endif %}
               </div>
             </div>
+            {% endif %}
 
             <!-- Sección de Asignación y Estado -->
             <div class="form-section">
               <h5 class="section-title">
                 <i class="fas fa-user-cog"></i> Asignación y Estado
               </h5>
+
+              {% if user.flotauser.role.name == 'Jefe de taller' and diagnostic.assigned_to == None %}
+              <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i>
+                <strong>Instrucciones para Jefe de Taller:</strong> Solo complete la asignación de mecánico y el estado del diagnóstico.
+                Los campos de evaluación técnica y resolución serán completados por el mecánico asignado.
+              </div>
+              {% endif %}
+
               <div class="row">
                 <div class="col-md-6">
                   <div class="mb-3">
                     {{ form.assigned_to.label_tag }}
+                    {% if user.flotauser.role.name == 'Jefe de taller' and diagnostic.assigned_to == None %}
+                      <span class="text-danger">*</span>
+                    {% endif %}
                     {{ form.assigned_to }}
                     {% if form.assigned_to.errors %}
                       <div class="text-danger">{{ form.assigned_to.errors }}</div>
+                    {% endif %}
+                    {% if user.flotauser.role.name == 'Jefe de taller' and diagnostic.assigned_to == None %}
+                      <small class="form-text text-muted">Seleccione el mecánico que realizará el diagnóstico</small>
                     {% endif %}
                   </div>
                 </div>
@@ -131,6 +215,18 @@
                     {{ form.route }}
                     {% if form.route.errors %}
                       <div class="text-danger">{{ form.route.errors }}</div>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="mb-3">
+                    {{ form.location.label_tag }}
+                    {{ form.location }}
+                    {% if form.location.errors %}
+                      <div class="text-danger">{{ form.location.errors }}</div>
                     {% endif %}
                   </div>
                 </div>
@@ -147,6 +243,7 @@
                   </div>
                 </div>
                 <div class="col-md-6">
+                  {% if is_create or diagnostic.assigned_to or user.flotauser.role.name != 'Jefe de taller' %}
                   <div class="mb-3">
                     <label for="id_diagnostic_method">Método de Diagnóstico</label>
                     <select class="form-select" id="id_diagnostic_method" name="diagnostic_method">
@@ -157,11 +254,13 @@
                       <option value="Otro">Otro</option>
                     </select>
                   </div>
+                  {% endif %}
                 </div>
               </div>
             </div>
 
             <!-- Sección de Resolución -->
+            {% if is_create or diagnostic.assigned_to or user.flotauser.role.name != 'Jefe de taller' %}
             <div class="form-section">
               <h5 class="section-title">
                 <i class="fas fa-check-circle"></i> Resolución
@@ -210,14 +309,21 @@
                 </div>
               </div>
             </div>
+            {% endif %}
 
             <!-- Botones de acción -->
             <div class="form-actions mt-4">
               <button type="submit" class="btn btn-success btn-lg">
                 <i class="fas fa-save"></i>
-                {% if is_create %}Crear Diagnóstico{% else %}Actualizar Diagnóstico{% endif %}
+                {% if user.flotauser.role.name == 'Jefe de taller' and diagnostic.assigned_to == None and not is_create %}
+                  Asignar y Completar
+                {% elif is_create %}
+                  Crear Diagnóstico
+                {% else %}
+                  Actualizar Diagnóstico
+                {% endif %}
               </button>
-              <a href="{% if incident %}{% url 'incident_detail' incident.id_incident %}{% else %}{% url 'diagnostics:diagnostics_list' %}{% endif %}"
+              <a href="{% if incident %}{% url 'incidents:incident_detail' incident.id_incident %}{% else %}{% url 'diagnostics:diagnostics_list' %}{% endif %}"
                  class="btn btn-secondary btn-lg">
                 <i class="fas fa-arrow-left"></i> Cancelar
               </a>

@@ -31,7 +31,7 @@
         <a href="{% url 'ingresos_list' %}" class="icon-truck">Ingresos</a>
         <a href="{% url 'calendario' %}" class="icon-doc">Calendario</a>
         <a href="{% url 'orden_trabajo_list' %}" class="icon-doc-text-inv">Órdenes de Trabajo</a>
-        <a href="{% url 'incident_list' %}" class="icon-pause">Incidentes</a>
+        <a href="{% url 'incidents:incident_list' %}" class="icon-pause">Incidentes</a>
         <a href="{% url 'datos' %}" class="icon-doc">Datos</a>
         <a href="#" class="icon-doc">Reportes</a>
         {% if user.is_authenticated %}

@@ -1,6 +1,8 @@
 from django.urls import path
 from . import views
 
+app_name = 'incidents'
+
 urlpatterns = [
     path('chofer/report/', views.chofer_report_incident, name='chofer_report_incident'),
     path('guardia/report/', views.guardia_report_incident, name='guardia_report_incident'),
@@ -10,4 +12,5 @@ urlpatterns = [
     path('resolve/<int:incident_id>/', views.resolve_incident, name='resolve_incident'),
     path('list/', views.incident_list, name='incident_list'),
     path('detail/<int:incident_id>/', views.incident_detail, name='incident_detail'),
+    path('create-multiple-diagnostic/', views.create_multiple_diagnostic, name='create_multiple_diagnostic'),
 ]

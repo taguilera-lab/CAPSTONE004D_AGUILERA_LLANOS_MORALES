@@ -121,6 +121,20 @@ class Vehicle(models.Model):
                 self.status = available_status
         self.save()
 
+    @property
+    def active_route(self):
+        """
+        Devuelve la ruta activa del vehículo.
+        Una ruta es considerada activa si este vehículo tiene un conductor activo asignado.
+        """
+        # Buscar si este vehículo tiene un conductor activo
+        try:
+            active_driver = FlotaUser.objects.get(patent=self, status__name='Activo')
+            # Si tiene conductor activo, devolver la primera ruta asociada
+            return self.routes.first()
+        except FlotaUser.DoesNotExist:
+            return None
+
     class Meta:
         db_table = 'Vehicles'
 
@@ -174,11 +188,24 @@ class Route(models.Model):
     id_route = models.AutoField(primary_key=True)
     route_code = models.CharField(max_length=50)
     gtm = models.CharField(max_length=50)
-    driver = models.ForeignKey(
-        FlotaUser, on_delete=models.SET_NULL, db_column='driver_id', null=True, blank=True)
-    truck = models.ForeignKey(
-        Vehicle, on_delete=models.CASCADE, db_column='truck_patent')
+    vehicles = models.ManyToManyField(
+        Vehicle, db_column='route_vehicles', related_name='routes', blank=True,
+        help_text='Vehículos asociados a esta ruta')
     comment = models.TextField()
+
+    @property
+    def driver(self):
+        """
+        Devuelve el conductor activo de esta ruta.
+        Busca entre los vehículos asociados cuál tiene un conductor activo.
+        """
+        for vehicle in self.vehicles.all():
+            try:
+                flota_user = FlotaUser.objects.get(patent=vehicle, status__name='Activo')
+                return flota_user
+            except FlotaUser.DoesNotExist:
+                continue
+        return None
 
     def __str__(self):
         return f"{self.id_route} - {self.route_code}"
@@ -554,8 +581,13 @@ class Diagnostics(models.Model):
         ('Otro', 'Otro'),
     ]
 
+    incidents = models.ManyToManyField(
+        Incident, db_column='incident_ids', related_name='diagnostics', blank=True,
+        help_text='Incidentes asociados a este diagnóstico')
+    
+    # Campo legacy para compatibilidad (se mantendrá hasta migración completa)
     incident = models.ForeignKey(
-        Incident, on_delete=models.CASCADE, db_column='incident_id', null=True, blank=True, related_name='diagnostics')
+        Incident, on_delete=models.CASCADE, db_column='incident_id', null=True, blank=True, related_name='legacy_diagnostics')
     
     # Campos de evaluación técnica
     severity = models.CharField(max_length=20, choices=Incident.SEVERITY_LEVELS, null=True, blank=True)
@@ -601,6 +633,7 @@ class Diagnostics(models.Model):
     photos_taken = models.BooleanField(default=False)
     requires_specialist = models.BooleanField(default=False)
     environmental_conditions = models.CharField(max_length=200, null=True, blank=True)
+    location = models.CharField(max_length=200, null=True, blank=True, help_text='Ubicación donde se realizó el diagnóstico (para diagnósticos in situ)')
     
     # Campos de auditoría específicos de diagnostics
     diagnostics_created_at = models.DateTimeField(auto_now_add=True)
@@ -611,8 +644,11 @@ class Diagnostics(models.Model):
         FlotaUser, on_delete=models.SET_NULL, db_column='diagnostics_updated_by_id', null=True, blank=True, related_name='updated_diagnostics')
 
     def __str__(self):
-        if self.incident:
-            return f"Diagnóstico de Incidencia #{self.incident.id_incident}"
+        if self.incidents.exists():
+            incident_ids = list(self.incidents.values_list('id_incident', flat=True))
+            return f"Diagnóstico #{self.id} - Incidentes: {', '.join(map(str, incident_ids))}"
+        elif self.incident:
+            return f"Diagnóstico de Incidencia #{self.incident.id_incident} (legacy)"
         return f"Diagnóstico #{self.id}"
 
     class Meta:

@@ -11,7 +11,7 @@
 <div class="container-fluid mt-4">
     <!-- Botón de regreso -->
     <div class="back-btn">
-        <a href="{% url 'incident_list' %}" class="btn btn-outline-secondary">
+        <a href="{% url 'incidents:incident_list' %}" class="btn btn-outline-secondary">
             <i class="fas fa-arrow-left"></i> Volver a Lista de Incidentes
         </a>
     </div>
@@ -403,7 +403,7 @@
                     {% if incident.latest_diagnostic %}
                         {% with current_status=incident.latest_diagnostic.0.status %}
                             {% if user.flotauser.role.name == 'Mecánico' and current_status == 'Reportada' %}
-                                <a href="{% url 'mechanic_diagnose_incident' incident.id_incident %}" class="btn btn-outline-primary btn-sm w-100 mb-2">
+                                <a href="{% url 'incidents:mechanic_diagnose_incident' incident.id_incident %}" class="btn btn-outline-primary btn-sm w-100 mb-2">
                                     <i class="fas fa-stethoscope"></i> Realizar Diagnóstico In Situ
                                 </a>
                             {% elif user.flotauser.role.name == 'Recepcionista de Vehículos' and current_status == 'Diagnostico_Mecanica_In_Situ' %}
@@ -417,7 +417,7 @@
                             {% endif %}
 
                             {% if user.flotauser.role.name == 'Supervisor' %}
-                                <a href="{% url 'supervisor_edit_incident' incident.id_incident %}" class="btn btn-outline-primary btn-sm w-100 mb-2">
+                                <a href="{% url 'incidents:supervisor_edit_incident' incident.id_incident %}" class="btn btn-outline-primary btn-sm w-100 mb-2">
                                     <i class="fas fa-edit"></i> Editar Incidente
                                 </a>
                             {% endif %}
@@ -429,13 +429,13 @@
                     {% else %}
                         {% comment %} No hay diagnóstico aún, estado inicial "Reportada" {% endcomment %}
                         {% if user.flotauser.role.name == 'Mecánico' %}
-                            <a href="{% url 'mechanic_diagnose_incident' incident.id_incident %}" class="btn btn-outline-primary btn-sm w-100 mb-2">
+                            <a href="{% url 'incidents:mechanic_diagnose_incident' incident.id_incident %}" class="btn btn-outline-primary btn-sm w-100 mb-2">
                                 <i class="fas fa-stethoscope"></i> Realizar Diagnóstico In Situ
                             </a>
                         {% endif %}
 
                         {% if user.flotauser.role.name == 'Supervisor' %}
-                            <a href="{% url 'supervisor_edit_incident' incident.id_incident %}" class="btn btn-outline-primary btn-sm w-100 mb-2">
+                            <a href="{% url 'incidents:supervisor_edit_incident' incident.id_incident %}" class="btn btn-outline-primary btn-sm w-100 mb-2">
                                 <i class="fas fa-edit"></i> Editar Incidente
                             </a>
                         {% endif %}

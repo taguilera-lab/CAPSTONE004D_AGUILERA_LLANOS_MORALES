@@ -34,7 +34,7 @@ def chofer_report_incident(request):
                     )
 
             messages.success(request, 'Incidente reportado exitosamente.')
-            return redirect('incident_list')
+            return redirect('incidents:incident_list')
     else:
         form = ChoferIncidentForm()
         image_form = IncidentImageForm()
@@ -101,7 +101,7 @@ def guardia_report_incident(request):
             if patent:
                 return redirect('ingresos_list')
             else:
-                return redirect('incident_list')
+                return redirect('incidents:incident_list')
     else:
         form = GuardiaIncidentForm(initial=initial_data)
         image_form = IncidentImageForm()
@@ -242,44 +242,73 @@ def resolve_incident(request, incident_id):
 
 @login_required
 def recepcionista_escalar_mecanica(request, incident_id):
-    """Vista para que la recepcionista asigne mecánica in situ a un incidente"""
+    """Vista para que la recepcionista asigne mecánica in situ a un incidente - Redirige a crear diagnóstico"""
     incident = get_object_or_404(Incident, id_incident=incident_id)
     
-    # Obtener mecánicos disponibles
-    mechanics = FlotaUser.objects.filter(role__name='Mecánico').select_related('role')
+    # Verificar que el usuario sea recepcionista
+    if not (hasattr(request.user, 'flotauser') and request.user.flotauser.role.name == 'Recepcionista de Vehículos'):
+        messages.error(request, 'Solo los recepcionistas pueden escalar a mecánica in situ.')
+        return redirect('incident_detail', incident_id=incident.id_incident)
     
-    if request.method == 'POST':
-        mechanic_id = request.POST.get('mechanic_id')
-        if mechanic_id:
-            mechanic = get_object_or_404(FlotaUser, id_user=mechanic_id, role__name='Mecánico')
-            
-            # Crear o actualizar diagnóstico
-            diagnostic, created = Diagnostics.objects.get_or_create(
-                incident=incident,
-                defaults={
-                    'status': 'Diagnostico_In_Situ',
-                    'assigned_to': mechanic,
-                }
-            )
-            
-            if not created:
-                diagnostic.status = 'Diagnostico_In_Situ'
-                diagnostic.assigned_to = mechanic
-                diagnostic.save()
-            
-            # Actualizar estado del incidente
-            incident.status = 'Diagnostico_In_Situ'
-            incident.save()
-            
-            messages.success(request, f'Mecánico {mechanic.name} asignado para diagnóstico in situ.')
-            return redirect('incident_detail', incident_id=incident.id_incident)
-        else:
-            messages.error(request, 'Debe seleccionar un mecánico.')
-    
-    context = {
-        'incident': incident,
-        'vehicle': incident.vehicle,
-        'mechanics': mechanics,
-    }
-    
-    return render(request, 'incidents/recepcionista_escalar_mecanica.html', context)
+    # Redirigir directamente a crear diagnóstico con los datos del incidente prepoblados
+    return redirect('diagnostics:diagnostics_create_for_incident', incident_id=incident.id_incident)
+
+@login_required
+def create_multiple_diagnostic(request):
+    """Vista para crear un diagnóstico que abarque múltiples incidentes seleccionados"""
+    # Verificar que el usuario sea recepcionista
+    if not (hasattr(request.user, 'flotauser') and request.user.flotauser.role.name == 'Recepcionista de Vehículos'):
+        messages.error(request, 'Solo los recepcionistas pueden crear diagnósticos múltiples.')
+        return redirect('incidents:incident_list')
+
+    if request.method != 'POST':
+        messages.error(request, 'Método no permitido.')
+        return redirect('incidents:incident_list')
+
+    selected_incident_ids = request.POST.getlist('selected_incidents')
+
+    if not selected_incident_ids:
+        messages.error(request, 'No se seleccionaron incidentes.')
+        return redirect('incidents:incident_list')
+
+    # Obtener los incidentes seleccionados
+    incidents = Incident.objects.filter(id_incident__in=selected_incident_ids).select_related('vehicle')
+
+    if not incidents.exists():
+        messages.error(request, 'Los incidentes seleccionados no existen.')
+        return redirect('incidents:incident_list')
+
+    # Verificar que todos los incidentes pertenezcan al mismo vehículo
+    vehicle_ids = incidents.values_list('vehicle_id', flat=True).distinct()
+    if len(vehicle_ids) > 1:
+        # Obtener información de los vehículos para un mensaje más descriptivo
+        vehicles_info = []
+        for incident in incidents:
+            vehicle_info = f"{incident.vehicle.patent} ({incident.vehicle.brand} {incident.vehicle.model})"
+            if vehicle_info not in vehicles_info:
+                vehicles_info.append(vehicle_info)
+        
+        messages.error(request, f'Los incidentes seleccionados pertenecen a vehículos diferentes: {", ".join(vehicles_info)}. Todos los incidentes deben pertenecer al mismo vehículo para crear un diagnóstico múltiple.')
+        return redirect('incidents:incident_list')
+
+    # Crear diagnóstico múltiple en estado inicial (pendiente de completar por mecánico)
+    from documents.models import Diagnostics
+
+    try:
+        diagnostic = Diagnostics.objects.create(
+            status='Reportada',  # Estado inicial - pendiente de completar
+            diagnostics_created_by=request.user.flotauser,
+        )
+
+        # Asignar los incidentes al diagnóstico
+        diagnostic.incidents.set(incidents)
+        diagnostic.save()
+
+        print(f"DEBUG: Diagnóstico múltiple creado - ID: {diagnostic.id}, Incidentes: {[i.id_incident for i in incidents]}")
+
+        messages.success(request, f'Diagnóstico múltiple creado exitosamente. Los mecánicos podrán completarlo desde la lista de diagnósticos.')
+        return redirect('diagnostics:diagnostics_list')
+    except Exception as e:
+        print(f"DEBUG: Error creando diagnóstico múltiple: {e}")
+        messages.error(request, f'Error al crear diagnóstico múltiple: {e}')
+        return redirect('incidents:incident_list')

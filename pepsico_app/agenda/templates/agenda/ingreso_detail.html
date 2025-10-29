@@ -126,7 +126,7 @@
             <small><strong>ID Incidente:</strong> {{ incident.id_incident }}</small>
           </div>
           <div class="incident-actions">
-            <a href="{% url 'incident_detail' incident.id_incident %}" class="btn btn-sm btn-info incident-detail-btn">
+            <a href="{% url 'incidents:incident_detail' incident.id_incident %}" class="btn btn-sm btn-info incident-detail-btn">
               <i class="fas fa-eye"></i> Detalles
             </a>
           </div>

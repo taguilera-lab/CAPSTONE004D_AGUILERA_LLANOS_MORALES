@@ -13,8 +13,8 @@
     <div class="col-12">
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a href="{% url 'incident_list' %}">Incidentes</a></li>
-          <li class="breadcrumb-item"><a href="{% url 'incident_detail' incident.id_incident %}">Incidente #{{ incident.id_incident }}</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'incidents:incident_list' %}">Incidentes</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'incidents:incident_detail' incident.id_incident %}">Incidente #{{ incident.id_incident }}</a></li>
           <li class="breadcrumb-item active">Escalar Mecánica In Situ</li>
         </ol>
       </nav>
@@ -134,7 +134,7 @@
                       <button type="submit" class="btn btn-success">
                         <i class="fas fa-check"></i> Asignar Mecánico y Escalar
                       </button>
-                      <a href="{% url 'incident_detail' incident.id_incident %}" class="btn btn-secondary">
+                      <a href="{% url 'incidents:incident_detail' incident.id_incident %}" class="btn btn-secondary">
                         <i class="fas fa-arrow-left"></i> Cancelar
                       </a>
                     </div>
