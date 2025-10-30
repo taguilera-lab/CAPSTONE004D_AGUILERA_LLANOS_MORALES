@@ -1,0 +1,222 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: system-ui, Arial;
+  background-color: #fff;
+}
+
+/* Barra superior */
+.barra-superior {
+  background-color: #FFD54F;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  padding-left: 100px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  position: relative;
+  z-index: 5;
+  margin-top: 0;
+}
+
+.logo {
+  position: absolute;
+  top: 10px;
+  left: 60px;
+  height: 50px;
+  z-index: 6;
+}
+
+.btn-menu {
+  position: absolute;
+  top: 12px;
+  left: 15px;
+  z-index: 7;
+}
+
+.btn-menu label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  font-size: 24px;
+  color: #1c1c1c;
+}
+
+#btn-menu {
+  display: none;
+}
+
+.container-menu {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.5);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 300ms ease;
+  z-index: 10;
+}
+
+#btn-menu:checked ~ .container-menu {
+  opacity: 1;
+  visibility: visible;
+}
+
+.cont-menu {
+  width: 100%;
+  max-width: 250px;
+  height: 100%;
+  background: #1c1c1c;
+  position: relative;
+  transform: translateX(-100%);
+  transition: transform 300ms ease;
+}
+
+#btn-menu:checked ~ .container-menu .cont-menu {
+  transform: translateX(0);
+}
+
+.cont-menu nav {
+  padding-top: 20px;
+}
+
+.cont-menu nav a {
+  display: block;
+  text-decoration: none;
+  padding: 16px 20px;
+  color: #c7c7c7;
+  border-left: 5px solid transparent;
+  transition: all 200ms ease;
+}
+
+.cont-menu nav a:hover {
+  border-left-color: #c7c7c7;
+  background: #1f1f1f;
+}
+
+.cont-menu .close {
+  position: absolute;
+  right: 8px;
+  top: 10px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+/* Contenido principal */
+.contenedor {
+  display: flex;
+  justify-content: center;
+  padding: 30px;
+}
+
+.formulario {
+  background-color: rgba(102, 88, 88, 0.103);
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  width: 100%;
+  max-width: 500px;
+}
+
+.formulario h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.campo {
+  margin-bottom: 20px;
+}
+
+label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+input[type="text"],
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"],
+select,
+textarea {
+  width: 100%;
+  padding: 8px;
+  border: 2px solid black;
+  border-radius: 15px;
+  font-family: system-ui, Arial;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+}
+
+/* Estilos para mensajes de alerta */
+.alert-info {
+  background-color: #e3f2fd;
+  padding: 15px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  border-left: 4px solid #2196f3;
+  color: #1976d2;
+}
+
+.alert-danger {
+  background-color: #ffebee;
+  padding: 15px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  border-left: 4px solid #f44336;
+  color: #c62828;
+}
+
+/* Estilos para botones de enlace */
+a.btn-programar {
+  display: inline-block;
+  text-decoration: none;
+  text-align: center;
+  padding: 10px 30px;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: system-ui, Arial;
+  font-weight: bold;
+}
+
+/* Botón programar */
+.botones {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  padding: 20px 0;
+}
+
+.btn-programar {
+  background-color: #1332e0;
+  color: white;
+  padding: 10px 30px;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.btn-programar:hover {
+  background-color: #3f51b5;
+}
+
+/* Footer */
+footer {
+  text-align: center;
+  padding: 15px;
+  background-color: #FFD54F;
+  color: #1c1c1c;
+  margin-top: 30px;
+}

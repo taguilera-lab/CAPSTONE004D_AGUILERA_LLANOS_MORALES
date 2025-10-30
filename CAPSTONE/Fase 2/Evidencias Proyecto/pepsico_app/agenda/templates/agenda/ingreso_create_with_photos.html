@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Crear Ingreso con Fotos{% endblock %}
+
+{% block static %}
+<link rel="stylesheet" href="{% static 'agenda/css/formulario.css' %}">
+<link rel="stylesheet" href="{% static 'agenda/css/ingreso_create_with_photos.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="contenedor">
+  <div class="formulario">
+    <h2>Crear Ingreso con Captura de Fotos</h2>
+    <p class="page-description">Selecciona un agendamiento y captura fotos automáticamente para documentar el ingreso del vehículo.</p>
+
+    <div class="date-info">
+      <p>Fecha seleccionada: <strong>{{ selected_date|date:"l, d F Y" }}</strong></p>
+    </div>
+
+    {% if pending_schedules %}
+    <div class="schedules-container">
+      {% for schedule in pending_schedules %}
+      <div class="schedule-card">
+        <div class="schedule-header">
+          <h4>{{ schedule.patent }}</h4>
+          <div class="schedule-datetime">
+            <strong>Agendado para:</strong> {{ schedule.start_datetime|date:"l, d F Y - H:i" }}
+          </div>
+          <div class="schedule-meta">
+            <span class="schedule-chofer">Chofer: {{ schedule.expected_chofer.name|default:"Por asignar" }}</span>
+          </div>
+        </div>
+
+        <div class="schedule-details">
+          <div class="detail-row">
+            <strong>Sucursal:</strong> {{ schedule.patent.site.name }}
+          </div>
+          {% if schedule.assigned_user %}
+          <div class="detail-row">
+            <strong>Asignado a:</strong> {{ schedule.assigned_user.name }}
+          </div>
+          {% endif %}
+          {% if schedule.observations %}
+          <div class="detail-row">
+            <strong>Observaciones:</strong> {{ schedule.observations }}
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Formulario para este agendamiento específico -->
+        <form class="ingreso-form" id="form-{{ schedule.id_schedule }}" method="post" enctype="multipart/form-data" action="{% url 'ingreso_create_from_schedule' %}">
+          {% csrf_token %}
+          <input type="hidden" name="schedule_id" value="{{ schedule.id_schedule }}">
+
+          <!-- Campos del agendamiento (solo lectura) -->
+          <div class="readonly-fields">
+            <div class="field-group">
+              <label>Patente:</label>
+              <input type="text" value="{{ schedule.patent }}" readonly class="readonly-input">
+            </div>
+            <div class="field-group">
+              <label>Fecha y Hora de Entrada:</label>
+              <input type="text" value="{% now 'd/m/Y H:i' %}" readonly class="readonly-input">
+            </div>
+            <div class="field-group">
+              <label>Vendedor:</label>
+              <input type="text" value="{{ schedule.expected_chofer.name|default:'Por asignar' }}" readonly class="readonly-input">
+            </div>
+            <div class="field-group">
+              <label>Observaciones:</label>
+              <textarea readonly class="readonly-textarea">{{ schedule.observations|default:'' }}</textarea>
+            </div>
+          </div>
+
+          <!-- Sección de captura de fotos -->
+          <div class="photo-section">
+            <h5>Captura de Fotos</h5>
+            <div class="photo-controls">
+              <button type="button" class="btn-capture" onclick="startCamera({{ schedule.id_schedule }})">
+                <span class="btn-icon">📷</span> Iniciar Cámara
+              </button>
+              <button type="button" class="btn-stop" onclick="stopCamera({{ schedule.id_schedule }})" style="display: none;">
+                <span class="btn-icon">⏹️</span> Detener Cámara
+              </button>
+            </div>
+
+            <div class="camera-container" id="camera-{{ schedule.id_schedule }}" style="display: none;">
+              <video id="video-{{ schedule.id_schedule }}" autoplay playsinline></video>
+              <canvas id="canvas-{{ schedule.id_schedule }}" style="display: none;"></canvas>
+              <div class="camera-controls">
+                <button type="button" class="btn-photo" onclick="takePhoto({{ schedule.id_schedule }})">
+                  <span class="btn-icon">📸</span> Tomar Foto
+                </button>
+              </div>
+            </div>
+
+            <!-- Galería de fotos capturadas -->
+            <div class="photo-gallery" id="gallery-{{ schedule.id_schedule }}">
+              <h6>Fotos Capturadas:</h6>
+              <div class="photos-grid" id="photos-{{ schedule.id_schedule }}">
+                <!-- Las fotos se agregarán aquí dinámicamente -->
+              </div>
+            </div>
+
+            <!-- Input oculto para las imágenes -->
+            <input type="file" name="images" id="images-{{ schedule.id_schedule }}" multiple accept="image/*" style="display: none;">
+          </div>
+
+          <!-- Botones de acción -->
+          <div class="form-actions">
+            <button type="submit" class="btn-create">
+              <span class="btn-icon">✅</span> Crear Ingreso
+            </button>
+            <button type="button" class="btn-cancel" onclick="cancelForm({{ schedule.id_schedule }})">
+              <span class="btn-icon">❌</span> Cancelar
+            </button>
+          </div>
+        </form>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="no-schedules">
+      <h4>No hay agendamientos pendientes</h4>
+      <p>No se encontraron agendamientos sin ingreso asociado para la fecha <strong>{{ selected_date|date:"d/m/Y" }}</strong>.</p>
+      <div class="actions">
+        <a href="{% url 'ingreso_create_select' %}" class="btn-secondary">Seleccionar Otra Fecha</a>
+        <a href="{% url 'ingresos_list' %}" class="btn-primary">Ver Lista de Ingresos</a>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="back-section">
+      <a href="{% url 'ingresos_list' %}" class="btn-secondary">Volver a Lista de Ingresos</a>
+    </div>
+  </div>
+</div>
+
+<script src="{% static 'agenda/js/ingreso_create_with_photos.js' %}"></script>
+{% endblock %}

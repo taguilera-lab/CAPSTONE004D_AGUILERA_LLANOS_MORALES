@@ -1,0 +1,60 @@
+/* Órdenes de Trabajo - Lista */
+.work-order-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: 1px solid #dee2e6;
+}
+
+.work-order-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.work-order-card.has-work-order {
+    border-left: 4px solid #007bff;
+}
+
+.work-order-card.no-work-order {
+    border-left: 4px solid #ffc107;
+    background-color: #fff3cd;
+}
+
+.work-order-card .card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.work-order-info p {
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.card-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.card-actions .btn {
+    flex: 1;
+    min-width: 120px;
+}
+
+/* Filtros */
+.filter-input {
+    border-radius: 0.375rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .work-order-card {
+        margin-bottom: 1rem;
+    }
+
+    .card-actions {
+        flex-direction: column;
+    }
+
+    .card-actions .btn {
+        width: 100%;
+    }
+}

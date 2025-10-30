@@ -1,0 +1,359 @@
+/* Estilos específicos para ingreso_detail.html */
+
+.detail-container {
+  background-color: rgba(102, 88, 88, 0.05);
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
+.detail-field {
+  margin-bottom: 15px;
+}
+
+.authorization-yes {
+  background-color: #4caf50;
+  color: white;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.authorization-no {
+  background-color: #f44336;
+  color: white;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.related-badge {
+  background-color: #2196f3;
+  color: white;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.related-time {
+  color: #666;
+  margin-left: 10px;
+}
+
+.related-title {
+  margin-top: 30px;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.related-schedules {
+  background-color: rgba(102, 88, 88, 0.05);
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.schedule-item {
+  padding: 10px;
+  margin-bottom: 10px;
+  background-color: #fafafa;
+  border-radius: 5px;
+  border-left: 3px solid #FFD54F;
+}
+
+.no-related {
+  background-color: rgba(102, 88, 88, 0.05);
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  color: #666;
+}
+
+.back-section {
+  margin-top: 30px;
+  text-align: center;
+}
+
+/* Estilos para la sección de imágenes */
+.images-section {
+  margin-bottom: 30px;
+}
+
+.images-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.image-item {
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: transform 0.2s;
+}
+
+.image-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.image-preview {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  display: block;
+}
+
+.image-info {
+  padding: 10px;
+  background-color: #f8f9fa;
+}
+
+.image-info strong {
+  color: #495057;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.image-info small {
+  color: #6c757d;
+  font-size: 0.85em;
+}
+
+.no-images {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 40px;
+  background-color: #f8f9fa;
+  border: 2px dashed #dee2e6;
+  border-radius: 8px;
+  color: #6c757d;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .images-gallery {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Estilos para la sección de incidentes */
+.incidents-section {
+  margin-bottom: 30px;
+}
+
+.incident-item {
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: box-shadow 0.2s;
+}
+
+.incident-item:hover {
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.incident-item.emergency {
+  border-left: 4px solid #dc3545;
+  background-color: #fff5f5;
+}
+
+.incident-header {
+  padding: 15px;
+  border-bottom: 1px solid #dee2e6;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.incident-header h4 {
+  margin: 0;
+  color: #333;
+  font-size: 1.1em;
+}
+
+.incident-meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.incident-type {
+  background-color: #17a2b8;
+  color: white;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.85em;
+  font-weight: 500;
+}
+
+.incident-priority {
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.85em;
+  font-weight: 500;
+  color: white;
+}
+
+.priority-alta, .priority-high {
+  background-color: #dc3545;
+}
+
+.priority-media, .priority-medium {
+  background-color: #ffc107;
+  color: #212529;
+}
+
+.priority-baja, .priority-low, .priority-normal {
+  background-color: #28a745;
+}
+
+.emergency-badge {
+  background-color: #dc3545;
+  color: white;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.8em;
+  font-weight: bold;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.7; }
+  100% { opacity: 1; }
+}
+
+.incident-details {
+  padding: 15px;
+}
+
+.incident-description {
+  margin: 0 0 10px 0;
+  color: #555;
+  line-height: 1.4;
+}
+
+.incident-info {
+  color: #666;
+}
+
+.incident-info small {
+  display: block;
+  margin-bottom: 2px;
+}
+
+.incident-actions {
+  margin-top: 20px;
+  padding-top: 10px;
+  border-top: 1px solid #eee;
+  margin-bottom: 10px;
+}
+
+.incident-detail-btn {
+  font-size: 0.85em;
+  padding: 5px 10px;
+  transition: all 0.3s ease;
+}
+
+.incident-detail-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Estilos para acciones de items relacionados (ingresos) */
+.item-actions {
+  margin-top: 20px;
+  padding-top: 10px;
+  text-align: center;
+}
+
+/* Responsive para incidentes */
+@media (max-width: 768px) {
+  .incident-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .incident-meta {
+    align-self: flex-start;
+  }
+}
+
+/* Estilos para los botones de acciones del formulario */
+.form-actions {
+  margin-top: 30px;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.form-actions .btn {
+  min-width: 150px;
+}
+
+/* Estilos para el header con botón de diagnóstico */
+.header-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.header-actions h2 {
+  margin: 0;
+  flex: 1;
+}
+
+.btn-diagnostico {
+  background-color: #17a2b8;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.3s ease;
+}
+
+.btn-diagnostico:hover {
+  background-color: #138496;
+  color: white;
+  text-decoration: none;
+}
+
+.btn-diagnostico i {
+  font-size: 16px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .header-actions h2 {
+    text-align: center;
+    margin-bottom: 15px;
+  }
+
+  .btn-diagnostico {
+    width: 100%;
+    justify-content: center;
+  }
+}

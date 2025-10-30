@@ -1,0 +1,172 @@
+/* Estilos específicos para ingreso_create_select.html */
+
+.date-selector {
+  margin-bottom: 30px;
+  padding: 20px;
+  background-color: rgba(102, 88, 88, 0.05);
+  border-radius: 10px;
+}
+
+.date-form {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.date-form label {
+  font-weight: bold;
+  margin-bottom: 0;
+}
+
+.date-input {
+  width: auto;
+  flex: 1;
+  min-width: 150px;
+}
+
+.filter-btn {
+  padding: 8px 20px;
+  font-size: 14px;
+}
+
+.date-info {
+  margin-top: 10px;
+  margin-bottom: 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.schedules-container {
+  display: flex;
+  gap: 30px;
+  flex-wrap: wrap;
+}
+
+.schedules-list {
+  flex: 2;
+  min-width: 300px;
+}
+
+.schedule-title {
+  margin-top: 0;
+  color: #333;
+}
+
+.schedule-description {
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.schedule-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.schedule-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
+  background-color: #fafafa;
+}
+
+.schedule-header {
+  margin-bottom: 10px;
+}
+
+.schedule-header h5 {
+  margin: 0 0 8px 0;
+  color: #333;
+}
+
+.schedule-datetime {
+  background-color: #e3f2fd;
+  color: #1565c0;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  border-left: 3px solid #2196f3;
+}
+
+.schedule-datetime strong {
+  color: #0d47a1;
+}
+
+.schedule-observations {
+  margin: 10px 0;
+  color: #555;
+}
+
+.schedule-meta {
+  color: #777;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.create-btn {
+  padding: 8px 15px;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.create-section {
+  flex: 1;
+  min-width: 250px;
+  text-align: center;
+}
+
+.create-section h3 {
+  margin-top: 0;
+  color: #333;
+}
+
+.create-description {
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.no-schedules-alert {
+  background-color: #e3f2fd;
+  padding: 15px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  border-left: 4px solid #2196f3;
+  color: #1976d2;
+}
+
+.no-schedules-alert h4 {
+  margin-top: 0;
+}
+
+.available-dates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.date-link {
+  background-color: #e3f2fd;
+  color: #1976d2;
+  padding: 5px 10px;
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 14px;
+  border: 1px solid #bbdefb;
+}
+
+.back-btn {
+  margin-top: 30px;
+  text-align: center;
+}
+
+/* Estilos para navegación de fecha */
+.date-navigation {
+  margin-bottom: 20px;
+}
+
+.date-navigation .btn-secondary {
+  font-size: 14px;
+  padding: 6px 12px;
+}

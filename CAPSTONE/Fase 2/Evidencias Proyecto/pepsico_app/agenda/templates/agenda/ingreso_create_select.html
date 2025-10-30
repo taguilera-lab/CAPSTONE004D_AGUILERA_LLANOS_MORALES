@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Crear Ingreso{% endblock %}
+
+{% block static %}
+<link rel="stylesheet" href="{% static 'agenda/css/formulario.css' %}">
+<link rel="stylesheet" href="{% static 'agenda/css/ingreso_create_select.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="contenedor">
+  <div class="formulario">
+    <h2>Crear Nuevo Ingreso</h2>
+
+    <!-- Selector de fecha -->
+    <div class="date-selector">
+      <form method="get" class="date-form">
+        <label for="date">Seleccionar fecha:</label>
+        <input type="date" name="date" id="date" class="date-input" value="{{ selected_date|date:'Y-m-d' }}">
+        <button type="submit" class="btn-programar filter-btn">Filtrar</button>
+      </form>
+      <p class="date-info">Mostrando agendamientos para: <strong>{{ selected_date|date:"l, d F Y" }}</strong></p>
+    </div>
+
+    {% if pending_schedules %}
+    <div class="schedules-container">
+      <div class="schedules-list">
+        <div class="date-navigation">
+          <a href="{% url 'ingreso_create_select' %}" class="btn-secondary">← Cambiar Fecha</a>
+          <a href="{% url 'calendario' %}" class="btn-secondary">📅 Ver Calendario</a>
+        </div>
+        <h3 class="schedule-title">Agendamientos Pendientes - {{ selected_date|date:"l, d F" }}</h3>
+        <p class="schedule-description">Selecciona un agendamiento existente para crear el ingreso con captura de fotos:</p>
+
+        <div class="schedule-cards">
+          {% for schedule in pending_schedules %}
+          <div class="schedule-card">
+            <div class="schedule-header">
+              <h5>{{ schedule.patent }} - {% if schedule.expected_chofer %}{{ schedule.expected_chofer.name }}{% else %}Chofer por asignar{% endif %}</h5>
+              <div class="schedule-datetime">
+                <strong>Agendado para:</strong> {{ schedule.start_datetime|date:"l, d F Y - H:i" }}
+              </div>
+            </div>
+            {% if schedule.observations %}
+            <p class="schedule-observations">{{ schedule.observations }}</p>
+            {% endif %}
+            <small class="schedule-meta">
+              Sucursal: {{ schedule.patent.site.name }}
+              {% if schedule.assigned_user %} | Asignado: {{ schedule.assigned_user.name }}{% endif %}
+            </small>
+            <button type="button" class="btn-programar create-btn" 
+                    onclick="window.location.href='{% url 'ingreso_create_select' %}?date={{ selected_date|date:'Y-m-d' }}&schedule_id={{ schedule.id_schedule }}'">
+              Crear Ingreso con Fotos
+            </button>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+    </div>
+    {% else %}
+    <div class="alert-info">
+      <h4 style="margin-top: 0;">No hay agendamientos pendientes</h4>
+      <p>No se encontraron agendamientos sin ingreso asociado para la fecha <strong>{{ selected_date|date:"d/m/Y" }}</strong>.</p>
+      <p>Selecciona otra fecha para ver agendamientos disponibles.</p>
+
+      {% if available_dates %}
+      <p><strong>Fechas con agendamientos disponibles:</strong></p>
+      <div class="available-dates">
+        {% for available_date in available_dates %}
+        <a href="?date={{ available_date|date:'Y-m-d' }}" class="date-link">
+          {{ available_date|date:"d/m" }}
+        </a>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <div class="back-btn">
+      <a href="{% url 'ingresos_list' %}" class="btn-programar">Volver a Lista</a>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Login - PepsiCo Flota{% endblock %}
+
+{% block static %}
+<link rel="stylesheet" href="{% static 'css/formulario.css' %}">
+<link rel="stylesheet" href="{% static 'agenda/css/agendar_ingreso.css' %}">
+<link rel="stylesheet" href="{% static 'login/css/login.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="contenedor">
+  <div class="formulario">
+    <h2>Iniciar Sesión</h2>
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+    <form method="post" id="login-form">
+      {% csrf_token %}
+      <div class="campo">
+        <label for="{{ form.username.id_for_label }}">Usuario</label>
+        {{ form.username }}
+      </div>
+      <div class="campo">
+        <label for="{{ form.password.id_for_label }}">Contraseña</label>
+        {{ form.password }}
+      </div>
+      <div class="botones">
+        <button type="submit" class="btn-programar">Iniciar Sesión</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+
+{% comment %} * Username: jefe_de_flota | Password: 123 | Rol: Jefe de Flota
+* Username: mecanico | Password: 123 | Rol: Mecánico
+* Username: vendedor | Password: 123 | Rol: Vendedor
+* Username: guardia | Password: 123 | Rol: Guardia
+* Username: bodeguero | Password: 123 | Rol: Bodeguero
+* Username: supervisor | Password: 123 | Rol: Supervisor
+* Username: jefe_de_taller | Password: 123 | Rol: Jefe de taller
+* Username: recepcionista_de_vehículos | Password: 123 | Rol: Recepcionista de Vehículos {% endcomment %}

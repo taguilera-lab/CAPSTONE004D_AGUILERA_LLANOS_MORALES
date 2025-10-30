@@ -1,0 +1,215 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Lista de Ingresos{% endblock %}
+
+{% block static %}
+<link rel="stylesheet" href="{% static 'agenda/css/ingresos_list.css' %}">
+<script src="{% static 'agenda/js/ingresos_list.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h1 class="mb-4">Lista de Ingresos</h1>
+  
+  <!-- Mostrar mensajes -->
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+  
+  <div class="d-flex justify-content-end gap-2 mb-3">
+    <a href="{% url 'ingreso_create_select' %}" class="btn btn-outline-primary">Crear Nuevo Ingreso</a>
+    <a href="{% url 'orden_trabajo_list' %}" class="btn btn-outline-success">
+      <i class="fas fa-tools"></i> Gestionar Órdenes de Trabajo
+    </a>
+    <a href="{% url 'registrar_salida' %}" class="btn btn-outline-secondary">Registrar Salida</a>
+    <a href="{% url 'calendario' %}" class="btn btn-outline-info">Ver Calendario</a>
+  </div>
+
+  <!-- Filtros -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h5 class="mb-0">Filtros</h5>
+    </div>
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-2">
+          <label for="filter-patent" class="form-label">Patente</label>
+          <input type="text" class="form-control filter-input" id="filter-patent" data-column="1">
+        </div>
+        <div class="col-md-2">
+          <label for="filter-service" class="form-label">Servicio</label>
+          <input type="text" class="form-control filter-input" id="filter-service" data-column="2">
+        </div>
+        <div class="col-md-2">
+          <label for="filter-entry" class="form-label">Entrada</label>
+          <input type="date" class="form-control" id="filter-entry">
+        </div>
+        <div class="col-md-2">
+          <label for="filter-month-year" class="form-label">Mes/Año</label>
+          <input type="month" class="form-control" id="filter-month-year">
+        </div>
+        <div class="col-md-2">
+          <label for="filter-exit" class="form-label">Salida</label>
+          <input type="date" class="form-control" id="filter-exit">
+        </div>
+        <div class="col-md-2">
+          <label for="filter-chofer" class="form-label">Chofer</label>
+          <input type="text" class="form-control filter-input" id="filter-chofer" data-column="5">
+        </div>
+        <div class="col-md-2">
+          <label for="filter-sucursal" class="form-label">Sucursal</label>
+          <input type="text" class="form-control filter-input" id="filter-sucursal" data-column="6">
+        </div>
+        <div class="col-md-2">
+          <label for="filter-agendado" class="form-label">Agendado</label>
+          <select class="form-select filter-input" id="filter-agendado" data-column="7">
+            <option value="">Todos</option>
+            <option value="Agendado">Agendado</option>
+            <option value="Directo">Directo</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label for="filter-autorizacion" class="form-label">Autorización</label>
+          <select class="form-select filter-input" id="filter-autorizacion" data-column="8">
+            <option value="">Todos</option>
+            <option value="Sí">Sí</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label for="filter-entry-registered" class="form-label">Entrada Registrada Por</label>
+          <input type="text" class="form-control filter-input" id="filter-entry-registered" data-column="9">
+        </div>
+        <div class="col-md-2">
+          <label for="filter-exit-registered" class="form-label">Salida Registrada Por</label>
+          <input type="text" class="form-control filter-input" id="filter-exit-registered" data-column="10">
+        </div>
+        <div class="col-md-12">
+          <button type="button" class="btn btn-outline-secondary me-2" id="clear-filters">Limpiar Filtros</button>
+          <span class="text-muted" id="results-count"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="table-responsive">
+    <div class="ingresos-grid" id="ingresos-container">
+      {% for ingreso in ingresos %}
+      <div class="ingreso-card" data-ingreso-id="{{ ingreso.id_ingreso }}">
+        <div class="card-header">
+          <div class="card-title">
+            <h5 class="mb-1">Ingreso #{{ ingreso.id_ingreso }}</h5>
+            <span class="patent-badge">{{ ingreso.patent }}</span>
+          </div>
+          <div class="card-indicators">
+            <div class="ot-indicator">
+              {% if ingreso.work_order %}
+                <span class="ot-light ot-green"></span>
+                <span class="ot-text">Con OT</span>
+              {% else %}
+                <span class="ot-light ot-red"></span>
+                <span class="ot-text">Sin OT</span>
+              {% endif %}
+            </div>
+            <div class="card-status">
+              {% if ingreso.schedule %}
+                <span class="badge bg-info">Agendado</span>
+              {% else %}
+                <span class="badge bg-secondary">Directo</span>
+              {% endif %}
+              {% if ingreso.exit_datetime %}
+                <span class="badge bg-success">Completado</span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <div class="ingreso-info">
+            <div class="info-row">
+              <span class="info-label">Entrada:</span>
+              <span class="info-value">{{ ingreso.entry_datetime|date:"d/m/Y H:i" }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Salida:</span>
+              <span class="info-value">{{ ingreso.exit_datetime|date:"d/m/Y H:i"|default:"Pendiente" }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Chofer:</span>
+              <span class="info-value">{{ ingreso.chofer|default:"-" }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Sucursal:</span>
+              <span class="info-value">{{ ingreso.patent.site.name }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Autorización para salir:</span>
+              <span class="info-value">
+                {% if ingreso.authorization %}
+                  <span class="badge bg-success">Sí</span>
+                {% else %}
+                  <span class="badge bg-danger">No</span>
+                {% endif %}
+              </span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Ingreso Técnico:</span>
+              <span class="info-value">
+                {% if ingreso.es_ingreso_tecnico %}
+                  <span class="badge bg-success"><i class="fas fa-check-circle"></i> Completado</span>
+                {% else %}
+                  <span class="badge bg-secondary">Pendiente</span>
+                {% endif %}
+              </span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Registrado por:</span>
+              <span class="info-value">{{ ingreso.entry_registered_by|default:"-" }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-actions">
+          <a href="{% url 'ingreso_detail' ingreso.id_ingreso %}" class="btn btn-sm btn-info">
+            <i class="fas fa-eye"></i> Ver Detalle
+          </a>
+          {% if ingreso.schedule %}
+          <a href="{% url 'schedule_detail' ingreso.schedule.id_schedule %}" class="btn btn-sm btn-secondary">
+            <i class="fas fa-calendar"></i> Ver Agenda
+          </a>
+          {% endif %}
+          <a href="{% url 'incidents:guardia_report_incident' %}?patent={{ ingreso.patent }}&ingreso_id={{ ingreso.id_ingreso }}" class="btn btn-sm btn-warning">
+            <i class="fas fa-exclamation-triangle"></i> Registrar Incidente
+          </a>
+          {% if user.is_authenticated and user.flotauser and user.flotauser.role.name == 'Recepcionista de Vehículos' %}
+          {% if ingreso.es_ingreso_tecnico %}
+          <a href="{% url 'recepcionista_ingreso_tecnico' %}?ingreso_id={{ ingreso.id_ingreso }}" class="btn btn-sm btn-success" title="Ingreso técnico completado">
+            <i class="fas fa-check-circle"></i> Técnico OK
+          </a>
+          {% else %}
+          <a href="{% url 'recepcionista_ingreso_tecnico' %}?ingreso_id={{ ingreso.id_ingreso }}" class="btn btn-sm btn-info">
+            <i class="fas fa-camera"></i> Ingreso Técnico
+          </a>
+          {% endif %}
+          {% endif %}
+          {% if ingreso.work_order %}
+            <a href="{% url 'orden_trabajo_detail' ingreso.work_order.id_work_order %}" class="btn btn-sm btn-success">
+              <i class="fas fa-eye"></i> Ver OT
+            </a>
+          {% else %}
+            <a href="{% url 'orden_trabajo_create' ingreso.id_ingreso %}" class="btn btn-sm btn-primary">
+              <i class="fas fa-plus"></i> Crear OT
+            </a>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Escalar Mecánica In Situ{% endblock %}
+
+{% block static %}
+<link rel="stylesheet" href="{% static 'incidents/css/recepcionista_escalar_mecanica.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-12">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{% url 'incidents:incident_list' %}">Incidentes</a></li>
+          <li class="breadcrumb-item"><a href="{% url 'incidents:incident_detail' incident.id_incident %}">Incidente #{{ incident.id_incident }}</a></li>
+          <li class="breadcrumb-item active">Escalar Mecánica In Situ</li>
+        </ol>
+      </nav>
+
+      <div class="card">
+        <div class="card-header">
+          <h2 class="mb-0">
+            <i class="fas fa-wrench text-primary"></i> Escalar Mecánica In Situ
+          </h2>
+        </div>
+
+        <div class="card-body">
+          <!-- Mostrar mensajes -->
+          {% if messages %}
+            {% for message in messages %}
+              <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+
+          <div class="row">
+            <!-- Datos del Camión -->
+            <div class="col-md-6">
+              <div class="card border-primary">
+                <div class="card-header bg-primary text-white">
+                  <h5 class="mb-0">
+                    <i class="fas fa-truck"></i> Datos del Vehículo
+                  </h5>
+                </div>
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-sm-6">
+                      <p><strong>Patente:</strong> {{ vehicle.patent }}</p>
+                      <p><strong>Marca:</strong> {{ vehicle.brand|default:"-" }}</p>
+                      <p><strong>Modelo:</strong> {{ vehicle.model|default:"-" }}</p>
+                    </div>
+                    <div class="col-sm-6">
+                      <p><strong>Año:</strong> {{ vehicle.year|default:"-" }}</p>
+                      <p><strong>Sucursal:</strong> {{ vehicle.site.name }}</p>
+                      <p><strong>Estado:</strong>
+                        <span class="badge bg-{% if vehicle.status|lower == 'activo' %}success{% else %}secondary{% endif %}">
+                          {{ vehicle.get_status_display }}
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Datos del Incidente -->
+            <div class="col-md-6">
+              <div class="card border-warning">
+                <div class="card-header bg-warning">
+                  <h5 class="mb-0">
+                    <i class="fas fa-exclamation-triangle"></i> Datos del Incidente
+                  </h5>
+                </div>
+                <div class="card-body">
+                  <p><strong>ID:</strong> #{{ incident.id_incident }}</p>
+                  <p><strong>Tipo:</strong>
+                    <span class="badge bg-secondary">{{ incident.get_incident_type_display }}</span>
+                  </p>
+                  <p><strong>Prioridad:</strong>
+                    <span class="badge bg-{% if incident.priority|lower == 'urgente' %}danger{% elif incident.priority|lower == 'alta' %}warning{% else %}info{% endif %}">
+                      {{ incident.get_priority_display|default:"Normal" }}
+                    </span>
+                  </p>
+                  <p><strong>Reportado por:</strong> {{ incident.reported_by.name }}</p>
+                  <p><strong>Fecha:</strong> {{ incident.reported_at|date:"d/m/Y H:i" }}</p>
+                  <p><strong>Ubicación:</strong> {{ incident.location|default:"No especificada" }}</p>
+                  <p><strong>Descripción:</strong></p>
+                  <div class="alert alert-light">
+                    {{ incident.description|default:"Sin descripción" }}
+                  </div>
+                  {% if incident.is_emergency %}
+                    <div class="alert alert-danger">
+                      <i class="fas fa-exclamation-circle"></i> <strong>EMERGENCIA</strong>
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Formulario de Asignación -->
+          <div class="row mt-4">
+            <div class="col-12">
+              <div class="card border-success">
+                <div class="card-header bg-success text-white">
+                  <h5 class="mb-0">
+                    <i class="fas fa-user-cog"></i> Asignar Mecánico para Diagnóstico In Situ
+                  </h5>
+                </div>
+                <div class="card-body">
+                  <form method="post">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                      <label for="mechanic_id" class="form-label">
+                        <i class="fas fa-user"></i> Seleccionar Mecánico
+                      </label>
+                      <select class="form-select" id="mechanic_id" name="mechanic_id" required>
+                        <option value="">-- Seleccionar Mecánico --</option>
+                        {% for mechanic in mechanics %}
+                          <option value="{{ mechanic.id_user }}">{{ mechanic.name }}</option>
+                        {% endfor %}
+                      </select>
+                      <div class="form-text">
+                        El mecánico seleccionado realizará el diagnóstico directamente en el vehículo.
+                      </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                      <button type="submit" class="btn btn-success">
+                        <i class="fas fa-check"></i> Asignar Mecánico y Escalar
+                      </button>
+                      <a href="{% url 'incidents:incident_detail' incident.id_incident %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Cancelar
+                      </a>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

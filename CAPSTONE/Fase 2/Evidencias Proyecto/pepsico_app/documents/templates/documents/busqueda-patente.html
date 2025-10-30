@@ -1,0 +1,241 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block static %}
+  <script src="{% static "documents/main.js" %}" defer></script>
+  <script src="{% static 'documents/search_and_filter.js' %}" defer></script>
+  <link rel="stylesheet" href="{% static "documents/Css/datos.css" %}">
+{% endblock %}
+
+{% block content %}
+  <!-- Selector de tablas -->
+  <label for="tablaSelector"><strong>Selecciona una tabla:</strong></label>
+  <select id="tablaSelector" onchange="mostrarTabla()">
+    <option value="tabla-vehicles">Vehículos</option>
+    <option value="tabla-ingresos">Ingresos</option>
+    <option value="tabla-routes">Rutas</option>
+    <option value="tabla-maintenanceschedules">Programaciones de Mantenimiento</option>
+    <option value="tabla-flotausers">Usuarios de Flota</option>
+  </select>
+
+  <!-- Barra de búsqueda -->
+  <label for="searchBar"><strong>Buscar por patente:</strong></label>
+  <input type="text" id="searchBar" placeholder="Ingrese la patente" />
+
+  <p id="noResultsMessage" style="color: red; display: none;"></p>
+
+  <!-- Vehículos -->
+  <div id="tabla-vehicles" class="tabla-contenedor">
+    <h2>Vehículos</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Patente</th>
+          <th>Equipo</th>
+          <th>CECO</th>
+          <th>Marca</th>
+          <th>Modelo</th>
+          <th>Año</th>
+          <th>Edad</th>
+          <th>Vida Útil</th>
+          <th>Kilometraje</th>
+          <th>Site</th>
+          <th>Operativo</th>
+          <th>Respaldo</th>
+          <th>Fuera de Servicio</th>
+          <th>Tipo</th>
+          <th>Plan</th>
+          <th>Siniestro</th>
+          <th>Observaciones</th>
+          <th>Cumplimiento</th>
+          <th>TCT</th>
+          <th>Geotab</th>
+          <th>Subasta</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for vehicle in vehicles %}
+        <tr>
+          <td>{{ vehicle.patent }}</td>
+          <td>{{ vehicle.equipment.code }}</td>
+          <td>{{ vehicle.ceco.name }}</td>
+          <td>{{ vehicle.brand }}</td>
+          <td>{{ vehicle.model }}</td>
+          <td>{{ vehicle.year }}</td>
+          <td>{{ vehicle.age }}</td>
+          <td>{{ vehicle.useful_life }}</td>
+          <td>{{ vehicle.mileage|default:"Sin datos" }}</td>
+          <td>{{ vehicle.site.name }}</td>
+          <td>{{ vehicle.operational|yesno:"Sí,No" }}</td>
+          <td>{{ vehicle.backup|yesno:"Sí,No" }}</td>
+          <td>{{ vehicle.out_of_service|yesno:"Sí,No" }}</td>
+          <td>{{ vehicle.type.name }}</td>
+          <td>{{ vehicle.plan|yesno:"Sí,No" }}</td>
+          <td>{{ vehicle.sinister|yesno:"Sí,No" }}</td>
+          <td>{{ vehicle.observations }}</td>
+          <td>{{ vehicle.compliance }}</td>
+          <td>{{ vehicle.tct|default:"Sin datos" }}</td>
+          <td>{{ vehicle.geotab_confirm|yesno:"Sí,No" }}</td>
+          <td>{{ vehicle.auction|yesno:"Sí,No" }}</td>
+          <td>{{ vehicle.status.name|default:"Sin estado" }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="22">No hay datos disponibles</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Ingresos -->
+  <div id="tabla-ingresos" class="tabla-contenedor" style="display:none">
+    <h2>Ingresos</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Patente</th>
+          <th>Tipo de Servicio</th>
+          <th>Fecha de Entrada</th>
+          <th>Fecha de Salida</th>
+          <th>Chofer</th>
+          <th>Supervisor</th>
+          <th>Observaciones</th>
+          <th>Autorización</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ingreso in ingresos %}
+        <tr>
+          <td>{{ ingreso.id_ingreso }}</td>
+          <td>{{ ingreso.patent.patent }}</td>
+          <td>{{ ingreso.work_order.service_type.name|default:"Sin tipo" }}</td>
+          <td>{{ ingreso.entry_datetime }}</td>
+          <td>{{ ingreso.exit_datetime|default:"Sin datos" }}</td>
+          <td>{{ ingreso.chofer.name }}</td>
+          <td>{{ ingreso.work_order.supervisor.name|default:"Sin supervisor" }}</td>
+          <td>{{ ingreso.observations|default:"Sin observaciones" }}</td>
+          <td>{{ ingreso.authorization|yesno:"Sí,No" }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="9">No hay datos disponibles</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Rutas -->
+  <div id="tabla-routes" class="tabla-contenedor" style="display:none">
+    <h2>Rutas</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Código de Ruta</th>
+          <th>GTM</th>
+          <th>Conductor</th>
+          <th>Patente Camión</th>
+          <th>Comentario</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for route in routes %}
+        <tr>
+          <td>{{ route.id_route }}</td>
+          <td>{{ route.route_code }}</td>
+          <td>{{ route.gtm }}</td>
+          <td>{{ route.driver.name|default:"Sin conductor" }}</td>
+          <td>{{ route.truck.patent }}</td>
+          <td>{{ route.comment }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6">No hay datos disponibles</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Programaciones de Mantenimiento -->
+  <div id="tabla-maintenanceschedules" class="tabla-contenedor" style="display:none">
+    <h2>Programaciones de Mantenimiento</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Patente</th>
+          <th>Tipo de Servicio</th>
+          <th>Fecha de Inicio</th>
+          <th>Fecha de Fin</th>
+          <th>Regla de Recurrencia</th>
+          <th>Recordatorio (min)</th>
+          <th>Usuario Asignado</th>
+          <th>Supervisor</th>
+          <th>Estado</th>
+          <th>Observaciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for schedule in maintenance_schedules %}
+        <tr>
+          <td>{{ schedule.id_schedule }}</td>
+          <td>{{ schedule.patent.patent }}</td>
+          <td>{{ schedule.service_type.name }}</td>
+          <td>{{ schedule.start_datetime }}</td>
+          <td>{{ schedule.end_datetime }}</td>
+          <td>{{ schedule.recurrence_rule|default:"Sin recurrencia" }}</td>
+          <td>{{ schedule.reminder_minutes|default:"Sin recordatorio" }}</td>
+          <td>{{ schedule.assigned_user.name|default:"Sin asignado" }}</td>
+          <td>{{ schedule.supervisor.name|default:"Sin supervisor" }}</td>
+          <td>{{ schedule.status.name }}</td>
+          <td>{{ schedule.observations|default:"Sin observaciones" }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="11">No hay datos disponibles</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Usuarios de Flota -->
+  <div id="tabla-flotausers" class="tabla-contenedor" style="display:none">
+    <h2>Usuarios de Flota</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Rol</th>
+          <th>Patente</th>
+          <th>Estado</th>
+          <th>Observaciones</th>
+          <th>GPID</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for user in flota_users %}
+        <tr>
+          <td>{{ user.id_user }}</td>
+          <td>{{ user.name }}</td>
+          <td>{{ user.role.name }}</td>
+          <td>{{ user.patent.patent }}</td>
+          <td>{{ user.status.name }}</td>
+          <td>{{ user.observations }}</td>
+          <td>{{ user.gpid }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7">No hay datos disponibles</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

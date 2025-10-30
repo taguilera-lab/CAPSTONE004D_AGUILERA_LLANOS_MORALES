@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{% if is_edit %}Editar Registro{% else %}Formulario de Datos{% endif %}{% endblock %}
+
+{% block static %}
+  <script>
+    window.isEdit = {% if is_edit %}true{% else %}false{% endif %};
+    {% if is_edit %}
+    window.selectedForm = "{{ selected_form }}";
+    {% endif %}
+  </script>
+  <script src="{% static "documents/form.js" %}"></script>
+  <link rel="stylesheet" href="{% static "documents/Css/datos.css" %}">
+{% endblock %}
+
+{% block content %}
+  <h1>{% if is_edit %}Editar Registro{% else %}Formulario de Datos{% endif %}</h1>
+  {% if success %}
+    <p style="color: green;">Se ha {% if is_edit %}editado{% else %}creado{% endif %} un registro en {{ table_name }}.</p>
+  {% endif %}
+  {% if not is_edit %}
+  <label for="formSelector"><strong>Selecciona una tabla:</strong></label>
+  <select id="formSelector">
+    <option value="site">Sites</option>
+    <option value="sap_equipment">SAP Equipment</option>
+    <option value="ceco">CECO</option>
+    <option value="vehicle_type">Tipos de Vehículos</option>
+    <option value="vehicle_status">Estados de Vehículos</option>
+    <option value="vehicle">Vehículos</option>
+    <option value="role">Roles</option>
+    <option value="user_status">Estados de Usuarios</option>
+    <option value="flota_user">Usuarios de Flota</option>
+    <option value="route">Rutas</option>
+    <option value="service_type">Tipos de Servicio</option>
+    <option value="ingreso">Ingresos</option>
+    <option value="task">Tareas</option>
+    <option value="task_assignment">Asignaciones de Tareas</option>
+    <option value="pause">Pausas</option>
+    <option value="document">Documentos</option>
+    <option value="repuesto">Repuestos</option>
+    <option value="notification">Notificaciones</option>
+    <option value="report">Reportes</option>
+    <option value="maintenance_schedule">Programaciones de Mantenimiento</option>
+  </select>
+  {% endif %}
+
+  <div id="form-site" class="form-container">
+    <h2>Sites</h2>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="form_type" value="site">
+      {{ forms.site.as_p }}
+      <button type="submit">Enviar</button>
+    </form>
+  </div>
+
+  <div id="form-sap_equipment" class="form-container" style="display:none">
+    <h2>SAP Equipment</h2>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="form_type" value="sap_equipment">
+      {{ forms.sap_equipment.as_p }}
+      <button type="submit">Enviar</button>
+    </form>
+  </div>
+
+  <div id="form-ceco" class="form-container" style="display:none">
+    <h2>CECO</h2>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="form_type" value="ceco">
+      {{ forms.ceco.as_p }}
+      <button type="submit">Enviar</button>
+    </form>
+  </div>
+
+  <div id="form-vehicle_type" class="form-container" style="display:none">
+    <h2>Tipos de Vehículos</h2>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="form_type" value="vehicle_type">
+      {{ forms.vehicle_type.as_p }}
+      <button type="submit">Enviar</button>
+    </form>
+  </div>
+
+  <div id="form-vehicle_status" class="form-container" style="display:none">
+    <h2>Estados de Vehículos</h2>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="form_type" value="vehicle_status">
+      {{ forms.vehicle_status.as_p }}
+      <button type="submit">Enviar</button>
+    </form>
+  </div>
+
+  <div id="form-vehicle" class="form-container" style="display:none">
+    <h2>Vehículos</h2>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="form_type" value="vehicle">
+      {{ forms.vehicle.as_p }}
+      <button type="submit">Enviar</button>
+    </form>
+  </div>
+
+  <div id="form-role" class="form-container" style="display:none">
+    <h2>Roles</h2>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="form_type" value="role">
+      {{ forms.role.as_p }}
+      <button type="submit">Enviar</button>
+    </form>
+  </div>
+
+  <div id="form-user_status" class="form-container" style="display:none">
+    <h2>Estados de Usuarios</h2>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="form_type" value="user_status">
+      {{ forms.user_status.as_p }}
+      <button type="submit">Enviar</button>
+    </form>
+  </div>
+
+  <div id="form-flota_user" class="form-container" style="display:none">
+    <h2>Usuarios de Flota</h2>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="form_type" value="flota_user">
+      {{ forms.flota_user.as_p }}
+      <button type="submit">Enviar</button>
+    </form>
+  </div>
+
+  <div id="form-route" class="form-container" style="display:none">
+    <h2>Rutas</h2>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="form_type" value="route">
+      {{ forms.route.as_p }}
+      <button type="submit">Enviar</button>
+    </form>
+  </div>
+
+  <div id="form-service_type" class="form-container" style="display:none">
+    <h2>Tipos de Servicio</h2>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="form_type" value="service_type">
+      {{ forms.service_type.as_p }}
+      <button type="submit">Enviar</button>
+    </form>
+  </div>
+
+  <div id="form-ingreso" class="form-container" style="display:none">
+    <h2>Ingresos</h2>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="form_type" value="ingreso">
+      {{ forms.ingreso.as_p }}
+      <button type="submit">Enviar</button>
+    </form>
+  </div>
+
+  <div id="form-task" class="form-container" style="display:none">
+    <h2>Tareas</h2>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="form_type" value="task">
+      {{ forms.task.as_p }}
+      <button type="submit">Enviar</button>
+    </form>
+  </div>
+
+  <div id="form-task_assignment" class="form-container" style="display:none">
+    <h2>Asignaciones de Tareas</h2>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="form_type" value="task_assignment">
+      {{ forms.task_assignment.as_p }}
+      <button type="submit">Enviar</button>
+    </form>
+  </div>
+
+  <div id="form-pause" class="form-container" style="display:none">
+    <h2>Pausas</h2>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="form_type" value="pause">
+      {{ forms.pause.as_p }}
+      <button type="submit">Enviar</button>
+    </form>
+  </div>
+
+  <div id="form-document" class="form-container" style="display:none">
+    <h2>Documentos</h2>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="form_type" value="document">
+      {{ forms.document.as_p }}
+      <button type="submit">Enviar</button>
+    </form>
+  </div>
+
+  <div id="form-repuesto" class="form-container" style="display:none">
+    <h2>Repuestos</h2>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="form_type" value="repuesto">
+      {{ forms.repuesto.as_p }}
+      <button type="submit">Enviar</button>
+    </form>
+  </div>
+
+  <div id="form-notification" class="form-container" style="display:none">
+    <h2>Notificaciones</h2>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="form_type" value="notification">
+      {{ forms.notification.as_p }}
+      <button type="submit">Enviar</button>
+    </form>
+  </div>
+
+  <div id="form-report" class="form-container" style="display:none">
+    <h2>Reportes</h2>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="form_type" value="report">
+      {{ forms.report.as_p }}
+      <button type="submit">Enviar</button>
+    </form>
+  </div>
+
+  <div id="form-maintenance_schedule" class="form-container" style="display:none">
+    <h2>Programaciones de Mantenimiento</h2>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="form_type" value="maintenance_schedule">
+      {{ forms.maintenance_schedule.as_p }}
+      <button type="submit">Enviar</button>
+    </form>
+  </div>
+
+{% endblock %}
