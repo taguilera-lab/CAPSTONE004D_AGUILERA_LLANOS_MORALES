@@ -94,3 +94,115 @@
     padding: 0.2rem 0.4rem;
   }
 }
+
+/* Estilos para resolución pequeña (375px) - Vista semanal */
+@media (max-width: 375px) {
+  /* Reducir tamaño de fuente de los números de día en vista semanal */
+  .fc-daygrid-day-number {
+    font-size: 0.7rem !important;
+    font-weight: 600 !important;
+    padding: 0.125rem !important;
+  }
+  
+  /* Reducir tamaño de fuente de los headers de día de la semana */
+  .fc-col-header-cell {
+    font-size: 0.65rem !important;
+    padding: 0.25rem !important;
+  }
+  
+  /* Ajustar el tamaño del calendario para caber mejor */
+  #calendar {
+    max-width: 100%;
+    padding: 0 0.0625rem;
+    margin: 0.3125rem auto;
+  }
+  
+  /* Reducir padding de las celdas del calendario */
+  .fc-daygrid-day {
+    padding: 0.125rem !important;
+  }
+  
+  /* Ajustar el tamaño del contenido de las celdas */
+  .fc-daygrid-day-top {
+    padding: 0.0625rem !important;
+  }
+  
+  /* Hacer que los eventos sean más pequeños */
+  .fc-event {
+    font-size: 0.6rem !important;
+    padding: 0.0625rem 0.125rem !important;
+  }
+  
+  /* Ajustar el título del evento si es muy largo */
+  .fc-event-title {
+    font-size: 0.6rem !important;
+    line-height: 1.1 !important;
+  }
+  
+  /* Mejorar la legibilidad del texto en celdas pequeñas */
+  .fc-daygrid-day-number {
+    font-weight: 700 !important;
+    color: #333 !important;
+  }
+  
+  /* Asegurar que los números de día sean claramente visibles */
+  .fc-daygrid-day-number::after {
+    content: none !important;
+  }
+}
+
+/* Estilos para resolución muy pequeña (350px) - Vista semanal */
+@media (max-width: 350px) {
+  /* Reducir tamaño de fuente de los números de día en vista semanal */
+  .fc-daygrid-day-number {
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    padding: 0.125rem !important;
+  }
+  
+  /* Reducir tamaño de fuente de los headers de día de la semana */
+  .fc-col-header-cell {
+    font-size: 0.7rem !important;
+    padding: 0.25rem !important;
+  }
+  
+  /* Ajustar el tamaño del calendario para caber mejor */
+  #calendar {
+    max-width: 100%;
+    padding: 0 0.0625rem;
+    margin: 0.3125rem auto;
+  }
+  
+  /* Reducir padding de las celdas del calendario */
+  .fc-daygrid-day {
+    padding: 0.125rem !important;
+  }
+  
+  /* Ajustar el tamaño del contenido de las celdas */
+  .fc-daygrid-day-top {
+    padding: 0.0625rem !important;
+  }
+  
+  /* Hacer que los eventos sean más pequeños */
+  .fc-event {
+    font-size: 0.65rem !important;
+    padding: 0.0625rem 0.125rem !important;
+  }
+  
+  /* Ajustar el título del evento si es muy largo */
+  .fc-event-title {
+    font-size: 0.65rem !important;
+    line-height: 1.1 !important;
+  }
+  
+  /* Mejorar la legibilidad del texto en celdas pequeñas */
+  .fc-daygrid-day-number {
+    font-weight: 700 !important;
+    color: #333 !important;
+  }
+  
+  /* Asegurar que los números de día sean claramente visibles */
+  .fc-daygrid-day-number::after {
+    content: none !important;
+  }
+}

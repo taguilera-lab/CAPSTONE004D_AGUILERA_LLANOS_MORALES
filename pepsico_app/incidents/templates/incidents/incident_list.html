@@ -191,13 +191,18 @@ function changeStatus(incidentId, newStatus) {
     {% endfor %}
   {% endif %}
   
-  {% if user.is_authenticated and user.flotauser and user.flotauser.role.name == 'Recepcionista de Vehículos' %}
+  {% if user.is_authenticated and user.flotauser and user.flotauser.role.name == 'Supervisor' %}
     <form id="multiple-diagnostic-form" method="post" action="{% url 'incidents:create_multiple_diagnostic' %}">
       {% csrf_token %}
       <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
           <button type="submit" id="create-multiple-diagnostic-btn" class="btn btn-success" disabled>
-            <i class="fas fa-plus"></i> Crear Diagnóstico Múltiple
+            <i class="fas fa-plus"></i> 
+            {% if user.flotauser.role.name == 'Supervisor' %}
+              Crear Diagnóstico Múltiple
+            {% else %}
+              Crear Diagnóstico Múltiple
+            {% endif %}
           </button>
           <small class="text-muted ms-2">Selecciona uno o más incidentes para crear un diagnóstico conjunto</small>
         </div>
@@ -215,7 +220,7 @@ function changeStatus(incidentId, newStatus) {
     <div id="incidents-container">
     {% for incident in incidents %}
     <div class="card incident-card">
-      {% if user.is_authenticated and user.flotauser and user.flotauser.role.name == 'Recepcionista de Vehículos' %}
+      {% if user.is_authenticated and user.flotauser and user.flotauser.role.name == 'Supervisor' %}
       <div class="card-header">
         <div class="d-flex justify-content-between align-items-center">
           <div class="form-check">
@@ -334,18 +339,11 @@ function changeStatus(incidentId, newStatus) {
             {% if user.is_authenticated %}
               {% if user.flotauser %}
                 {% if user.flotauser.role.name == 'Recepcionista de Vehículos' %}
-                  <a href="{% url 'incidents:recepcionista_escalar_mecanica' incident.id_incident %}" class="btn btn-info btn-sm">
-                    <i class="fas fa-wrench"></i> Escalar Mecánica In Situ
-                  </a>
+                  <!-- Botón escalar mecánica removido para recepcionistas -->
                 {% elif user.flotauser.role.name == 'Supervisor' %}
                   <a href="{% url 'incidents:supervisor_edit_incident' incident.id_incident %}" class="btn btn-outline-primary btn-sm">
                     <i class="fas fa-edit"></i> Editar
                   </a>
-                  {% if incident.status != 'Resuelta' and incident.status != 'Cerrada' %}
-                    <button class="btn btn-success btn-sm" onclick="changeStatus({{ incident.id_incident }}, 'Resuelta')">
-                      <i class="fas fa-check"></i> Resolver
-                    </button>
-                  {% endif %}
                 {% elif user.flotauser.role.name == 'Jefe de Flota' %}
                   {% if incident.status == 'Reportada' %}
                     <button class="btn btn-info btn-sm" onclick="changeStatus({{ incident.id_incident }}, 'En_revision')">
@@ -400,7 +398,7 @@ function changeStatus(incidentId, newStatus) {
     {% endfor %}
   </div>
 
-  {% if user.is_authenticated and user.flotauser and user.flotauser.role.name == 'Recepcionista de Vehículos' %}
+  {% if user.is_authenticated and user.flotauser and user.flotauser.role.name == 'Supervisor' %}
     </form>
   {% endif %}
 </div>

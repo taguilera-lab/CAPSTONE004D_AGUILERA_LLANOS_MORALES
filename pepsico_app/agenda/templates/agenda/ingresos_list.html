@@ -108,7 +108,7 @@
           </div>
           <div class="card-indicators">
             <div class="ot-indicator">
-              {% if ingreso.work_order %}
+              {% if ingreso.work_orders.exists %}
                 <span class="ot-light ot-green"></span>
                 <span class="ot-text">Con OT</span>
               {% else %}
@@ -197,13 +197,9 @@
           </a>
           {% endif %}
           {% endif %}
-          {% if ingreso.work_order %}
-            <a href="{% url 'orden_trabajo_detail' ingreso.work_order.id_work_order %}" class="btn btn-sm btn-success">
+          {% if ingreso.work_orders.exists %}
+            <a href="{% url 'orden_trabajo_detail' ingreso.work_orders.first.id_work_order %}" class="btn btn-sm btn-success">
               <i class="fas fa-eye"></i> Ver OT
-            </a>
-          {% else %}
-            <a href="{% url 'orden_trabajo_create' ingreso.id_ingreso %}" class="btn btn-sm btn-primary">
-              <i class="fas fa-plus"></i> Crear OT
             </a>
           {% endif %}
         </div>

@@ -17,6 +17,13 @@
   <a href="{% url 'agendar_ingreso' %}" class="btn btn-primary mb-3">Agendar Nuevo Ingreso</a>
   {% endif %}
   <a href="{% url 'ingresos_list' %}" class="btn btn-secondary mb-3">Ver Lista de Ingresos</a>
+  
+  <!-- Mensaje de ayuda -->
+  <div class="alert alert-info mb-3" role="alert">
+    <i class="icon-info"></i>
+    <strong>Para ver disponibilidad:</strong> hacer click en el día en el calendario
+  </div>
+  
   <div id='calendar'></div>
 </div>
 

@@ -84,8 +84,9 @@ document.addEventListener('DOMContentLoaded', function() {
     },
     dateClick: function(info) {
       console.log('Día clicado:', info.dateStr);
+      // Cambiar a vista de día y navegar a la fecha específica
       calendar.changeView('timeGridDay', info.dateStr);
-    }
+    },
   });
   calendar.render();
 });

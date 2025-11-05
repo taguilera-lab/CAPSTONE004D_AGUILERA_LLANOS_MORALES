@@ -293,8 +293,8 @@ class WorkOrderStatus(models.Model):
 
 class WorkOrder(models.Model):
     id_work_order = models.AutoField(primary_key=True)
-    ingreso = models.OneToOneField(
-        Ingreso, on_delete=models.CASCADE, db_column='ingreso_id', related_name='work_order')
+    ingreso = models.ForeignKey(
+        Ingreso, on_delete=models.CASCADE, db_column='ingreso_id', null=True, blank=True, related_name='work_orders')
     service_type = models.ForeignKey(
         ServiceType, on_delete=models.CASCADE, db_column='service_type_id', null=True, blank=True)
     status = models.ForeignKey(
@@ -310,7 +310,10 @@ class WorkOrder(models.Model):
         FlotaUser, on_delete=models.SET_NULL, db_column='supervisor_id', null=True, blank=True, related_name='supervised_work_orders')
 
     def __str__(self):
-        return f"OT-{self.id_work_order} - {self.ingreso.patent}"
+        if self.ingreso:
+            return f"OT-{self.id_work_order} - {self.ingreso.patent}"
+        else:
+            return f"OT-{self.id_work_order} - Sin ingreso"
 
     class Meta:
         db_table = 'WorkOrders'
@@ -686,6 +689,24 @@ class IngresoImage(models.Model):
 
     class Meta:
         db_table = 'IngresoImages'
+
+
+class WorkOrderImage(models.Model):
+    id_image = models.AutoField(primary_key=True)
+    work_order = models.ForeignKey(
+        WorkOrder, on_delete=models.CASCADE, db_column='work_order_id', related_name='images')
+    name = models.CharField(max_length=100)
+    description = models.CharField(max_length=200, null=True, blank=True, help_text='Descripción del tipo de foto (ej. "Trabajo realizado", "Estado final")')
+    image = models.ImageField(upload_to='work_order_images/')
+    uploaded_by = models.ForeignKey(
+        FlotaUser, on_delete=models.SET_NULL, db_column='uploaded_by_id', null=True, blank=True, related_name='uploaded_work_order_images')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"OT-{self.work_order.id_work_order} - {self.name}"
+
+    class Meta:
+        db_table = 'WorkOrderImages'
 
 
 @receiver(post_save, sender=Incident)

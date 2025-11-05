@@ -1,6 +1,8 @@
 // diagnostics_list.js
 
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('Diagnostics list JavaScript loaded');
+
     // Inicializar tooltips de Bootstrap si están disponibles
     if (typeof bootstrap !== 'undefined' && bootstrap.Tooltip) {
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
@@ -9,41 +11,57 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Función para filtrar diagnósticos en tiempo real (si se implementa búsqueda adicional)
-    function filterDiagnostics() {
-        const statusFilter = document.getElementById('status').value.toLowerCase();
-        const severityFilter = document.getElementById('severity').value.toLowerCase();
+    // Event listeners para filtros - enviar formulario automáticamente
+    const statusSelect = document.getElementById('status');
+    const severitySelect = document.getElementById('severity');
+    const patentInput = document.getElementById('patent');
 
-        const diagnosticCards = document.querySelectorAll('.diagnostic-card');
+    console.log('Filter elements found:', { statusSelect, severitySelect, patentInput });
 
-        diagnosticCards.forEach(card => {
-            const statusBadge = card.querySelector('.badge');
-            const severityBadge = card.querySelector('.badge.bg-danger, .badge.bg-warning, .badge.bg-info, .badge.bg-secondary');
-
-            let showCard = true;
-
-            if (statusFilter && !statusBadge.textContent.toLowerCase().includes(statusFilter)) {
-                showCard = false;
+    if (statusSelect) {
+        statusSelect.addEventListener('change', function() {
+            console.log('Status changed to:', this.value);
+            const form = document.querySelector('form[method="get"]');
+            if (form) {
+                console.log('Submitting form for status change');
+                form.submit();
             }
-
-            if (severityFilter && severityBadge && !severityBadge.textContent.toLowerCase().includes(severityFilter)) {
-                showCard = false;
-            }
-
-            card.style.display = showCard ? 'block' : 'none';
         });
     }
 
-    // Event listeners para filtros
-    const statusSelect = document.getElementById('status');
-    const severitySelect = document.getElementById('severity');
-
-    if (statusSelect) {
-        statusSelect.addEventListener('change', filterDiagnostics);
+    if (severitySelect) {
+        severitySelect.addEventListener('change', function() {
+            console.log('Severity changed to:', this.value);
+            const form = document.querySelector('form[method="get"]');
+            if (form) {
+                console.log('Submitting form for severity change');
+                form.submit();
+            }
+        });
     }
 
-    if (severitySelect) {
-        severitySelect.addEventListener('change', filterDiagnostics);
+    if (patentInput) {
+        console.log('Setting up patent input listeners');
+        // Para el input de patente, enviar solo cuando se presione Enter o se pierda el foco
+        patentInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                console.log('Enter pressed in patent input, value:', this.value);
+                const form = document.querySelector('form[method="get"]');
+                if (form) {
+                    form.submit();
+                }
+            }
+        });
+
+        patentInput.addEventListener('blur', function() {
+            console.log('Patent input lost focus, value:', this.value);
+            // Enviar cuando se pierde el foco (click fuera del input)
+            const form = document.querySelector('form[method="get"]');
+            if (form) {
+                form.submit();
+            }
+        });
     }
 
     // Función para manejar clics en tarjetas de diagnóstico

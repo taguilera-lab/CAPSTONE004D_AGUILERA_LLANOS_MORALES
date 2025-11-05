@@ -1,4 +1,4 @@
-// diagnostics_detail.js
+// diagnostics_detail.js v1.1 - Updated for WorkOrder generation
 
 document.addEventListener('DOMContentLoaded', function() {
     // Inicializar tooltips de Bootstrap si están disponibles
@@ -25,19 +25,77 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
+    // Función para obtener el token CSRF
+    function getCSRFToken() {
+        // Intentar obtener del input hidden
+        let token = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+        if (token) return token;
+
+        // Intentar obtener del meta tag
+        token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        if (token) return token;
+
+        // Intentar obtener de las cookies
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+            const [name, value] = cookie.trim().split('=');
+            if (name === 'csrftoken') {
+                return decodeURIComponent(value);
+            }
+        }
+
+        return '';
+    }
+
     // Función para generar orden de trabajo
     window.generateWorkOrder = function(diagnosticId) {
         if (confirm('¿Desea generar una orden de trabajo para este diagnóstico?')) {
             const button = event.target.closest('button');
+            const originalText = button.innerHTML;
             button.classList.add('loading');
             button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generando...';
 
-            // Simular una llamada AJAX
-            setTimeout(() => {
-                alert('Orden de trabajo generada exitosamente. Redirigiendo...');
-                // En una implementación real, redirigir a la página de la OT
-                window.location.reload();
-            }, 1000);
+            // Hacer llamada AJAX a la vista
+            const csrfToken = getCSRFToken();
+            console.log('CSRF Token:', csrfToken);
+            if (!csrfToken) {
+                alert('Error: No se pudo obtener el token CSRF. Por favor, recarga la página.');
+                button.classList.remove('loading');
+                button.disabled = false;
+                button.innerHTML = originalText;
+                return;
+            }
+            fetch(`/diagnostics/${diagnosticId}/generar-ot/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Csrftoken': csrfToken
+                },
+                credentials: 'same-origin'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    // Recargar la página después de 2 segundos para mostrar los cambios
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 2000);
+                } else {
+                    showToast(data.error || 'Error al generar la orden de trabajo', 'error');
+                    button.classList.remove('loading');
+                    button.disabled = false;
+                    button.innerHTML = originalText;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('Error de conexión al generar la orden de trabajo', 'error');
+                button.classList.remove('loading');
+                button.disabled = false;
+                button.innerHTML = originalText;
+            });
         }
     };
 
@@ -207,15 +265,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Ocultar acciones inapropiadas basadas en el estado
             const resolveButton = document.querySelector('button[onclick*="markAsResolved"]');
-            const workOrderButton = document.querySelector('button[onclick*="generateWorkOrder"]');
 
             if (status.includes('resuelta') && resolveButton) {
                 resolveButton.style.display = 'none';
             }
 
-            if (!status.includes('diagnóstico in situ') && workOrderButton) {
-                workOrderButton.style.display = 'none';
-            }
+            // Nota: El botón de generar orden de trabajo ahora se controla desde el template
+            // y permite generar OT independientemente del estado del diagnóstico
         }
     }
 

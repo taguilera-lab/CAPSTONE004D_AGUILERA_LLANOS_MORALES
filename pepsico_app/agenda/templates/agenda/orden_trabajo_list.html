@@ -41,8 +41,8 @@
     <div class="card-body">
       <div class="row g-3">
         <div class="col-md-2">
-          <label for="filter-patent" class="form-label">Patente</label>
-          <input type="text" class="form-control filter-input" id="filter-patent" data-column="1">
+          <label for="filter-patent" class="form-label">Patente/OT</label>
+          <input type="text" class="form-control filter-input" id="filter-patent" data-column="1" placeholder="Buscar por patente o OT">
         </div>
         <div class="col-md-2">
           <label for="filter-status" class="form-label">Estado</label>
@@ -55,16 +55,16 @@
           </select>
         </div>
         <div class="col-md-2">
-          <label for="filter-entry-date" class="form-label">Fecha de Entrada</label>
+          <label for="filter-entry-date" class="form-label">Fecha de Creación</label>
           <input type="date" class="form-control" id="filter-entry-date">
         </div>
         <div class="col-md-2">
-          <label for="filter-month-year" class="form-label">Mes y Año de Entrada</label>
+          <label for="filter-month-year" class="form-label">Mes y Año de Creación</label>
           <input type="month" class="form-control" id="filter-month-year">
         </div>
         <div class="col-md-2">
-          <label for="filter-chofer" class="form-label">Chofer</label>
-          <input type="text" class="form-control filter-input" id="filter-chofer" data-column="4">
+          <label for="filter-chofer" class="form-label">Chofer/Observaciones</label>
+          <input type="text" class="form-control filter-input" id="filter-chofer" data-column="4" placeholder="Buscar por chofer u observaciones">
         </div>
         <div class="col-md-12">
           <button type="button" class="btn btn-outline-secondary me-2" id="clear-filters">
@@ -80,11 +80,17 @@
   <div class="row" id="work-orders-container">
     {% for item in work_orders_data %}
     <div class="col-md-6 col-lg-4 mb-4">
-      <div class="card work-order-card {% if item.has_work_order %}has-work-order{% else %}no-work-order{% endif %}" data-id="{{ item.ingreso.id_ingreso }}">
+      <div class="card work-order-card has-work-order" data-id="{{ item.work_order.id_work_order }}">
         <div class="card-header">
           <div class="d-flex justify-content-between align-items-center">
             <h6 class="mb-0">
-              <i class="fas fa-car"></i> {{ item.ingreso.patent }}
+              {% if item.ingreso %}
+                <i class="fas fa-car"></i> {{ item.ingreso.patent }}
+              {% elif item.vehicle %}
+                <i class="fas fa-car"></i> {{ item.vehicle.patent }}
+              {% else %}
+                <i class="fas fa-tools"></i> OT-{{ item.work_order.id_work_order }}
+              {% endif %}
             </h6>
             <span class="badge" style="background-color: {{ item.status_color }};">
               {{ item.status_name }}
@@ -93,6 +99,7 @@
         </div>
         <div class="card-body">
           <div class="work-order-info">
+            {% if item.ingreso %}
             <p class="mb-1">
               <strong>ID Ingreso:</strong> {{ item.ingreso.id_ingreso }}
             </p>
@@ -105,7 +112,21 @@
             <p class="mb-1">
               <strong>Sucursal:</strong> {{ item.ingreso.patent.site.name }}
             </p>
-            {% if item.has_work_order %}
+            {% elif item.vehicle %}
+            <p class="mb-1">
+              <strong>Vehículo:</strong> {{ item.vehicle.patent }}
+            </p>
+            <p class="mb-1">
+              <strong>Marca/Modelo:</strong> {{ item.vehicle.brand }} {{ item.vehicle.model }}
+            </p>
+            <p class="mb-1">
+              <strong>Sucursal:</strong> {{ item.vehicle.site.name }}
+            </p>
+            {% else %}
+            <p class="mb-1">
+              <strong>Tipo:</strong> <span class="badge bg-secondary">Sin información de vehículo</span>
+            </p>
+            {% endif %}
             <p class="mb-1">
               <strong>OT:</strong> OT-{{ item.work_order.id_work_order }}
             </p>
@@ -117,25 +138,15 @@
               <strong>Estimada:</strong> {{ item.work_order.estimated_completion|date:"d/m/Y H:i" }}
             </p>
             {% endif %}
-            {% endif %}
           </div>
 
           <div class="card-actions mt-3">
-            {% if item.has_work_order %}
-              <a href="{% url 'orden_trabajo_detail' item.work_order.id_work_order %}" class="btn btn-primary btn-sm">
-                <i class="fas fa-eye"></i> Ver Orden
-              </a>
-              <a href="{% url 'orden_trabajo_update' item.work_order.id_work_order %}" class="btn btn-outline-primary btn-sm">
-                <i class="fas fa-edit"></i> Editar
-              </a>
-            {% else %}
-              <a href="{% url 'orden_trabajo_create' item.ingreso.id_ingreso %}" class="btn btn-success btn-sm">
-                <i class="fas fa-plus"></i> Crear Orden
-              </a>
-              <a href="{% url 'ingreso_detail' item.ingreso.id_ingreso %}" class="btn btn-outline-secondary btn-sm">
-                <i class="fas fa-info-circle"></i> Ver Ingreso
-              </a>
-            {% endif %}
+            <a href="{% url 'orden_trabajo_detail' item.work_order.id_work_order %}" class="btn btn-primary btn-sm">
+              <i class="fas fa-eye"></i> Ver Orden
+            </a>
+            <a href="{% url 'orden_trabajo_update' item.work_order.id_work_order %}" class="btn btn-outline-primary btn-sm">
+              <i class="fas fa-edit"></i> Editar
+            </a>
           </div>
         </div>
       </div>
@@ -143,7 +154,7 @@
     {% empty %}
     <div class="col-12">
       <div class="alert alert-info">
-        <i class="fas fa-info-circle"></i> No hay ingresos registrados para crear órdenes de trabajo.
+        <i class="fas fa-info-circle"></i> No hay órdenes de trabajo registradas.
       </div>
     </div>
     {% endfor %}

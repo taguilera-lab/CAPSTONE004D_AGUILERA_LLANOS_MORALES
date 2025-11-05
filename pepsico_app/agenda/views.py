@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 from documents.models import Ingreso, MaintenanceSchedule, Vehicle, Route, WorkOrder, WorkOrderStatus, WorkOrderMechanic, SparePartUsage, Repuesto, Task, Incident, IngresoImage
 from .forms import IngresoForm, AgendarIngresoForm, WorkOrderForm, WorkOrderMechanicForm, SparePartUsageForm
 from django.utils.safestring import mark_safe
@@ -54,7 +55,7 @@ def calendario(request):
 def ingresos_list(request):
     ingresos = Ingreso.objects.select_related(
         'patent', 'patent__site', 'entry_registered_by', 'exit_registered_by', 'schedule'
-    ).prefetch_related('work_order').all()
+    ).prefetch_related('work_orders').all()
     return render(request, 'agenda/ingresos_list.html', {'ingresos': ingresos})
 
 def ingreso_create_select(request):
@@ -285,22 +286,35 @@ def ingreso_create_from_schedule(request):
 
 def orden_trabajo_list(request):
     """Vista para listar todas las órdenes de trabajo"""
-    # Obtener todos los ingresos que pueden tener órdenes de trabajo
-    ingresos = Ingreso.objects.select_related('patent', 'chofer', 'patent__site').order_by('-entry_datetime')
+    # Obtener todas las órdenes de trabajo con sus ingresos relacionados (si existen)
+    work_orders = WorkOrder.objects.select_related(
+        'ingreso__patent', 'ingreso__chofer', 'ingreso__patent__site', 'status'
+    ).prefetch_related('diagnostics__incidents__vehicle').order_by('-created_datetime')
 
     # Obtener estados para el filtro
     work_order_statuses = WorkOrderStatus.objects.all()
 
-    # Crear una lista con información combinada de ingresos y órdenes de trabajo
+    # Crear una lista con información de todas las órdenes de trabajo
     work_orders_data = []
-    for ingreso in ingresos:
-        work_order = getattr(ingreso, 'work_order', None)
+    for work_order in work_orders:
+        # Si no hay ingreso, intentar obtener el vehículo del diagnóstico
+        vehicle = None
+        if not work_order.ingreso:
+            # Buscar el diagnóstico relacionado
+            diagnostic = work_order.diagnostics.first()
+            if diagnostic:
+                # Obtener el primer incidente del diagnóstico
+                incident = diagnostic.incidents.first()
+                if incident:
+                    vehicle = incident.vehicle
+
         work_orders_data.append({
-            'ingreso': ingreso,
+            'ingreso': work_order.ingreso,  # Puede ser None
             'work_order': work_order,
-            'has_work_order': work_order is not None,
-            'status_name': work_order.status.name if work_order else 'Sin Orden',
-            'status_color': work_order.status.color if work_order else '#6c757d',
+            'vehicle': vehicle,  # Vehículo del diagnóstico si no hay ingreso
+            'has_work_order': True,  # Siempre es True ya que estamos iterando sobre work_orders
+            'status_name': work_order.status.name if work_order.status else 'Sin Estado',
+            'status_color': work_order.status.color if work_order.status else '#6c757d',
         })
 
     return render(request, 'agenda/orden_trabajo_list.html', {
@@ -314,10 +328,10 @@ def orden_trabajo_create(request, ingreso_id):
     ingreso = get_object_or_404(Ingreso, id_ingreso=ingreso_id)
 
     # Verificar si ya existe una orden de trabajo para este ingreso
-    if hasattr(ingreso, 'work_order'):
+    if ingreso.work_orders.exists():
         from django.contrib import messages
         messages.warning(request, f'Ya existe una orden de trabajo para el ingreso {ingreso.id_ingreso}')
-        return redirect('orden_trabajo_detail', work_order_id=ingreso.work_order.id_work_order)
+        return redirect('orden_trabajo_detail', work_order_id=ingreso.work_orders.first().id_work_order)
 
     if request.method == 'POST':
         form = WorkOrderForm(request.POST)
@@ -375,6 +389,9 @@ def orden_trabajo_detail(request, work_order_id):
         related_work_order=work_order
     ).select_related('incident__vehicle', 'incident__reported_by', 'diagnostic_by').order_by('-diagnostic_started_at')
 
+    # Obtener imágenes de la orden de trabajo
+    work_order_images = work_order.images.all().order_by('-uploaded_at')
+
     # Formularios para agregar elementos
     mechanic_form = WorkOrderMechanicForm()
     spare_part_form = SparePartUsageForm()
@@ -389,6 +406,7 @@ def orden_trabajo_detail(request, work_order_id):
         'spare_part_usages': spare_part_usages,
         'tasks': tasks,
         'related_diagnostics': related_diagnostics,
+        'work_order_images': work_order_images,
         'mechanic_form': mechanic_form,
         'spare_part_form': spare_part_form,
         'total_mechanic_hours': total_mechanic_hours,
@@ -638,11 +656,11 @@ def search_vehicle_api(request):
         return JsonResponse({'found': False, 'error': 'Patente requerida'})
     
     try:
-        vehicle = Vehicle.objects.select_related('site').prefetch_related('route_set').get(patent=patent)
+        vehicle = Vehicle.objects.select_related('site').prefetch_related('routes').get(patent=patent)
         
         # Obtener la ruta principal (primera ruta asociada)
         route_code = None
-        routes = vehicle.route_set.all()
+        routes = vehicle.routes.all()
         if routes.exists():
             route_code = routes.first().route_code
         
@@ -660,6 +678,44 @@ def search_vehicle_api(request):
         return JsonResponse({'found': False, 'error': 'Vehículo no encontrado'})
     except Exception as e:
         return JsonResponse({'found': False, 'error': str(e)})
+
+
+def search_vehicles_autocomplete(request):
+    """
+    API para autocompletado de búsqueda de vehículos
+    """
+    query = request.GET.get('q', '').strip()
+
+    if not query or len(query) < 2:
+        return JsonResponse({'vehicles': []})
+
+    # Buscar vehículos que coincidan con la consulta
+    vehicles = Vehicle.objects.filter(
+        Q(patent__icontains=query) |
+        Q(brand__icontains=query) |
+        Q(model__icontains=query)
+    ).select_related('site')[:10]  # Limitar a 10 resultados
+
+    vehicles_data = []
+    for vehicle in vehicles:
+        # Obtener la ruta principal
+        route_code = None
+        routes = vehicle.routes.all()
+        if routes.exists():
+            route_code = routes.first().route_code
+
+        vehicles_data.append({
+            'id': vehicle.patent,
+            'patent': vehicle.patent,
+            'brand': vehicle.brand,
+            'model': vehicle.model,
+            'year': vehicle.year,
+            'site_name': vehicle.site.name if vehicle.site else None,
+            'route_code': route_code,
+            'display_text': f"{vehicle.patent} - {vehicle.brand} {vehicle.model} ({vehicle.year})"
+        })
+
+    return JsonResponse({'vehicles': vehicles_data})
 
 
 @login_required
@@ -726,7 +782,7 @@ def recepcionista_ingreso_tecnico(request):
 
     # GET request - mostrar detalles del ingreso y formulario de fotos
     # Obtener rutas del vehículo
-    routes = ingreso.patent.route_set.all()
+    routes = ingreso.patent.routes.all()
 
     context = {
         'ingreso': ingreso,
@@ -736,3 +792,80 @@ def recepcionista_ingreso_tecnico(request):
     }
 
     return render(request, 'agenda/ingreso_tecnico.html', context)
+
+
+@login_required
+def orden_trabajo_add_photo(request, work_order_id):
+    """Vista para agregar fotos a una orden de trabajo"""
+    work_order = get_object_or_404(WorkOrder, id_work_order=work_order_id)
+
+    # Verificar si la orden está completada
+    if work_order.status.name == 'Completada':
+        from django.contrib import messages
+        messages.error(request, 'No se pueden agregar fotos a una orden de trabajo completada')
+        return redirect('orden_trabajo_detail', work_order_id=work_order.id_work_order)
+
+    if request.method == 'POST':
+        # Procesar las fotos subidas (desde archivo)
+        images = request.FILES.getlist('images')
+        file_description = request.POST.get('file_description', '')
+
+        # Procesar las fotos capturadas desde la cámara
+        captured_images = request.FILES.getlist('captured_images')
+        captured_names = request.POST.getlist('captured_names')
+        captured_descriptions = request.POST.getlist('captured_descriptions')
+
+        # Combinar todas las fotos
+        all_images = list(images) + list(captured_images)
+        all_descriptions = []
+
+        # Para fotos desde archivo, usar la descripción general
+        for _ in images:
+            all_descriptions.append(file_description)
+
+        # Para fotos capturadas, usar las descripciones individuales
+        all_descriptions.extend(captured_descriptions)
+
+        if not all_images:
+            from django.contrib import messages
+            messages.error(request, 'Debe capturar al menos una foto con la cámara o seleccionar archivos.')
+            return redirect('orden_trabajo_detail', work_order_id=work_order.id_work_order)
+
+        # Importar el modelo WorkOrderImage
+        from documents.models import WorkOrderImage
+
+        for i, image_file in enumerate(all_images):
+            # Determinar el nombre de la foto
+            if i < len(images):
+                # Foto desde archivo - usar nombre original o generar uno
+                base_name = image_file.name.rsplit('.', 1)[0] if '.' in image_file.name else 'foto_archivo'
+                image_name = f"{base_name}_{i+1}"
+            else:
+                # Foto capturada - usar el nombre proporcionado o generar uno
+                captured_index = i - len(images)
+                image_name = captured_names[captured_index] if captured_index < len(captured_names) and captured_names[captured_index] else f"Foto {i+1}"
+
+            # Obtener la descripción correspondiente
+            description = all_descriptions[i] if i < len(all_descriptions) else ''
+
+            # Crear la instancia de WorkOrderImage
+            work_order_image = WorkOrderImage.objects.create(
+                work_order=work_order,
+                name=image_name,
+                description=description,
+                image=image_file,
+                uploaded_by=request.user.flotauser if hasattr(request.user, 'flotauser') else None
+            )
+
+        from django.contrib import messages
+        messages.success(request, f'Se agregaron {len(all_images)} foto(s) exitosamente a la orden de trabajo OT-{work_order.id_work_order}')
+        return redirect('orden_trabajo_detail', work_order_id=work_order.id_work_order)
+
+    # GET request - mostrar formulario para subir fotos
+    # Obtener mecánicos asignados
+    mechanic_assignments = work_order.mechanic_assignments.select_related('mechanic').filter(is_active=True)
+    
+    return render(request, 'agenda/orden_trabajo_add_photo.html', {
+        'work_order': work_order,
+        'mechanic_assignments': mechanic_assignments,
+    })

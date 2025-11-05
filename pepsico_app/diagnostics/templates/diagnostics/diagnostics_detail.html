@@ -5,7 +5,7 @@
 
 {% block static %}
 <link rel="stylesheet" href="{% static 'diagnostics/css/diagnostics_detail.css' %}">
-<script src="{% static 'diagnostics/js/diagnostics_detail.js' %}"></script>
+<script src="{% static 'diagnostics/js/diagnostics_detail.js' %}?v=1.1"></script>
 {% endblock %}
 
 {% block content %}
@@ -25,10 +25,16 @@
           {% endif %}
         </div>
         <div class="d-flex gap-2">
-          {% if user.flotauser.role.name in 'Supervisor,Jefe de Flota' or diagnostic.assigned_to == user.flotauser %}
-            <a href="{% url 'diagnostics:diagnostics_update' diagnostic.id %}" class="btn btn-primary">
-              <i class="fas fa-edit"></i> Editar
-            </a>
+          {% if user.flotauser %}
+            {% if user.flotauser.role.name == 'Supervisor' or user.flotauser.role.name == 'Jefe de Flota' %}
+              <a href="{% url 'diagnostics:diagnostics_update' diagnostic.id %}" class="btn btn-primary">
+                <i class="fas fa-edit"></i> Editar
+              </a>
+            {% elif diagnostic.assigned_to == user.flotauser %}
+              <a href="{% url 'diagnostics:diagnostics_update' diagnostic.id %}" class="btn btn-primary">
+                <i class="fas fa-edit"></i> Editar
+              </a>
+            {% endif %}
           {% endif %}
           <a href="{% url 'diagnostics:diagnostics_list' %}" class="btn btn-outline-secondary">
             <i class="fas fa-arrow-left"></i> Volver
@@ -66,6 +72,13 @@
                     </span>
                   </p>
                   <p class="mb-2">
+                    <strong>Estado de Completitud:</strong>
+                    <span class="badge bg-{% if diagnostic.completion_status == 'completed' %}success{% elif diagnostic.completion_status == 'pending_completion' %}warning{% else %}danger{% endif %} ms-2">
+                      <i class="fas fa-{% if diagnostic.completion_status == 'completed' %}check-circle{% elif diagnostic.completion_status == 'pending_completion' %}clock{% else %}user-cog{% endif %} me-1"></i>
+                      {{ diagnostic.completion_text }}
+                    </span>
+                  </p>
+                  <p class="mb-2">
                     <strong>Severidad:</strong>
                     <span class="badge bg-{% if diagnostic.severity == 'Critica' %}danger{% elif diagnostic.severity == 'Alta' %}warning{% elif diagnostic.severity == 'Media' %}info{% else %}secondary{% endif %} ms-2">
                       {{ diagnostic.get_severity_display|default:"No especificada" }}
@@ -95,6 +108,24 @@
                   <p class="mb-2">
                     <strong>Fecha de creación:</strong> {{ diagnostic.diagnostics_created_at|date:"d/m/Y H:i" }}
                   </p>
+                  <p class="mb-2">
+                    <strong>Ingreso asociado:</strong>
+                    {% if diagnostic.related_ingreso %}
+                      <a href="{% url 'ingreso_detail' diagnostic.related_ingreso.id_ingreso %}" class="text-decoration-none">
+                        <i class="fas fa-external-link-alt text-primary"></i> Ingreso #{{ diagnostic.related_ingreso.id_ingreso }}
+                      </a>
+                    {% else %}
+                      <span class="text-muted">No hay ingreso asociado</span>
+                    {% endif %}
+                  </p>
+                  {% if diagnostic.related_work_order %}
+                    <p class="mb-2">
+                      <strong>Orden de Trabajo:</strong>
+                      <a href="{% url 'orden_trabajo_detail' diagnostic.related_work_order.id_work_order %}" class="text-decoration-none">
+                        <i class="fas fa-external-link-alt text-success"></i> OT-{{ diagnostic.related_work_order.id_work_order }}
+                      </a>
+                    </p>
+                  {% endif %}
                   {% if diagnostic.diagnostics_updated_at and diagnostic.diagnostics_updated_at != diagnostic.diagnostics_created_at %}
                     <p class="mb-2">
                       <strong>Última actualización:</strong> {{ diagnostic.diagnostics_updated_at|date:"d/m/Y H:i" }}
@@ -202,7 +233,7 @@
                 </div>
               </div>
               <div class="mt-3">
-                <a href="{% url 'documents_incident_detail' diagnostic.incident.id %}" class="btn btn-outline-primary btn-sm">
+                <a href="{% url 'incidents:incident_detail' diagnostic.incident.id_incident %}" class="btn btn-outline-primary btn-sm">
                   <i class="fas fa-external-link-alt"></i> Ver Incidente Completo
                 </a>
               </div>
@@ -221,28 +252,28 @@
               </h5>
             </div>
             <div class="card-body">
-              {% if user.flotauser.role.name in 'Supervisor,Jefe de Flota' or diagnostic.assigned_to == user.flotauser %}
-                {% if diagnostic.status != 'Resuelta' %}
-                  <button class="btn btn-success btn-sm w-100 mb-2" onclick="markAsResolved({{ diagnostic.id }})">
-                    <i class="fas fa-check"></i> Marcar como Resuelta
-                  </button>
-                {% endif %}
+              {% if not diagnostic.related_work_order %}
+                <button class="btn btn-info btn-sm w-100 mb-2" onclick="generateWorkOrder({{ diagnostic.id }})">
+                  <i class="fas fa-tools"></i> Generar Orden de Trabajo
+                </button>
+              {% endif %}
 
-                {% if diagnostic.status == 'Diagnostico_In_Situ' %}
-                  <button class="btn btn-info btn-sm w-100 mb-2" onclick="generateWorkOrder({{ diagnostic.id }})">
-                    <i class="fas fa-tools"></i> Generar Orden de Trabajo
-                  </button>
-                {% endif %}
+              {% if diagnostic.related_ingreso %}
+                <a href="{% url 'ingreso_detail' diagnostic.related_ingreso.id_ingreso %}" class="btn btn-success btn-sm w-100 mb-2">
+                  <i class="fas fa-car"></i> Ver Ingreso Asociado
+                </a>
               {% endif %}
 
               <button class="btn btn-outline-primary btn-sm w-100 mb-2" onclick="printDiagnostic()">
                 <i class="fas fa-print"></i> Imprimir
               </button>
 
-              {% if user.flotauser.role.name in 'Supervisor,Jefe de Flota' %}
-                <button class="btn btn-outline-danger btn-sm w-100" onclick="deleteDiagnostic({{ diagnostic.id }})">
-                  <i class="fas fa-trash"></i> Eliminar
-                </button>
+              {% if user.flotauser %}
+                {% if user.flotauser.role.name == 'Supervisor' or user.flotauser.role.name == 'Jefe de Flota' %}
+                  <button class="btn btn-outline-danger btn-sm w-100" onclick="deleteDiagnostic({{ diagnostic.id }})">
+                    <i class="fas fa-trash"></i> Eliminar
+                  </button>
+                {% endif %}
               {% endif %}
             </div>
           </div>
@@ -300,6 +331,13 @@
                 <span class="stat-label">Estado actual:</span>
                 <span class="stat-value badge bg-{% if diagnostic.status == 'Resuelta' %}success{% elif diagnostic.status == 'Diagnostico_In_Situ' %}warning{% elif diagnostic.status == 'OT_Generada' %}info{% else %}secondary{% endif %}">{{ diagnostic.get_status_display }}</span>
               </div>
+              <div class="stat-item">
+                <span class="stat-label">Completitud:</span>
+                <span class="stat-value badge bg-{% if diagnostic.completion_status == 'completed' %}success{% elif diagnostic.completion_status == 'pending_completion' %}warning{% else %}danger{% endif %}">
+                  <i class="fas fa-{% if diagnostic.completion_status == 'completed' %}check-circle{% elif diagnostic.completion_status == 'pending_completion' %}clock{% else %}user-cog{% endif %} me-1"></i>
+                  {{ diagnostic.completion_text }}
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -326,4 +364,7 @@
     </div>
   </div>
 </div>
+
+<!-- Token CSRF para AJAX -->
+{% csrf_token %}
 {% endblock %}

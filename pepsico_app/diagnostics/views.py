@@ -4,7 +4,8 @@ from django.contrib import messages
 from django.db.models import Q, Prefetch
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import JsonResponse
-from documents.models import Diagnostics, Incident, Vehicle, FlotaUser, Route
+from django.views.decorators.http import require_POST
+from documents.models import Diagnostics, Incident, Vehicle, FlotaUser, Route, WorkOrder, WorkOrderStatus
 from .forms import DiagnosticsForm
 
 @login_required
@@ -23,8 +24,11 @@ def diagnostics_list(request):
             # Supervisores y jefes ven todos los diagnósticos
             diagnostics = Diagnostics.objects.all()
         elif user_role == 'Recepcionista de Vehículos':
-            # Recepcionistas ven diagnósticos que ellos crearon
-            diagnostics = Diagnostics.objects.filter(diagnostics_created_by=request.user.flotauser)
+            # Recepcionistas ven diagnósticos que ellos crearon Y diagnósticos trabajados por otros roles
+            diagnostics = Diagnostics.objects.filter(
+                Q(diagnostics_created_by=request.user.flotauser) |  # Diagnósticos que creó
+                Q(status__in=['Diagnostico_In_Situ', 'OT_Generada', 'Resuelta'])  # Diagnósticos trabajados por otros
+            )
         else:
             # Otros roles ven diagnósticos relacionados con sus incidentes, vehículo asignado, o creados por ellos
             diagnostics = Diagnostics.objects.filter(
@@ -85,6 +89,18 @@ def diagnostics_list(request):
         
         # Agregar el atributo unique_vehicles al diagnóstico
         diagnostic.unique_vehicles = unique_vehicles
+        
+        # Determinar el estado de completitud basado en actores
+        # Jefe de taller asignó mecánico Y mecánico completó el diagnóstico
+        if diagnostic.assigned_to and (diagnostic.diagnostic_completed_at or diagnostic.diagnostic_by):
+            diagnostic.completion_status = 'completed'
+            diagnostic.completion_text = 'Diagnóstico Completado - Continuar a OT'
+        elif diagnostic.assigned_to:
+            diagnostic.completion_status = 'pending_completion'
+            diagnostic.completion_text = 'Pendiente - Completar Diagnóstico'
+        else:
+            diagnostic.completion_status = 'pending_assignment'
+            diagnostic.completion_text = 'Pendiente - Asignar Mecánico'
 
     context = {
         'diagnostics': diagnostics,
@@ -95,48 +111,79 @@ def diagnostics_list(request):
     return render(request, 'diagnostics/diagnostics_list.html', context)
 
 @login_required
-def diagnostics_detail(request, diagnostic_id):
-    """Vista para ver el detalle de un diagnóstico"""
-    diagnostic = get_object_or_404(
-        Diagnostics.objects.select_related(
-            'incident', 'incident__vehicle', 'assigned_to', 'created_by'
-        ),
-        id=diagnostic_id
-    )
-
-    # Verificar permisos según el rol del usuario
-    if hasattr(request.user, 'flotauser'):
-        user_role = request.user.flotauser.role.name
-        can_view = (
-            user_role in ['Supervisor', 'Jefe de Flota'] or
-            diagnostic.assigned_to == request.user.flotauser or
-            (diagnostic.incident and diagnostic.incident.reported_by == request.user.flotauser) or
-            (diagnostic.incident and hasattr(request.user.flotauser, 'patent') and request.user.flotauser.patent == diagnostic.incident.vehicle)
-        )
-        if not can_view:
-            messages.error(request, 'No tienes permisos para ver este diagnóstico.')
-            return redirect('diagnostics:diagnostics_list')
-    else:
-        messages.error(request, 'Usuario no autorizado.')
-        return redirect('login')
-
-    context = {
-        'diagnostic': diagnostic,
-    }
-
-    return render(request, 'diagnostics/diagnostics_detail.html', context)
-
-@login_required
 def diagnostics_create(request, incident_id=None):
     """Vista para crear un nuevo diagnóstico"""
     incident = None
     if incident_id:
         incident = get_object_or_404(Incident, id_incident=incident_id)
 
+    # Verificar si viene desde un ingreso (diagnóstico en blanco)
+    from_ingreso_id = request.GET.get('from_ingreso')
+    auto_create = request.GET.get('auto_create') == 'true'
+    ingreso = None
+    if from_ingreso_id:
+        from documents.models import Ingreso
+        ingreso = get_object_or_404(Ingreso, id_ingreso=from_ingreso_id)
+
+    # Si es auto-creación desde ingreso, crear automáticamente
+    if auto_create and from_ingreso_id and ingreso and request.method == 'POST':
+        # Validar que el ingreso tenga ingreso técnico completado
+        if not ingreso.es_ingreso_tecnico:
+            messages.error(request, 'Primero realizar ingreso técnico antes de hacer diagnóstico')
+            return redirect('agenda:ingreso_detail', ingreso_id=ingreso.id_ingreso)
+        
+        # Obtener la ruta activa del vehículo del ingreso
+        route = None
+        if ingreso.patent and hasattr(ingreso.patent, 'active_route'):
+            route = ingreso.patent.active_route
+        
+        # Crear diagnóstico automáticamente con datos básicos
+        diagnostic = Diagnostics.objects.create(
+            severity=request.POST.get('severity', 'Sin especificar'),
+            category=request.POST.get('category', 'Mantenimiento'),
+            symptoms=request.POST.get('symptoms', 'Diagnóstico inicial del ingreso técnico'),
+            location=request.POST.get('location', f'Ingreso Técnico - Vehículo {ingreso.patent}'),
+            status='Reportada',
+            route=route,  # Asociar la ruta del vehículo del ingreso
+            diagnostics_created_by=request.user.flotauser if hasattr(request.user, 'flotauser') else None,
+            related_ingreso=ingreso
+        )
+        
+        messages.success(request, f'Diagnóstico creado exitosamente para el ingreso {ingreso.id_ingreso}.')
+        return redirect('diagnostics:diagnostics_list')
+
     if request.method == 'POST':
+        # Validar que si viene desde un ingreso, tenga ingreso técnico completado
+        if ingreso and not ingreso.es_ingreso_tecnico:
+            messages.error(request, 'Primero realizar ingreso técnico antes de hacer diagnóstico')
+            return redirect('agenda:ingreso_detail', ingreso_id=ingreso.id_ingreso)
+        
         form = DiagnosticsForm(request.POST, incident_id=incident_id, user=request.user)
         if form.is_valid():
             diagnostic = form.save(commit=False)
+
+            # Validar lógica de estado e incidentes
+            selected_status = form.cleaned_data.get('status')
+            selected_incidents = form.cleaned_data.get('incidents', [])
+            
+            # Para diagnósticos reportados: requieren incidentes asociados O estar relacionados con un ingreso
+            if selected_status == 'Reportada' and not selected_incidents and not ingreso:
+                form.add_error('incidents', 'Los diagnósticos reportados deben estar asociados a al menos un incidente o relacionados con un ingreso técnico.')
+            elif selected_status == 'Diagnostico_In_Situ' and selected_incidents:
+                form.add_error('incidents', 'Los diagnósticos in situ no deben estar asociados a incidentes.')
+            
+            # Si hay errores de validación, volver a renderizar el formulario
+            if form.errors:
+                # Si hay errores de validación, volver a renderizar el formulario
+                context = {
+                    'form': form,
+                    'incident': incident,
+                    'incidents': [incident] if incident else [],
+                    'ingreso': ingreso,
+                    'is_create': True,
+                    'from_ingreso': bool(from_ingreso_id),
+                }
+                return render(request, 'diagnostics/diagnostics_form.html', context)
 
             # Si no hay mecánico asignado, asignar al usuario actual si es mecánico
             if not diagnostic.assigned_to and hasattr(request.user, 'flotauser'):
@@ -146,6 +193,10 @@ def diagnostics_create(request, incident_id=None):
             # Establecer el creador del diagnóstico
             if hasattr(request.user, 'flotauser'):
                 diagnostic.diagnostics_created_by = request.user.flotauser
+
+            # Si viene desde un ingreso, relacionarlo
+            if ingreso:
+                diagnostic.related_ingreso = ingreso
 
             diagnostic.save()
             # El método save del formulario ya maneja la relación ManyToMany con incidents
@@ -157,9 +208,14 @@ def diagnostics_create(request, incident_id=None):
         # Crear formulario con incident_id para prepoblación
         initial_data = {}
         
-        # Si no hay incident_id, es un diagnóstico in situ
-        if not incident_id and hasattr(request.user, 'flotauser'):
-            initial_data['status'] = 'Diagnostico_In_Situ'
+        # No forzar estado inicial - permitir que el mecánico elija
+        # Si viene desde un ingreso, sugerir Reportada pero permitir cambio
+        if from_ingreso_id and ingreso:
+            initial_data['status'] = 'Reportada'
+            # Pre-poblar con información del ingreso
+            if hasattr(request.user, 'flotauser'):
+                initial_data['location'] = f'Ingreso Técnico - Vehículo {ingreso.patent}'
+        # Para otros casos, no establecer estado inicial por defecto
         
         form = DiagnosticsForm(incident_id=incident_id, user=request.user, initial=initial_data)
 
@@ -167,7 +223,9 @@ def diagnostics_create(request, incident_id=None):
         'form': form,
         'incident': incident,  # Mantener para compatibilidad con template
         'incidents': [incident] if incident else [],  # Lista de incidentes para el template
+        'ingreso': ingreso,  # Agregar el ingreso si existe
         'is_create': True,
+        'from_ingreso': bool(from_ingreso_id),  # Indicar si viene de ingreso
     }
 
     return render(request, 'diagnostics/diagnostics_form.html', context)
@@ -201,8 +259,11 @@ def diagnostics_detail(request, diagnostic_id):
             # Mecánicos solo pueden ver diagnósticos asignados a ellos
             can_view = diagnostic.assigned_to == request.user.flotauser
         elif user_role == 'Recepcionista de Vehículos':
-            # Recepcionistas pueden ver diagnósticos que crearon
-            can_view = diagnostic.diagnostics_created_by == request.user.flotauser
+            # Recepcionistas pueden ver diagnósticos que crearon O diagnósticos trabajados por otros
+            can_view = (
+                diagnostic.diagnostics_created_by == request.user.flotauser or  # Creó el diagnóstico
+                diagnostic.status in ['Diagnostico_In_Situ', 'OT_Generada', 'Resuelta']  # Puede ver diagnósticos trabajados
+            )
         else:
             # Otros roles pueden ver diagnósticos relacionados con sus incidentes
             can_view = (
@@ -219,6 +280,18 @@ def diagnostics_detail(request, diagnostic_id):
     if diagnostic.incident:
         incidents.append(diagnostic.incident)
     incidents.extend(list(diagnostic.incidents.all()))
+
+    # Determinar el estado de completitud basado en actores
+    # Jefe de taller asignó mecánico Y mecánico completó el diagnóstico
+    if diagnostic.assigned_to and (diagnostic.diagnostic_completed_at or diagnostic.diagnostic_by):
+        diagnostic.completion_status = 'completed'
+        diagnostic.completion_text = 'Diagnóstico Completado - Continuar a OT'
+    elif diagnostic.assigned_to:
+        diagnostic.completion_status = 'pending_completion'
+        diagnostic.completion_text = 'Pendiente - Completar Diagnóstico'
+    else:
+        diagnostic.completion_status = 'pending_assignment'
+        diagnostic.completion_text = 'Pendiente - Asignar Mecánico'
 
     context = {
         'diagnostic': diagnostic,
@@ -258,6 +331,41 @@ def diagnostics_update(request, diagnostic_id):
     if request.method == 'POST':
         form = DiagnosticsForm(request.POST, instance=diagnostic, user=request.user)
         if form.is_valid():
+            # Validar lógica de estado e incidentes antes de guardar
+            selected_status = form.cleaned_data.get('status')
+            selected_incidents = form.cleaned_data.get('incidents', [])
+            
+            # Para diagnósticos reportados: requieren incidentes asociados O estar relacionados con un ingreso
+            if selected_status == 'Reportada' and not selected_incidents and not diagnostic.related_ingreso:
+                form.add_error('incidents', 'Los diagnósticos reportados deben estar asociados a al menos un incidente o relacionados con un ingreso técnico.')
+            elif selected_status == 'Diagnostico_In_Situ' and selected_incidents:
+                form.add_error('incidents', 'Los diagnósticos in situ no deben estar asociados a incidentes.')
+            
+            # Si hay errores de validación, volver a renderizar el formulario
+            if form.errors:
+                # Obtener incidentes relacionados para el contexto
+                incidents = []
+                if diagnostic.incident:
+                    incidents.append(diagnostic.incident)
+                incidents.extend(list(diagnostic.incidents.all()))
+                
+                # Obtener vehículos únicos
+                unique_vehicles = []
+                seen_vehicles = set()
+                for incident in incidents:
+                    if incident.vehicle.patent not in seen_vehicles:
+                        unique_vehicles.append(incident.vehicle)
+                        seen_vehicles.add(incident.vehicle.patent)
+                
+                context = {
+                    'form': form,
+                    'diagnostic': diagnostic,
+                    'incidents': incidents,
+                    'unique_vehicles': unique_vehicles,
+                    'is_create': False,
+                }
+                return render(request, 'diagnostics/diagnostics_form.html', context)
+
             diagnostic = form.save(commit=False)
 
             # Lógica de asignación según el rol
@@ -266,9 +374,14 @@ def diagnostics_update(request, diagnostic_id):
                 if user_role == 'Jefe de taller' and not diagnostic.assigned_to:
                     # Jefe de taller puede asignar a un mecánico (viene del formulario)
                     pass  # El formulario ya maneja la asignación
-                elif user_role == 'Mecánico' and not diagnostic.assigned_to:
-                    # Si un mecánico edita un diagnóstico sin asignar, se lo asigna
-                    diagnostic.assigned_to = request.user.flotauser
+                elif user_role == 'Mecánico':
+                    # Si un mecánico edita un diagnóstico, se lo asigna si no está asignado
+                    if not diagnostic.assigned_to:
+                        diagnostic.assigned_to = request.user.flotauser
+                    # Marcar como quien realizó el diagnóstico si no está marcado
+                    if not diagnostic.diagnostic_by:
+                        diagnostic.diagnostic_by = request.user.flotauser
+                    # NO cambiar automáticamente el estado - permitir que el mecánico elija
 
             # Establecer el usuario que actualizó el diagnóstico
             if hasattr(request.user, 'flotauser'):
@@ -287,37 +400,26 @@ def diagnostics_update(request, diagnostic_id):
         # Determinar si es diagnóstico in situ (sin incidentes asociados)
         is_in_situ = len(incidents) == 0
         
-        # También considerar "in situ" cuando un jefe de taller edita un diagnóstico 
-        # creado por recepcionista que está en blanco (estado Reportada)
-        is_blank_card_from_recepcionista = (
-            hasattr(request.user, 'flotauser') and 
-            request.user.flotauser.role.name == 'Jefe de taller' and
-            diagnostic.diagnostics_created_by and
-            diagnostic.diagnostics_created_by.role.name == 'Recepcionista de Vehículos' and
-            diagnostic.status == 'Reportada' and
-            len(incidents) > 0  # Tiene incidentes asociados
-        )
-        
-        # Usar lógica in situ si cumple cualquiera de las condiciones
-        should_prepopulate_in_situ = is_in_situ or is_blank_card_from_recepcionista
-        
         # Preparar datos iniciales
         initial_data = {}
-        
-        # Pre-poblar estado para diagnósticos in situ o tarjetas en blanco de recepcionista
-        if should_prepopulate_in_situ and (not diagnostic.status or is_blank_card_from_recepcionista):
-            initial_data['status'] = 'Diagnostico_In_Situ'
-        
-        # Pre-poblar ruta desde el vehículo del primer incidente o del creador (para in situ)
+
+        # Para edición: mantener el estado actual, no forzar basado en incidentes
+        # Solo establecer estado por defecto si no tiene ninguno
+        if not diagnostic.status:
+            initial_data['status'] = 'Reportada'        # Pre-poblar ruta desde el vehículo del primer incidente o del creador (para in situ)
         if not diagnostic.route:
             vehicle = None
             
             if incidents:
                 # Si hay incidentes, usar el vehículo del primer incidente
                 vehicle = incidents[0].vehicle
-            elif should_prepopulate_in_situ and diagnostic.diagnostics_created_by:
-                # Si es in situ o tarjeta en blanco, usar el vehículo asignado al creador
-                vehicle = diagnostic.diagnostics_created_by.patent
+            elif is_in_situ:
+                # Si es in situ, primero intentar usar el vehículo del ingreso relacionado
+                if diagnostic.related_ingreso:
+                    vehicle = diagnostic.related_ingreso.patent
+                # Si no hay ingreso relacionado, usar el vehículo asignado al creador
+                elif diagnostic.diagnostics_created_by:
+                    vehicle = diagnostic.diagnostics_created_by.patent
             
             if vehicle:
                 # Usar la ruta activa del vehículo
@@ -334,6 +436,13 @@ def diagnostics_update(request, diagnostic_id):
         if incident.vehicle.patent not in seen_vehicles:
             unique_vehicles.append(incident.vehicle)
             seen_vehicles.add(incident.vehicle.patent)
+    
+    # Si no hay incidentes pero hay related_ingreso, incluir el vehículo del ingreso
+    if not incidents and diagnostic.related_ingreso:
+        vehicle = diagnostic.related_ingreso.patent
+        if vehicle.patent not in seen_vehicles:
+            unique_vehicles.append(vehicle)
+            seen_vehicles.add(vehicle.patent)
 
     context = {
         'form': form,
@@ -436,3 +545,59 @@ def diagnostics_create_multiple(request):
     }
 
     return render(request, 'diagnostics/diagnostics_form.html', context)
+
+
+@login_required
+@require_POST
+def generate_work_order_from_diagnostic(request, diagnostic_id):
+    """Vista para generar una orden de trabajo desde un diagnóstico"""
+    diagnostic = get_object_or_404(Diagnostics, id=diagnostic_id)
+
+    # Verificar que no exista ya una orden de trabajo para este diagnóstico
+    if diagnostic.related_work_order:
+        return JsonResponse({
+            'success': False,
+            'error': 'Ya existe una orden de trabajo para este diagnóstico.'
+        }, status=400)
+
+    try:
+        # Obtener o crear el estado por defecto
+        default_status = WorkOrderStatus.objects.filter(name='Pendiente').first()
+        if not default_status:
+            default_status = WorkOrderStatus.objects.create(
+                name='Pendiente',
+                description='Orden de trabajo creada, pendiente de asignación',
+                color='#ffc107'
+            )
+
+        # Crear la orden de trabajo
+        observations = f"Orden de trabajo generada desde diagnóstico #{diagnostic.id}"
+        if diagnostic.related_ingreso:
+            observations += f" (relacionado con ingreso #{diagnostic.related_ingreso.id_ingreso})"
+
+        work_order = WorkOrder.objects.create(
+            ingreso=diagnostic.related_ingreso if diagnostic.related_ingreso else None,
+            observations=observations,
+            status=default_status,
+            created_by=request.user.flotauser if hasattr(request.user, 'flotauser') else None,
+        )
+
+        # Actualizar el diagnóstico
+        diagnostic.related_work_order = work_order
+        diagnostic.status = 'OT_Generada'
+        diagnostic.save()
+
+        return JsonResponse({
+            'success': True,
+            'message': f'Orden de trabajo OT-{work_order.id_work_order} generada exitosamente.',
+            'work_order_id': work_order.id_work_order
+        })
+
+    except Exception as e:
+        import traceback
+        error_details = traceback.format_exc()
+        return JsonResponse({
+            'success': False,
+            'error': f'Error al generar la orden de trabajo: {str(e)}',
+            'details': error_details
+        }, status=500)

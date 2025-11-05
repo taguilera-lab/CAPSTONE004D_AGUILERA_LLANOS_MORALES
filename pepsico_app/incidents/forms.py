@@ -25,6 +25,18 @@ class IncidentForm(forms.ModelForm):
 
 
 class ChoferIncidentForm(IncidentForm):
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        if user and hasattr(user, 'flotauser') and user.flotauser.role.name == 'Vendedor':
+            # Vendedor puede editar prioridad con opciones limitadas
+            self.fields['priority'] = forms.ChoiceField(
+                choices=[('Normal', 'Normal'), ('Urgente', 'Urgente')],
+                widget=forms.Select(attrs={'class': 'custom-select'}),
+                label='Prioridad',
+                required=False
+            )
+
     class Meta(IncidentForm.Meta):
         fields = ['vehicle', 'name', 'incident_type', 'description', 'location',
                   'latitude', 'longitude', 'is_emergency', 'requires_tow']

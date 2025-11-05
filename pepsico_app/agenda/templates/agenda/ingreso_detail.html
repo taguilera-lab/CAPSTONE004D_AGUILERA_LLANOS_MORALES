@@ -6,16 +6,37 @@
 {% block static %}
 <link rel="stylesheet" href="{% static 'agenda/css/formulario.css' %}">
 <link rel="stylesheet" href="{% static 'agenda/css/ingreso_detail.css' %}">
+<script src="{% static 'agenda/js/ingreso_detail.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar el botón de diagnóstico con los datos del ingreso
+    initDiagnosticoButton({{ ingreso.id_ingreso }}, '{{ ingreso.patent }}');
+});
+</script>
 {% endblock %}
 
 {% block content %}
 <div class="contenedor">
   <div class="formulario">
+    <!-- Token CSRF para AJAX -->
+    {% csrf_token %}
+    
     <div class="header-actions">
       <h2>Detalle de Ingreso</h2>
-      <button class="btn-diagnostico">
-        <i class="fas fa-stethoscope"></i> Realizar Diagnóstico
-      </button>
+      {% if ingreso.es_ingreso_tecnico %}
+      <div class="action-buttons">
+        <button class="btn-diagnostico">
+          <i class="fas fa-stethoscope"></i> Realizar Diagnóstico
+        </button>
+      </div>
+      {% else %}
+      <div class="warning-message">
+        <div class="alert alert-warning" role="alert">
+          <i class="fas fa-exclamation-triangle"></i>
+          <strong>Atención:</strong> Primero realizar ingreso técnico antes de hacer diagnóstico
+        </div>
+      </div>
+      {% endif %}
     </div>
 
     <div class="detail-container">
@@ -41,7 +62,7 @@
         <strong>Sucursal de Origen:</strong> {{ ingreso.patent.site.name }}
       </div>
       <div class="detail-field">
-        <strong>Ruta:</strong> {% for route in ingreso.patent.route_set.all %}{{ route.route_code }}{% if not forloop.last %}, {% endif %}{% endfor %}
+        <strong>Ruta:</strong> {% for route in ingreso.patent.routes.all %}{{ route.route_code }}{% if not forloop.last %}, {% endif %}{% endfor %}
       </div>
       <div class="detail-field">
         <strong>Autorización para salir:</strong>

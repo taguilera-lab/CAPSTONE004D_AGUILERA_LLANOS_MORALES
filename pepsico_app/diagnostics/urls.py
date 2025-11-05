@@ -9,5 +9,6 @@ urlpatterns = [
     path('crear-multiple/', views.diagnostics_create_multiple, name='diagnostics_create_multiple'),
     path('<int:diagnostic_id>/', views.diagnostics_detail, name='diagnostics_detail'),
     path('<int:diagnostic_id>/editar/', views.diagnostics_update, name='diagnostics_update'),
+    path('<int:diagnostic_id>/generar-ot/', views.generate_work_order_from_diagnostic, name='generate_work_order_from_diagnostic'),
     path('api/incidents/<int:incident_id>/vehicle/', views.get_incident_vehicle_info, name='get_incident_vehicle_info'),
 ]

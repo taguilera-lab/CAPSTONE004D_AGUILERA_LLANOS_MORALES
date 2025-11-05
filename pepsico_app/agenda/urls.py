@@ -20,7 +20,9 @@ urlpatterns = [
     path('ordenes-trabajo/<int:work_order_id>/delete-mechanics/', views.orden_trabajo_delete_mechanics, name='orden_trabajo_delete_mechanics'),
     path('ordenes-trabajo/<int:work_order_id>/delete-spare_parts/', views.orden_trabajo_delete_spare_parts, name='orden_trabajo_delete_spare_parts'),
     path('ordenes-trabajo/<int:work_order_id>/completar/', views.orden_trabajo_complete, name='orden_trabajo_complete'),
+    path('ordenes-trabajo/<int:work_order_id>/agregar-fotos/', views.orden_trabajo_add_photo, name='orden_trabajo_add_photo'),
     path('schedule/<int:pk>/', views.schedule_detail, name='schedule_detail'),
     path('recepcionista/ingreso-tecnico/', views.recepcionista_ingreso_tecnico, name='recepcionista_ingreso_tecnico'),
     path('api/search-vehicle/', views.search_vehicle_api, name='search_vehicle_api'),
+    path('api/search-vehicles/', views.search_vehicles_autocomplete, name='search_vehicles_autocomplete'),
 ]
