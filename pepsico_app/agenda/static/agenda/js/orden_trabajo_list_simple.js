@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const estadoFilter = document.querySelector('select.filter-input')?.value?.toLowerCase() || '';
         const fechaFilter = document.getElementById('filter-entry-date')?.value || '';
         const mesAnioFilter = document.getElementById('filter-month-year')?.value || '';
+        const partsIssuedFilter = document.getElementById('filter-parts-issued')?.value || '';
 
         console.log('Filtros activos:', { fechaFilter, mesAnioFilter });
 
@@ -119,6 +120,29 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 } else {
                     show = false;
+                }
+            }
+
+            // Filtro de repuestos emitidos
+            if (partsIssuedFilter && show) {
+                const paragraphs = card.querySelectorAll('.card-body p');
+                let partsIssuedText = '';
+                for (let i = 0; i < paragraphs.length; i++) {
+                    const text = paragraphs[i].textContent.trim();
+                    if (text.includes('Repuestos Emitidos:')) {
+                        // Extraer el texto del badge
+                        const badge = paragraphs[i].querySelector('.badge');
+                        if (badge) {
+                            partsIssuedText = badge.textContent.trim().toLowerCase();
+                        }
+                        break;
+                    }
+                }
+                
+                if (partsIssuedFilter === 'true') {
+                    show = (partsIssuedText === 'sí');
+                } else if (partsIssuedFilter === 'false') {
+                    show = (partsIssuedText === 'no');
                 }
             }
 

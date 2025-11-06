@@ -1,0 +1,339 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Movimiento de Stock #{{ movement.pk }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">
+          <i class="fas fa-exchange-alt"></i> Movimiento de Stock #{{ movement.pk }}
+        </h1>
+        <div>
+          <button type="button" class="btn btn-secondary me-2" onclick="window.print()">
+            <i class="fas fa-print"></i> Imprimir
+          </button>
+          <a href="{% url 'repuestos:stock_movement_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Volver a Movimientos
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Información del Movimiento -->
+    <div class="col-lg-8">
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">
+            <i class="fas fa-info-circle"></i> Información del Movimiento
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <strong>ID del Movimiento:</strong>
+                <span class="ms-2">#{{ movement.pk }}</span>
+              </div>
+
+              <div class="mb-3">
+                <strong>Fecha y Hora:</strong>
+                <span class="ms-2">{{ movement.performed_at|date:"d/m/Y H:i:s" }}</span>
+              </div>
+
+              <div class="mb-3">
+                <strong>Tipo de Movimiento:</strong>
+                <span class="ms-2">
+                  {% if movement.movement_type == 'in' %}
+                  <span class="badge bg-success">
+                    <i class="fas fa-arrow-up"></i> Entrada
+                  </span>
+                  {% else %}
+                  <span class="badge bg-danger">
+                    <i class="fas fa-arrow-down"></i> Salida
+                  </span>
+                  {% endif %}
+                </span>
+              </div>
+
+              <div class="mb-3">
+                <strong>Cantidad:</strong>
+                <span class="ms-2 {% if movement.movement_type == 'in' %}text-success{% else %}text-danger{% endif %}">
+                  {% if movement.movement_type == 'in' %}+{% else %}-{% endif %}{{ movement.quantity }}
+                </span>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="mb-3">
+                <strong>Stock Anterior:</strong>
+                <span class="ms-2">{{ movement.previous_stock }}</span>
+              </div>
+
+              <div class="mb-3">
+                <strong>Stock Nuevo:</strong>
+                <span class="ms-2">{{ movement.new_stock }}</span>
+              </div>
+
+              <div class="mb-3">
+                <strong>Realizado por:</strong>
+                <span class="ms-2">{{ movement.performed_by.name|default:"Sistema" }}</span>
+              </div>
+
+              {% if movement.supplier %}
+              <div class="mb-3">
+                <strong>Proveedor:</strong>
+                <span class="ms-2">
+                  <a href="{% url 'repuestos:supplier_detail' movement.supplier.pk %}">
+                    {{ movement.supplier.name }}
+                  </a>
+                </span>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-12">
+              <div class="mb-3">
+                <strong>Motivo:</strong>
+                <div class="ms-2 mt-2">{{ movement.reason|linebreaks }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Información del Repuesto -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">
+            <i class="fas fa-cog"></i> Información del Repuesto
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <strong>Nombre:</strong>
+                <span class="ms-2">
+                  <a href="{% url 'repuestos:spare_part_detail' movement.repuesto.pk %}">
+                    {{ movement.repuesto.name }}
+                  </a>
+                </span>
+              </div>
+
+              {% if movement.repuesto.part_number %}
+              <div class="mb-3">
+                <strong>Número de Parte:</strong>
+                <span class="ms-2">{{ movement.repuesto.part_number }}</span>
+              </div>
+              {% endif %}
+
+              <div class="mb-3">
+                <strong>Categoría:</strong>
+                <span class="ms-2">
+                  {% if spare_part_stock and spare_part_stock.category %}
+                    {{ spare_part_stock.category.name }}
+                  {% else %}
+                    Sin categoría
+                  {% endif %}
+                </span>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="mb-3">
+                <strong>Stock Actual:</strong>
+                <span class="ms-2">
+                  {% if spare_part_stock %}
+                    {{ spare_part_stock.current_stock }}
+                  {% else %}
+                    No disponible
+                  {% endif %}
+                </span>
+              </div>
+
+              <div class="mb-3">
+                <strong>Stock Mínimo:</strong>
+                <span class="ms-2">
+                  {% if spare_part_stock %}
+                    {{ spare_part_stock.minimum_stock }}
+                  {% else %}
+                    No disponible
+                  {% endif %}
+                </span>
+              </div>
+
+              <div class="mb-3">
+                <strong>Unidad de Medida:</strong>
+                <span class="ms-2">
+                  {% if spare_part_stock %}
+                    {{ spare_part_stock.unit }}
+                  {% else %}
+                    No disponible
+                  {% endif %}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {% if spare_part_stock and spare_part_stock.description %}
+          <div class="row">
+            <div class="col-12">
+              <div class="mb-3">
+                <strong>Descripción:</strong>
+                <div class="ms-2 mt-2">{{ spare_part_stock.description|linebreaks }}</div>
+              </div>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel Lateral -->
+    <div class="col-lg-4">
+      {% if movement.work_order %}
+      <!-- Orden de Trabajo Relacionada -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">
+            <i class="fas fa-tools"></i> Orden de Trabajo
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <strong>ID:</strong>
+            <span class="ms-2">{{ movement.work_order.id }}</span>
+          </div>
+
+          <div class="mb-3">
+            <strong>Vehículo:</strong>
+            <span class="ms-2">{{ movement.work_order.vehicle.plate_number }}</span>
+          </div>
+
+          <div class="mb-3">
+            <strong>Estado:</strong>
+            <span class="ms-2">
+              {% if movement.work_order.status == 'pending' %}
+              <span class="badge bg-warning">Pendiente</span>
+              {% elif movement.work_order.status == 'in_progress' %}
+              <span class="badge bg-primary">En Progreso</span>
+              {% elif movement.work_order.status == 'completed' %}
+              <span class="badge bg-success">Completada</span>
+              {% else %}
+              <span class="badge bg-secondary">{{ movement.work_order.get_status_display }}</span>
+              {% endif %}
+            </span>
+          </div>
+
+          <a href="#" class="btn btn-outline-primary btn-sm">
+            <i class="fas fa-external-link-alt"></i> Ver Orden de Trabajo
+          </a>
+        </div>
+      </div>
+      {% endif %}
+
+      {% if movement.purchase_order %}
+      <!-- Orden de Compra Relacionada -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h5 class="mb-0">
+            <i class="fas fa-shopping-cart"></i> Orden de Compra
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <strong>Número:</strong>
+            <span class="ms-2">{{ movement.purchase_order.order_number }}</span>
+          </div>
+
+          <div class="mb-3">
+            <strong>Proveedor:</strong>
+            <span class="ms-2">{{ movement.purchase_order.supplier.name }}</span>
+          </div>
+
+          <div class="mb-3">
+            <strong>Estado:</strong>
+            <span class="ms-2">
+              {% if movement.purchase_order.status == 'DRAFT' %}
+              <span class="badge bg-secondary">Borrador</span>
+              {% elif movement.purchase_order.status == 'PENDING' %}
+              <span class="badge bg-warning">Pendiente</span>
+              {% elif movement.purchase_order.status == 'APPROVED' %}
+              <span class="badge bg-primary">Aprobada</span>
+              {% elif movement.purchase_order.status == 'ORDERED' %}
+              <span class="badge bg-info">Ordenada</span>
+              {% elif movement.purchase_order.status == 'RECEIVED' %}
+              <span class="badge bg-success">Recibida</span>
+              {% else %}
+              <span class="badge bg-secondary">{{ movement.purchase_order.get_status_display }}</span>
+              {% endif %}
+            </span>
+          </div>
+
+          <a href="{% url 'repuestos:purchase_order_detail' movement.purchase_order.pk %}" class="btn btn-outline-primary btn-sm">
+            <i class="fas fa-external-link-alt"></i> Ver Orden de Compra
+          </a>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Resumen del Movimiento -->
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">
+            <i class="fas fa-chart-line"></i> Resumen
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="row text-center">
+            <div class="col-4">
+              <div class="mb-2">
+                <i class="fas fa-boxes fa-2x text-secondary"></i>
+              </div>
+              <small class="text-muted">Stock Anterior</small>
+              <div class="h5 mb-0">{{ movement.previous_stock }}</div>
+            </div>
+
+            <div class="col-4">
+              <div class="mb-2">
+                {% if movement.movement_type == 'in' %}
+                <i class="fas fa-plus-circle fa-2x text-success"></i>
+                {% else %}
+                <i class="fas fa-minus-circle fa-2x text-danger"></i>
+                {% endif %}
+              </div>
+              <small class="text-muted">Movimiento</small>
+              <div class="h5 mb-0 {% if movement.movement_type == 'in' %}text-success{% else %}text-danger{% endif %}">
+                {% if movement.movement_type == 'in' %}+{% else %}-{% endif %}{{ movement.quantity }}
+              </div>
+            </div>
+
+            <div class="col-4">
+              <div class="mb-2">
+                <i class="fas fa-boxes fa-2x text-primary"></i>
+              </div>
+              <small class="text-muted">Stock Nuevo</small>
+              <div class="h5 mb-0">{{ movement.new_stock }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+@media print {
+  .btn, .card-header .btn {
+    display: none !important;
+  }
+}
+</style>
+{% endblock %}

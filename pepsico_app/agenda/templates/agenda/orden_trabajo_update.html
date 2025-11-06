@@ -49,6 +49,15 @@
       </div>
 
       <div class="campo">
+        <label for="{{ form.parts_issued.id_for_label }}">Repuestos Emitidos</label>
+        {{ form.parts_issued }}
+        {% if form.parts_issued.errors %}
+          <div class="text-danger">{{ form.parts_issued.errors }}</div>
+        {% endif %}
+        <small class="form-text text-muted">Marque esta casilla cuando se hayan registrado las salidas de repuestos para esta orden de trabajo.</small>
+      </div>
+
+      <div class="campo">
         <label for="{{ form.observations.id_for_label }}">Observaciones</label>
         {{ form.observations }}
         {% if form.observations.errors %}

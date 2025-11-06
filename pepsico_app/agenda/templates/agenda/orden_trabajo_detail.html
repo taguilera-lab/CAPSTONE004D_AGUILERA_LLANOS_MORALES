@@ -247,24 +247,26 @@
         <h2 class="mb-3 mb-md-0">
           <i class="fas fa-tools"></i> Orden de Trabajo OT-{{ work_order.id_work_order }}
         </h2>
-        <div class="d-flex align-items-center mt-2 mt-md-0">
-          <span class="badge fs-6 me-2" style="background-color: {{ work_order.status.color }};">
+        <div class="d-flex align-items-center mt-2 mt-md-0 flex-wrap gap-2">
+          <span class="badge fs-6 me-2 me-md-0" style="background-color: {{ work_order.status.color }};">
             {{ work_order.status.name }}
           </span>
-          <a href="{% url 'orden_trabajo_update' work_order.id_work_order %}" class="btn btn-outline-primary me-2">
-            <i class="fas fa-edit"></i> Editar
-          </a>
-          {% if work_order.status.name != 'Completada' %}
-          <a href="{% url 'orden_trabajo_add_photo' work_order.id_work_order %}" class="btn btn-outline-success me-2">
-            <i class="fas fa-camera"></i> Agregar Fotos
-          </a>
-          {% endif %}
-          <a href="{% url 'ingresos_list' %}" class="btn btn-outline-info me-2">
-            <i class="fas fa-list"></i> Volver a Ingresos
-          </a>
-          <a href="{% url 'orden_trabajo_list' %}" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left"></i> Volver a Órdenes de Trabajo
-          </a>
+          <div class="d-flex flex-column flex-md-row gap-1 gap-md-2 w-100 w-md-auto">
+            <a href="{% url 'orden_trabajo_update' work_order.id_work_order %}" class="btn btn-outline-primary btn-sm">
+              <i class="fas fa-edit"></i> Editar
+            </a>
+            {% if work_order.status.name != 'Completada' %}
+            <a href="{% url 'orden_trabajo_add_photo' work_order.id_work_order %}" class="btn btn-outline-success btn-sm">
+              <i class="fas fa-camera"></i> Agregar Fotos
+            </a>
+            {% endif %}
+            <a href="{% url 'ingresos_list' %}" class="btn btn-outline-info btn-sm">
+              <i class="fas fa-list"></i> Volver a Ingresos
+            </a>
+            <a href="{% url 'orden_trabajo_list' %}" class="btn btn-outline-secondary btn-sm">
+              <i class="fas fa-arrow-left"></i> Volver a Órdenes de Trabajo
+            </a>
+          </div>
         </div>
       </div>
     </div>
@@ -356,11 +358,137 @@
               <td><strong>Costo Total:</strong></td>
               <td>${{ work_order.total_cost|floatformat:2 }}</td>
             </tr>
+            <tr>
+              <td><strong>Repuestos Emitidos:</strong></td>
+              <td>
+                {% if work_order.parts_issued %}
+                  <span class="badge bg-success">
+                    <i class="fas fa-check"></i> Sí
+                  </span>
+                {% else %}
+                  <span class="badge bg-warning">
+                    <i class="fas fa-times"></i> No
+                  </span>
+                {% endif %}
+              </td>
+            </tr>
           </table>
           {% if work_order.observations %}
           <div class="mt-3">
             <strong>Observaciones:</strong>
             <p class="text-muted">{{ work_order.observations }}</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Supervisor Asignado -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">
+            <i class="fas fa-user-tie"></i> Jefe de Taller Asignado
+          </h5>
+          {% if work_order.status.name != 'Completada' %}
+          <a href="{% url 'orden_trabajo_assign_supervisor' work_order.id_work_order %}" class="btn btn-outline-primary btn-sm">
+            <i class="fas fa-user-plus"></i> {% if work_order.supervisor %}Cambiar{% else %}Asignar{% endif %} Jefe de Taller
+          </a>
+          {% endif %}
+        </div>
+        <div class="card-body">
+          {% if work_order.supervisor %}
+          <div class="row">
+            <div class="col-md-6">
+              <table class="table table-sm">
+                <tr>
+                  <td><strong>Nombre:</strong></td>
+                  <td>{{ work_order.supervisor.name }}</td>
+                </tr>
+                <tr>
+                  <td><strong>Rol:</strong></td>
+                  <td>{{ work_order.supervisor.role.name }}</td>
+                </tr>
+                <tr>
+                  <td><strong>Estado:</strong></td>
+                  <td>{{ work_order.supervisor.status.name }}</td>
+                </tr>
+              </table>
+            </div>
+            <div class="col-md-6">
+              <div class="alert alert-success">
+                <i class="fas fa-check-circle"></i> Jefe de taller asignado correctamente
+              </div>
+            </div>
+          </div>
+          {% else %}
+          <div class="text-center py-4">
+            <i class="fas fa-user-tie fa-3x text-muted mb-3"></i>
+            <p class="text-muted mb-3">No hay jefe de taller asignado a esta orden de trabajo</p>
+            {% if work_order.status.name != 'Completada' %}
+            <a href="{% url 'orden_trabajo_assign_supervisor' work_order.id_work_order %}" class="btn btn-outline-primary">
+              <i class="fas fa-user-plus"></i> Asignar Jefe de Taller
+            </a>
+            {% endif %}
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tipo de Servicio Asignado -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0">
+            <i class="fas fa-wrench"></i> Tipo de Servicio Asignado
+          </h5>
+          {% if work_order.status.name != 'Completada' %}
+          <a href="{% url 'orden_trabajo_assign_service_type' work_order.id_work_order %}" class="btn btn-outline-primary btn-sm">
+            <i class="fas fa-wrench"></i> {% if work_order.service_type %}Cambiar{% else %}Asignar{% endif %} Tipo de Servicio
+          </a>
+          {% endif %}
+        </div>
+        <div class="card-body">
+          {% if work_order.service_type %}
+          <div class="row">
+            <div class="col-md-6">
+              <table class="table table-sm">
+                <tr>
+                  <td><strong>Nombre:</strong></td>
+                  <td>{{ work_order.service_type.name }}</td>
+                </tr>
+                {% if work_order.service_type.description %}
+                <tr>
+                  <td><strong>Descripción:</strong></td>
+                  <td>{{ work_order.service_type.description }}</td>
+                </tr>
+                {% endif %}
+                <tr>
+                  <td><strong>Sucursal:</strong></td>
+                  <td>{{ work_order.service_type.site.name }}</td>
+                </tr>
+              </table>
+            </div>
+            <div class="col-md-6">
+              <div class="alert alert-success">
+                <i class="fas fa-check-circle"></i> Tipo de servicio asignado correctamente
+              </div>
+            </div>
+          </div>
+          {% else %}
+          <div class="text-center py-4">
+            <i class="fas fa-wrench fa-3x text-muted mb-3"></i>
+            <p class="text-muted mb-3">No hay tipo de servicio asignado a esta orden de trabajo</p>
+            {% if work_order.status.name != 'Completada' %}
+            <a href="{% url 'orden_trabajo_assign_service_type' work_order.id_work_order %}" class="btn btn-outline-primary">
+              <i class="fas fa-wrench"></i> Asignar Tipo de Servicio
+            </a>
+            {% endif %}
           </div>
           {% endif %}
         </div>
@@ -557,6 +685,11 @@
             <button type="button" class="btn btn-sm btn-outline-danger" onclick="showDeleteConfirm('mechanics-table')" id="delete-mechanics-btn" style="display: none;">
               <i class="fas fa-trash"></i> Eliminar Seleccionados
             </button>
+            {% if work_order.status.name != 'Completada' %}
+            <a href="{% url 'orden_trabajo_add_tasks_auto' work_order.id_work_order %}" class="btn btn-sm btn-outline-primary">
+              <i class="fas fa-tasks"></i> Agregar Tareas Auto
+            </a>
+            {% endif %}
             <a href="{% url 'orden_trabajo_add_mechanic' work_order.id_work_order %}" class="btn btn-sm btn-outline-success">
               <i class="fas fa-plus"></i> Agregar
             </a>
@@ -746,6 +879,7 @@
                   <th>Inicio</th>
                   <th>Fin</th>
                   <th>Supervisor</th>
+                  <th>Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -761,6 +895,13 @@
                   <td>{{ task.start_datetime|date:"d/m/Y H:i" }}</td>
                   <td>{% if task.end_datetime %}{{ task.end_datetime|date:"d/m/Y H:i" }}{% else %}-{% endif %}</td>
                   <td>{% if task.supervisor %}{{ task.supervisor.name }}{% else %}-{% endif %}</td>
+                  <td>
+                    {% if work_order.status.name != 'Completada' %}
+                    <a href="{% url 'orden_trabajo_edit_task' task.id_task %}" class="btn btn-sm btn-outline-primary" title="Editar tarea">
+                      <i class="fas fa-edit"></i> Editar
+                    </a>
+                    {% endif %}
+                  </td>
                 </tr>
                 {% endfor %}
               </tbody>

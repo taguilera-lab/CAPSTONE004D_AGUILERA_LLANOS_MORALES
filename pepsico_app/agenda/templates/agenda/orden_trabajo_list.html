@@ -66,6 +66,14 @@
           <label for="filter-chofer" class="form-label">Chofer/Observaciones</label>
           <input type="text" class="form-control filter-input" id="filter-chofer" data-column="4" placeholder="Buscar por chofer u observaciones">
         </div>
+        <div class="col-md-2">
+          <label for="filter-parts-issued" class="form-label">Repuestos Emitidos</label>
+          <select class="form-select filter-input" id="filter-parts-issued" data-column="5">
+            <option value="">Todos</option>
+            <option value="true">Sí</option>
+            <option value="false">No</option>
+          </select>
+        </div>
         <div class="col-md-12">
           <button type="button" class="btn btn-outline-secondary me-2" id="clear-filters">
             <i class="fas fa-eraser"></i> Limpiar Filtros
@@ -138,6 +146,14 @@
               <strong>Estimada:</strong> {{ item.work_order.estimated_completion|date:"d/m/Y H:i" }}
             </p>
             {% endif %}
+            <p class="mb-1">
+              <strong>Repuestos Emitidos:</strong>
+              {% if item.work_order.parts_issued %}
+                <span class="badge bg-success">Sí</span>
+              {% else %}
+                <span class="badge bg-warning">No</span>
+              {% endif %}
+            </p>
           </div>
 
           <div class="card-actions mt-3">

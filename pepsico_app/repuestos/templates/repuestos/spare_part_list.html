@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Lista de Repuestos{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>
+          <i class="fas fa-cogs"></i> Repuestos
+        </h1>
+        <div>
+          <a href="{% url 'repuestos:dashboard' %}" class="btn btn-secondary me-2">
+            <i class="fas fa-arrow-left"></i> Volver a Repuestos
+          </a>
+          <a href="{% url 'repuestos:spare_part_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Nuevo Repuesto
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Formulario de búsqueda -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">Filtros de Búsqueda</h5>
+        </div>
+        <div class="card-body">
+          <form method="get" class="row g-3">
+            <div class="col-md-4">
+              <label for="{{ search_form.search.id_for_label }}" class="form-label">Buscar</label>
+              {{ search_form.search }}
+            </div>
+            <div class="col-md-3">
+              <label for="{{ search_form.category.id_for_label }}" class="form-label">Categoría</label>
+              {{ search_form.category }}
+            </div>
+            <div class="col-md-3">
+              <label for="{{ search_form.supplier.id_for_label }}" class="form-label">Proveedor</label>
+              {{ search_form.supplier }}
+            </div>
+            <div class="col-md-2">
+              <label for="{{ search_form.stock_status.id_for_label }}" class="form-label">Estado Stock</label>
+              {{ search_form.stock_status }}
+            </div>
+            <div class="col-12">
+              <button type="submit" class="btn btn-outline-primary me-2">
+                <i class="fas fa-search"></i> Buscar
+              </button>
+              <a href="{% url 'repuestos:spare_part_list' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-times"></i> Limpiar
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lista de repuestos -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          {% if page_obj %}
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Repuesto</th>
+                  <th>Número de Parte</th>
+                  <th>Categoría</th>
+                  <th>Proveedor</th>
+                  <th>Stock Actual</th>
+                  <th>Costo Unit.</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for stock_info in page_obj %}
+                <tr>
+                  <td>
+                    <strong>{{ stock_info.repuesto.name }}</strong>
+                    {% if stock_info.description %}
+                    <br><small class="text-muted">{{ stock_info.description|truncatechars:50 }}</small>
+                    {% endif %}
+                  </td>
+                  <td>{{ stock_info.part_number|default:"-" }}</td>
+                  <td>{{ stock_info.category.name|default:"Sin categoría" }}</td>
+                  <td>{{ stock_info.supplier.name|default:"Sin proveedor" }}</td>
+                  <td>
+                    <span class="badge bg-{% if stock_info.is_low_stock %}danger{% elif stock_info.current_stock == 0 %}dark{% else %}success{% endif %}">
+                      {{ stock_info.current_stock }}
+                    </span>
+                    {% if stock_info.is_low_stock %}
+                    <small class="text-danger">(Mín: {{ stock_info.minimum_stock }})</small>
+                    {% endif %}
+                  </td>
+                  <td>${{ stock_info.unit_cost|floatformat:2 }}</td>
+                  <td>
+                    {% if stock_info.is_active %}
+                    <span class="badge bg-success">Activo</span>
+                    {% else %}
+                    <span class="badge bg-secondary">Inactivo</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <a href="{% url 'repuestos:spare_part_detail' stock_info.pk %}" class="btn btn-sm btn-outline-primary" title="Ver detalle">
+                      <i class="fas fa-eye"></i> Ver
+                    </a>
+                    <a href="{% url 'repuestos:spare_part_update' stock_info.pk %}" class="btn btn-sm btn-outline-warning" title="Editar">
+                      <i class="fas fa-edit"></i> Editar
+                    </a>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Paginación -->
+          {% if page_obj.has_other_pages %}
+          <nav aria-label="Paginación de repuestos" class="mt-4">
+            <ul class="pagination justify-content-center">
+              {% if page_obj.has_previous %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                  Anterior
+                </a>
+              </li>
+              {% endif %}
+
+              {% for num in page_obj.paginator.page_range %}
+              {% if page_obj.number == num %}
+              <li class="page-item active">
+                <span class="page-link">{{ num }}</span>
+              </li>
+              {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ num }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+              </li>
+              {% endif %}
+              {% endfor %}
+
+              {% if page_obj.has_next %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                  Siguiente
+                </a>
+              </li>
+              {% endif %}
+            </ul>
+          </nav>
+          {% endif %}
+
+          <!-- Botón de navegación -->
+          <div class="text-center mt-4">
+            <a href="{% url 'repuestos:dashboard' %}" class="btn btn-secondary btn-lg">
+              <i class="fas fa-arrow-left"></i> Volver a Repuestos
+            </a>
+          </div>
+
+          {% else %}
+          <div class="text-center py-5">
+            <i class="fas fa-cogs fa-3x text-muted mb-3"></i>
+            <h4>No se encontraron repuestos</h4>
+            <p class="text-muted">No hay repuestos que coincidan con los criterios de búsqueda.</p>
+            <a href="{% url 'repuestos:spare_part_create' %}" class="btn btn-primary">
+              <i class="fas fa-plus"></i> Crear Primer Repuesto
+            </a>
+          </div>
+
+          <!-- Botón de navegación cuando no hay repuestos -->
+          <div class="text-center mt-4">
+            <a href="{% url 'repuestos:dashboard' %}" class="btn btn-secondary">
+              <i class="fas fa-arrow-left"></i> Volver a Repuestos
+            </a>
+          </div>
+
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

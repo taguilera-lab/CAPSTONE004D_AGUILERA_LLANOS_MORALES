@@ -1,0 +1,318 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if form.instance.pk %}Editar Movimiento{% else %}Nuevo Movimiento{% endif %}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="mb-0">
+            <i class="fas fa-exchange-alt"></i>
+            {% if form.instance.pk %}Editar Movimiento de Stock{% else %}Nuevo Movimiento de Stock{% endif %}
+          </h4>
+        </div>
+        <div class="card-body">
+          <form method="post">
+            {% csrf_token %}
+
+            <!-- Tipo de Movimiento -->
+            <div class="mb-3">
+              <label for="{{ form.movement_type.id_for_label }}" class="form-label">
+                Tipo de Movimiento <span class="text-danger">*</span>
+              </label>
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="movement_type" id="id_movement_type_0" value="IN"
+                           {% if form.initial.movement_type == 'IN' or not form.initial.movement_type %}checked{% endif %}>
+                    <label class="form-check-label text-success" for="id_movement_type_0">
+                      <i class="fas fa-arrow-up"></i> Entrada de Stock
+                    </label>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="movement_type" id="id_movement_type_1" value="OUT"
+                           {% if form.initial.movement_type == 'OUT' %}checked{% endif %}>
+                    <label class="form-check-label text-danger" for="id_movement_type_1">
+                      <i class="fas fa-arrow-down"></i> Salida de Stock
+                    </label>
+                  </div>
+                </div>
+              </div>
+              {% if form.movement_type.errors %}
+              <div class="text-danger small mt-1">
+                {% for error in form.movement_type.errors %}{{ error }}{% endfor %}
+              </div>
+              {% endif %}
+            </div>
+
+            <!-- Repuesto -->
+            <div class="mb-3">
+              <label for="{{ form.repuesto.id_for_label }}" class="form-label">
+                Repuesto <span class="text-danger">*</span>
+              </label>
+              {{ form.repuesto }}
+              {% if form.repuesto.errors %}
+              <div class="text-danger small">
+                {% for error in form.repuesto.errors %}{{ error }}{% endfor %}
+              </div>
+              {% endif %}
+              <div class="form-text">
+                Seleccione el repuesto para el movimiento de stock.
+              </div>
+            </div>
+
+            <!-- Cantidad -->
+            <div class="mb-3">
+              <label for="{{ form.quantity.id_for_label }}" class="form-label">
+                Cantidad <span class="text-danger">*</span>
+              </label>
+              <div class="input-group">
+                {{ form.quantity }}
+                <span class="input-group-text">unidades</span>
+              </div>
+              {% if form.quantity.errors %}
+              <div class="text-danger small">
+                {% for error in form.quantity.errors %}{{ error }}{% endfor %}
+              </div>
+              {% endif %}
+            </div>
+
+            <!-- Orden de Compra (solo para entradas) -->
+            <div class="mb-3" id="purchaseOrderField" style="display: {% if form.initial.movement_type == 'IN' or not form.initial.movement_type %}block{% else %}none{% endif %};">
+              <label for="{{ form.purchase_order.id_for_label }}" class="form-label">
+                Orden de Compra
+              </label>
+              {{ form.purchase_order }}
+              {% if form.purchase_order.errors %}
+              <div class="text-danger small">
+                {% for error in form.purchase_order.errors %}{{ error }}{% endfor %}
+              </div>
+              {% endif %}
+              <div class="form-text">
+                Seleccione la orden de compra asociada a esta entrada de stock (opcional).
+              </div>
+            </div>
+
+            <!-- Motivo -->
+            <div class="mb-3">
+              <label for="{{ form.reason.id_for_label }}" class="form-label">
+                Motivo <span class="text-danger">*</span>
+              </label>
+              {{ form.reason }}
+              {% if form.reason.errors %}
+              <div class="text-danger small">
+                {% for error in form.reason.errors %}{{ error }}{% endfor %}
+              </div>
+              {% endif %}
+              <div class="form-text">
+                Explique el motivo del movimiento (compra, uso en mantenimiento, devolución, etc.)
+              </div>
+            </div>
+
+            <!-- Orden de Trabajo (opcional) -->
+            <div class="mb-3">
+              <label for="{{ form.work_order.id_for_label }}" class="form-label">
+                Orden de Trabajo
+              </label>
+              {{ form.work_order }}
+              {% if form.work_order.errors %}
+              <div class="text-danger small">
+                {% for error in form.work_order.errors %}{{ error }}{% endfor %}
+              </div>
+              {% endif %}
+              <div class="form-text">
+                Opcional: asocie este movimiento a una orden de trabajo específica.
+              </div>
+            </div>
+
+            <!-- Información del Stock Actual (solo lectura) -->
+            <div class="mb-3" id="currentStockInfo" style="display: none;">
+              <div class="alert alert-info">
+                <h6><i class="fas fa-info-circle"></i> Información del Stock Actual</h6>
+                <div class="row">
+                  <div class="col-md-4">
+                    <strong>Stock Actual:</strong> <span id="currentStock">-</span>
+                  </div>
+                  <div class="col-md-4">
+                    <strong>Stock Mínimo:</strong> <span id="minStock">-</span>
+                  </div>
+                  <div class="col-md-4">
+                    <strong>Stock Disponible:</strong> <span id="availableStock">-</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Preview del movimiento -->
+            <div class="mb-3" id="movementPreview" style="display: none;">
+              <div class="alert alert-warning">
+                <h6><i class="fas fa-eye"></i> Preview del Movimiento</h6>
+                <div class="row">
+                  <div class="col-md-6">
+                    <strong>Stock Después del Movimiento:</strong> <span id="newStock">-</span>
+                  </div>
+                  <div class="col-md-6">
+                    <strong>Estado:</strong> <span id="stockStatus">-</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Botones -->
+            <div class="d-flex justify-content-between">
+              <a href="{% url 'repuestos:stock_movement_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Cancelar
+              </a>
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i>
+                {% if form.instance.pk %}Actualizar{% else %}Crear{% endif %} Movimiento
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const sparePartSelect = document.getElementById('id_repuesto');
+  // Función para mostrar/ocultar campos según el tipo de movimiento
+  function toggleFieldsByMovementType() {
+    const movementType = document.querySelector('input[name="movement_type"]:checked');
+    console.log('toggleFieldsByMovementType called, checked input:', movementType);
+    
+    if (movementType) {
+      const movementValue = movementType.value;
+      console.log('Movement type value:', movementValue);
+      
+      const purchaseOrderField = document.getElementById('purchaseOrderField');
+      console.log('purchaseOrderField element:', purchaseOrderField);
+      
+      if (movementValue === 'IN') {
+        console.log('Showing purchase order field');
+        purchaseOrderField.style.display = 'block';
+      } else {
+        console.log('Hiding purchase order field');
+        purchaseOrderField.style.display = 'none';
+        // Limpiar el campo cuando no es entrada
+        document.getElementById('id_purchase_order').value = '';
+      }
+    } else {
+      console.log('No movement type selected');
+    }
+  }
+
+  console.log('Stock movement form JavaScript loaded');
+  
+  if (!sparePartSelect) {
+    console.error('sparePartSelect (id_repuesto) not found!');
+    return;
+  }
+  
+  if (!quantityInput) {
+    console.error('quantityInput (id_quantity) not found!');
+    return;
+  }
+  
+  console.log('All elements found, initializing...');
+
+  // Función para actualizar información del stock
+  function updateStockInfo() {
+    const sparePartId = sparePartSelect.value;
+    console.log('updateStockInfo called with sparePartId:', sparePartId);
+    
+    if (sparePartId && sparePartId !== '') {
+      console.log('Making AJAX call...');
+      // Hacer llamada AJAX para obtener la información del stock
+      fetch(`/repuestos/api/repuesto/${sparePartId}/stock/`, {
+        credentials: 'same-origin'
+      })
+        .then(response => {
+          console.log('Response received, status:', response.status);
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then(data => {
+          console.log('Data received:', data);
+          // Actualizar los valores en la interfaz
+          document.getElementById('currentStock').textContent = data.current_stock || '0';
+          document.getElementById('minStock').textContent = data.minimum_stock || '0';
+          document.getElementById('availableStock').textContent = data.current_stock || '0';
+          
+          document.getElementById('currentStockInfo').style.display = 'block';
+          console.log('Stock info updated successfully');
+          updateMovementPreview();
+        })
+        .catch(error => {
+          console.error('Error al obtener información del stock:', error);
+          // Mostrar valores por defecto en caso de error
+          document.getElementById('currentStock').textContent = 'Error';
+          document.getElementById('minStock').textContent = 'Error';
+          document.getElementById('availableStock').textContent = 'Error';
+          document.getElementById('currentStockInfo').style.display = 'block';
+        });
+    } else {
+      console.log('No sparePartId selected, hiding stock info');
+      // Ocultar información cuando no hay repuesto seleccionado
+      document.getElementById('currentStockInfo').style.display = 'none';
+      document.getElementById('movementPreview').style.display = 'none';
+    }
+  }
+
+  // Función para actualizar el preview del movimiento
+  function updateMovementPreview() {
+    const quantity = parseInt(quantityInput.value) || 0;
+    const currentStock = parseInt(document.getElementById('currentStock').textContent) || 0;
+    const movementType = document.querySelector('input[name="movement_type"]:checked').value;
+
+    if (quantity > 0) {
+      let newStock;
+      if (movementType === 'IN') {
+        newStock = currentStock + quantity;
+      } else {
+        newStock = currentStock - quantity;
+      }
+
+      document.getElementById('newStock').textContent = newStock;
+      document.getElementById('movementPreview').style.display = 'block';
+
+      // Actualizar estado
+      const statusElement = document.getElementById('stockStatus');
+      if (newStock <= 0) {
+        statusElement.innerHTML = '<span class="badge bg-danger">Sin Stock</span>';
+      } else if (newStock < 10) { // Ejemplo de stock mínimo
+        statusElement.innerHTML = '<span class="badge bg-warning">Stock Bajo</span>';
+      } else {
+        statusElement.innerHTML = '<span class="badge bg-success">Stock Normal</span>';
+      }
+    } else {
+      document.getElementById('movementPreview').style.display = 'none';
+    }
+  }
+
+  // Event listeners
+  sparePartSelect.addEventListener('change', updateStockInfo);
+  quantityInput.addEventListener('input', updateMovementPreview);
+  movementTypeInputs.forEach(input => {
+    input.addEventListener('change', function() {
+      updateMovementPreview();
+      toggleFieldsByMovementType();
+    });
+  });
+
+  // Inicializar
+  updateStockInfo();
+  toggleFieldsByMovementType();
+  console.log('Stock movement form initialization complete');
+});
+</script>
+{% endblock %}

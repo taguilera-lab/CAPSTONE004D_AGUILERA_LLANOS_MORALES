@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'diagnostics',
     'login',
     'agenda',
+    'repuestos',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

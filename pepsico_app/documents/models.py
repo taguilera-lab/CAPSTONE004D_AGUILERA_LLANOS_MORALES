@@ -304,6 +304,7 @@ class WorkOrder(models.Model):
     actual_completion = models.DateTimeField(null=True, blank=True)
     total_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     observations = models.TextField(null=True, blank=True)
+    parts_issued = models.BooleanField(default=False, help_text="Indica si se han registrado las salidas de repuestos para esta OT")
     created_by = models.ForeignKey(
         FlotaUser, on_delete=models.SET_NULL, db_column='created_by_id', null=True, blank=True, related_name='created_work_orders')
     supervisor = models.ForeignKey(

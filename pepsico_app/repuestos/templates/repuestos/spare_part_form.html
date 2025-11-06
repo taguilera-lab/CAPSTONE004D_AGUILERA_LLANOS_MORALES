@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="mb-0">
+            <i class="fas fa-cog"></i> {{ title }}
+          </h4>
+        </div>
+        <div class="card-body">
+          <form method="post">
+            {% csrf_token %}
+
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="{{ form.repuesto.id_for_label }}" class="form-label">Repuesto *</label>
+                  {{ form.repuesto }}
+                  {% if form.repuesto.errors %}
+                  <div class="text-danger small">{{ form.repuesto.errors.0 }}</div>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="{{ form.part_number.id_for_label }}" class="form-label">Número de Parte</label>
+                  {{ form.part_number }}
+                  {% if form.part_number.errors %}
+                  <div class="text-danger small">{{ form.part_number.errors.0 }}</div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="{{ form.category.id_for_label }}" class="form-label">Categoría</label>
+                  {{ form.category }}
+                  {% if form.category.errors %}
+                  <div class="text-danger small">{{ form.category.errors.0 }}</div>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="{{ form.supplier.id_for_label }}" class="form-label">Proveedor</label>
+                  {{ form.supplier }}
+                  {% if form.supplier.errors %}
+                  <div class="text-danger small">{{ form.supplier.errors.0 }}</div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="{{ form.description.id_for_label }}" class="form-label">Descripción</label>
+              {{ form.description }}
+              {% if form.description.errors %}
+              <div class="text-danger small">{{ form.description.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <div class="row">
+              <div class="col-md-4">
+                <div class="mb-3">
+                  <label for="{{ form.unit_cost.id_for_label }}" class="form-label">Costo Unitario *</label>
+                  {{ form.unit_cost }}
+                  {% if form.unit_cost.errors %}
+                  <div class="text-danger small">{{ form.unit_cost.errors.0 }}</div>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="col-md-4">
+                <div class="mb-3">
+                  <label for="{{ form.selling_price.id_for_label }}" class="form-label">Precio de Venta</label>
+                  {{ form.selling_price }}
+                  {% if form.selling_price.errors %}
+                  <div class="text-danger small">{{ form.selling_price.errors.0 }}</div>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="col-md-4">
+                <div class="mb-3">
+                  <label for="{{ form.current_stock.id_for_label }}" class="form-label">Stock Actual *</label>
+                  {{ form.current_stock }}
+                  {% if form.current_stock.errors %}
+                  <div class="text-danger small">{{ form.current_stock.errors.0 }}</div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-4">
+                <div class="mb-3">
+                  <label for="{{ form.minimum_stock.id_for_label }}" class="form-label">Stock Mínimo</label>
+                  {{ form.minimum_stock }}
+                  {% if form.minimum_stock.errors %}
+                  <div class="text-danger small">{{ form.minimum_stock.errors.0 }}</div>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="col-md-4">
+                <div class="mb-3">
+                  <label for="{{ form.maximum_stock.id_for_label }}" class="form-label">Stock Máximo</label>
+                  {{ form.maximum_stock }}
+                  {% if form.maximum_stock.errors %}
+                  <div class="text-danger small">{{ form.maximum_stock.errors.0 }}</div>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="col-md-4">
+                <div class="mb-3">
+                  <label for="{{ form.location.id_for_label }}" class="form-label">Ubicación</label>
+                  {{ form.location }}
+                  {% if form.location.errors %}
+                  <div class="text-danger small">{{ form.location.errors.0 }}</div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3 form-check">
+                  {{ form.is_active }}
+                  <label for="{{ form.is_active.id_for_label }}" class="form-check-label">
+                    Repuesto activo
+                  </label>
+                  {% if form.is_active.errors %}
+                  <div class="text-danger small">{{ form.is_active.errors.0 }}</div>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="mb-3 form-check">
+                  {{ form.requires_approval }}
+                  <label for="{{ form.requires_approval.id_for_label }}" class="form-check-label">
+                    Requiere aprobación
+                  </label>
+                  {% if form.requires_approval.errors %}
+                  <div class="text-danger small">{{ form.requires_approval.errors.0 }}</div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2">
+              <a href="{% url 'repuestos:spare_part_list' %}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Cancelar
+              </a>
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Guardar
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -869,3 +869,301 @@ def orden_trabajo_add_photo(request, work_order_id):
         'work_order': work_order,
         'mechanic_assignments': mechanic_assignments,
     })
+
+
+@login_required
+def orden_trabajo_add_tasks_auto(request, work_order_id):
+    """Vista para agregar tareas automáticamente a los mecánicos asignados"""
+    work_order = get_object_or_404(WorkOrder, id_work_order=work_order_id)
+
+    # Verificar si la orden está completada
+    if work_order.status.name == 'Completada':
+        from django.contrib import messages
+        messages.error(request, 'No puedes agregar tareas a una orden de trabajo completada')
+        return redirect('orden_trabajo_detail', work_order_id=work_order.id_work_order)
+
+    # Obtener mecánicos asignados
+    mechanic_assignments = work_order.mechanic_assignments.select_related('mechanic').filter(is_active=True)
+
+    if not mechanic_assignments:
+        from django.contrib import messages
+        messages.warning(request, 'No hay mecánicos asignados a esta orden de trabajo')
+        return redirect('orden_trabajo_detail', work_order_id=work_order.id_work_order)
+
+    if request.method == 'POST':
+        # Procesar las horas enviadas
+        import random
+        from datetime import timedelta
+
+        # Lista de descripciones posibles para tareas
+        task_descriptions = [
+            "Revisar sistema de frenos",
+            "Inspeccionar motor y componentes",
+            "Verificar sistema eléctrico",
+            "Chequear suspensión y dirección",
+            "Revisar transmisión",
+            "Inspeccionar sistema de escape",
+            "Verificar neumáticos y ruedas",
+            "Chequear sistema de refrigeración",
+            "Revisar batería y alternador",
+            "Inspeccionar sistema de combustible",
+            "Verificar luces y señales",
+            "Chequear aire acondicionado",
+            "Revisar frenos de mano",
+            "Inspeccionar amortiguadores",
+            "Verificar correas y mangueras"
+        ]
+
+        urgencies = ['Alta', 'Media', 'Baja']
+
+        # Obtener service_types disponibles
+        from documents.models import ServiceType
+        service_types = list(ServiceType.objects.all())
+
+        tasks_created = 0
+        for assignment in mechanic_assignments:
+            # Generar datos aleatorios
+            description = random.choice(task_descriptions)
+            urgency = random.choice(urgencies)
+            service_type = random.choice(service_types) if service_types else None
+
+            # Obtener horas del POST
+            hours_key = f'hours_{assignment.id_assignment}'
+            hours = request.POST.get(hours_key)
+            try:
+                hours = float(hours) if hours else 0
+            except ValueError:
+                hours = 0
+
+            # Crear la tarea
+            start_datetime = timezone.now()
+            end_datetime = start_datetime + timedelta(hours=hours) if hours > 0 else None
+
+            task = Task.objects.create(
+                work_order=work_order,
+                description=description,
+                urgency=urgency,
+                start_datetime=start_datetime,
+                end_datetime=end_datetime,
+                service_type=service_type,
+                supervisor=work_order.supervisor
+            )
+
+            # Asignar la tarea al mecánico
+            from documents.models import TaskAssignment
+            TaskAssignment.objects.create(
+                task=task,
+                user=assignment.mechanic
+            )
+
+            tasks_created += 1
+
+        from django.contrib import messages
+        messages.success(request, f'Se crearon {tasks_created} tarea(s) automáticamente para los mecánicos asignados')
+        return redirect('orden_trabajo_detail', work_order_id=work_order.id_work_order)
+
+    # GET request - mostrar formulario con tareas generadas
+    import random
+
+    # Lista de descripciones posibles para tareas
+    task_descriptions = [
+        "Revisar sistema de frenos",
+        "Inspeccionar motor y componentes",
+        "Verificar sistema eléctrico",
+        "Chequear suspensión y dirección",
+        "Revisar transmisión",
+        "Inspeccionar sistema de escape",
+        "Verificar neumáticos y ruedas",
+        "Chequear sistema de refrigeración",
+        "Revisar batería y alternador",
+        "Inspeccionar sistema de combustible",
+        "Verificar luces y señales",
+        "Chequear aire acondicionado",
+        "Revisar frenos de mano",
+        "Inspeccionar amortiguadores",
+        "Verificar correas y mangueras"
+    ]
+
+    urgencies = ['Alta', 'Media', 'Baja']
+
+    # Obtener service_types disponibles
+    from documents.models import ServiceType
+    service_types = list(ServiceType.objects.all())
+
+    # Generar tareas aleatorias para mostrar (sin guardar)
+    generated_tasks = []
+    for assignment in mechanic_assignments:
+        description = random.choice(task_descriptions)
+        urgency = random.choice(urgencies)
+        service_type = random.choice(service_types) if service_types else None
+
+        generated_tasks.append({
+            'assignment': assignment,
+            'description': description,
+            'urgency': urgency,
+            'service_type': service_type.name if service_type else 'General'
+        })
+
+    return render(request, 'agenda/orden_trabajo_add_tasks_auto.html', {
+        'work_order': work_order,
+        'mechanic_assignments': mechanic_assignments,
+        'generated_tasks': generated_tasks,
+    })
+
+
+@login_required
+def orden_trabajo_edit_task(request, task_id):
+    """Vista para editar una tarea específica"""
+    from documents.models import Task, TaskAssignment
+
+    task = get_object_or_404(Task, id_task=task_id)
+
+    # Verificar que la tarea pertenezca a una orden de trabajo activa
+    if not task.work_order or task.work_order.status.name == 'Completada':
+        from django.contrib import messages
+        messages.error(request, 'No puedes editar tareas de órdenes de trabajo completadas')
+        return redirect('orden_trabajo_detail', work_order_id=task.work_order.id_work_order)
+
+    # Obtener la asignación de la tarea
+    try:
+        task_assignment = TaskAssignment.objects.select_related('user').get(task=task)
+        assigned_mechanic = task_assignment.user
+    except TaskAssignment.DoesNotExist:
+        assigned_mechanic = None
+
+    if request.method == 'POST':
+        # Procesar el formulario
+        description = request.POST.get('description')
+        urgency = request.POST.get('urgency')
+        hours = request.POST.get('hours')
+
+        # Validar datos
+        if not description or not urgency:
+            from django.contrib import messages
+            messages.error(request, 'La descripción y urgencia son obligatorias')
+            return redirect('orden_trabajo_edit_task', task_id=task.id_task)
+
+        try:
+            hours = float(hours) if hours else 0
+        except ValueError:
+            hours = 0
+
+        # Actualizar la tarea
+        task.description = description
+        task.urgency = urgency
+
+        if hours > 0:
+            from datetime import timedelta
+            task.end_datetime = task.start_datetime + timedelta(hours=hours)
+        else:
+            task.end_datetime = None
+
+        task.save()
+
+        from django.contrib import messages
+        messages.success(request, 'Tarea actualizada exitosamente')
+        return redirect('orden_trabajo_detail', work_order_id=task.work_order.id_work_order)
+
+    # GET request - mostrar formulario de edición
+    # Calcular horas actuales si existe end_datetime
+    current_hours = 0
+    if task.end_datetime:
+        from datetime import timedelta
+        duration = task.end_datetime - task.start_datetime
+        current_hours = duration.total_seconds() / 3600  # Convertir a horas
+
+    return render(request, 'agenda/orden_trabajo_edit_task.html', {
+        'task': task,
+        'assigned_mechanic': assigned_mechanic,
+        'current_hours': current_hours,
+    })
+
+
+@login_required
+def orden_trabajo_assign_supervisor(request, work_order_id):
+    """Vista para asignar o cambiar jefe de taller a una orden de trabajo"""
+    work_order = get_object_or_404(WorkOrder, id_work_order=work_order_id)
+
+    # Verificar si la orden está completada
+    if work_order.status.name == 'Completada':
+        from django.contrib import messages
+        messages.error(request, 'No puedes cambiar el jefe de taller de una orden de trabajo completada')
+        return redirect('orden_trabajo_detail', work_order_id=work_order.id_work_order)
+
+    if request.method == 'POST':
+        supervisor_id = request.POST.get('supervisor_id')
+
+        if supervisor_id:
+            try:
+                from documents.models import FlotaUser
+                supervisor = FlotaUser.objects.get(id_user=supervisor_id)
+                work_order.supervisor = supervisor
+                work_order.save()
+
+                from django.contrib import messages
+                messages.success(request, f'Jefe de taller {supervisor.name} asignado exitosamente a la orden de trabajo')
+                return redirect('orden_trabajo_detail', work_order_id=work_order.id_work_order)
+            except FlotaUser.DoesNotExist:
+                from django.contrib import messages
+                messages.error(request, 'Supervisor no encontrado')
+        else:
+            from django.contrib import messages
+            messages.error(request, 'Debes seleccionar un supervisor')
+
+    # GET request - mostrar formulario para seleccionar jefe de taller
+    # Obtener usuarios con rol de jefe de taller
+    from documents.models import FlotaUser, Role
+    try:
+        jefe_taller_role = Role.objects.get(name='Jefe de taller')
+        available_jefes_taller = FlotaUser.objects.filter(role=jefe_taller_role).order_by('name')
+    except Role.DoesNotExist:
+        # Si no existe el rol específico, mostrar todos los usuarios activos
+        available_jefes_taller = FlotaUser.objects.filter(status__name='Activo').order_by('name')
+
+    return render(request, 'agenda/orden_trabajo_assign_supervisor.html', {
+        'work_order': work_order,
+        'available_jefes_taller': available_jefes_taller,
+        'current_supervisor': work_order.supervisor,
+    })
+
+
+def orden_trabajo_assign_service_type(request, work_order_id):
+    """Vista para asignar o cambiar tipo de servicio a una orden de trabajo"""
+    work_order = get_object_or_404(WorkOrder, id_work_order=work_order_id)
+
+    # Verificar si la orden está completada
+    if work_order.status.name == 'Completada':
+        from django.contrib import messages
+        messages.error(request, 'No puedes cambiar el tipo de servicio de una orden de trabajo completada')
+        return redirect('orden_trabajo_detail', work_order_id=work_order.id_work_order)
+
+    if request.method == 'POST':
+        service_type_id = request.POST.get('service_type_id')
+
+        if service_type_id:
+            try:
+                from documents.models import ServiceType
+                service_type = ServiceType.objects.get(id_service_type=service_type_id)
+                work_order.service_type = service_type
+                work_order.save()
+
+                from django.contrib import messages
+                messages.success(request, f'Tipo de servicio "{service_type.name}" asignado exitosamente a la orden de trabajo')
+                return redirect('orden_trabajo_detail', work_order_id=work_order.id_work_order)
+            except ServiceType.DoesNotExist:
+                from django.contrib import messages
+                messages.error(request, 'Tipo de servicio no encontrado')
+        else:
+            from django.contrib import messages
+            messages.error(request, 'Debes seleccionar un tipo de servicio')
+
+    # GET request - mostrar formulario para seleccionar tipo de servicio
+    # Obtener todos los tipos de servicio disponibles
+    from documents.models import ServiceType
+    available_service_types = ServiceType.objects.all().order_by('name')
+
+    return render(request, 'agenda/orden_trabajo_assign_service_type.html', {
+        'work_order': work_order,
+        'available_service_types': available_service_types,
+        'current_service_type': work_order.service_type,
+    })

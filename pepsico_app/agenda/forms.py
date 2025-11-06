@@ -106,10 +106,11 @@ class AgendarIngresoForm(forms.ModelForm):
 class WorkOrderForm(forms.ModelForm):
     class Meta:
         model = WorkOrder
-        fields = ['service_type', 'status', 'estimated_completion', 'observations', 'supervisor']
+        fields = ['service_type', 'status', 'estimated_completion', 'observations', 'parts_issued', 'supervisor']
         widgets = {
             'estimated_completion': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
             'observations': forms.Textarea(attrs={'rows': 3}),
+            'parts_issued': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 
     def __init__(self, *args, **kwargs):
