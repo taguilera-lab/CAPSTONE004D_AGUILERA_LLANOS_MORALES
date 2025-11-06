@@ -21,14 +21,25 @@ from documents.models import Repuesto
 def repuestos_dashboard(request):
     """Dashboard principal del módulo de repuestos"""
     # Estadísticas generales
-    total_repuestos = SparePartStock.objects.filter(is_active=True).count()
-    low_stock_count = SparePartStock.objects.filter(
-        is_active=True,
+    total_repuestos = Repuesto.objects.count()
+    
+    # Repuestos sin SparePartStock registrado (considerados sin stock)
+    repuestos_sin_stock_info = Repuesto.objects.exclude(
+        stock_info__isnull=False
+    ).count()
+    
+    # SparePartStock activos
+    spare_part_stocks = SparePartStock.objects.filter(is_active=True)
+    
+    # Stock bajo: stock > 0 pero <= mínimo
+    low_stock_count = spare_part_stocks.filter(
+        current_stock__gt=0,
         current_stock__lte=F('minimum_stock')
     ).count()
-    out_of_stock_count = SparePartStock.objects.filter(
-        is_active=True, current_stock=0
-    ).count()
+    
+    # Sin stock: stock <= 0 + repuestos sin registro
+    out_of_stock_from_stocks = spare_part_stocks.filter(current_stock__lte=0).count()
+    out_of_stock_count = out_of_stock_from_stocks + repuestos_sin_stock_info
 
     # Movimientos recientes
     recent_movements = StockMovement.objects.select_related('repuesto', 'performed_by')[:10]

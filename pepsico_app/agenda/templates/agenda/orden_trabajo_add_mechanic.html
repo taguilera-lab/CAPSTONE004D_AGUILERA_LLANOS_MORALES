@@ -36,15 +36,6 @@
         <small class="form-text text-muted">Selecciona el mecánico a asignar a esta orden de trabajo</small>
       </div>
 
-      <div class="campo">
-        <label for="{{ form.hours_worked.id_for_label }}">Horas Trabajadas</label>
-        {{ form.hours_worked }}
-        {% if form.hours_worked.errors %}
-          <div class="text-danger">{{ form.hours_worked.errors }}</div>
-        {% endif %}
-        <small class="form-text text-muted">Horas que el mecánico ya ha trabajado (opcional)</small>
-      </div>
-
       <div class="botones">
         <button type="submit" class="btn-programar">
           <i class="fas fa-save"></i> Asignar Mecánico

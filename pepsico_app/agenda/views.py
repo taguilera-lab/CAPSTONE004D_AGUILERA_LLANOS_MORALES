@@ -1,10 +1,12 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.db.models import Q
 from documents.models import Ingreso, MaintenanceSchedule, Vehicle, Route, WorkOrder, WorkOrderStatus, WorkOrderMechanic, SparePartUsage, Repuesto, Task, Incident, IngresoImage
 from repuestos.models import SparePartStock
 from .forms import IngresoForm, AgendarIngresoForm, WorkOrderForm, WorkOrderMechanicForm, SparePartUsageForm
+from pausas.models import WorkOrderPause
 from django.utils.safestring import mark_safe
 from django.utils import timezone
 import json
@@ -309,6 +311,30 @@ def orden_trabajo_list(request):
                 if incident:
                     vehicle = incident.vehicle
 
+        # Verificar estado de stock de repuestos
+        stock_issues = []
+        spare_part_usages = work_order.spare_part_usages.select_related('repuesto')
+        
+        for usage in spare_part_usages:
+            try:
+                from repuestos.models import SparePartStock
+                stock_info = SparePartStock.objects.get(repuesto=usage.repuesto)
+                if stock_info.current_stock < usage.quantity_used:
+                    stock_issues.append({
+                        'repuesto': usage.repuesto.name,
+                        'required': usage.quantity_used,
+                        'available': stock_info.current_stock
+                    })
+            except SparePartStock.DoesNotExist:
+                stock_issues.append({
+                    'repuesto': usage.repuesto.name,
+                    'required': usage.quantity_used,
+                    'available': 0
+                })
+
+        # Verificar si tiene pausas activas
+        has_active_pauses = WorkOrderPause.objects.filter(work_order=work_order, is_active=True, end_datetime__isnull=True).exists()
+
         work_orders_data.append({
             'ingreso': work_order.ingreso,  # Puede ser None
             'work_order': work_order,
@@ -316,6 +342,9 @@ def orden_trabajo_list(request):
             'has_work_order': True,  # Siempre es True ya que estamos iterando sobre work_orders
             'status_name': work_order.status.name if work_order.status else 'Sin Estado',
             'status_color': work_order.status.color if work_order.status else '#6c757d',
+            'stock_issues': stock_issues,
+            'has_stock_issues': len(stock_issues) > 0,
+            'has_active_pauses': has_active_pauses,
         })
 
     return render(request, 'agenda/orden_trabajo_list.html', {
@@ -379,10 +408,81 @@ def orden_trabajo_detail(request, work_order_id):
         id_work_order=work_order_id
     )
 
+    # Verificar si tiene pausas activas
+    has_active_pauses = WorkOrderPause.objects.filter(work_order=work_order, is_active=True, end_datetime__isnull=True).exists()
+
+    # Verificar si el usuario actual es mecánico asignado
+    is_assigned_mechanic = False
+    has_active_personal_pause = False
+    if hasattr(request.user, 'flotauser'):
+        is_assigned_mechanic = WorkOrderMechanic.objects.filter(
+            work_order=work_order,
+            mechanic=request.user.flotauser,
+            is_active=True
+        ).exists()
+        
+        # Verificar si el mecánico tiene una pausa personal activa
+        if is_assigned_mechanic:
+            mechanic_assignment = WorkOrderMechanic.objects.filter(
+                work_order=work_order,
+                mechanic=request.user.flotauser,
+                is_active=True
+            ).first()
+            if mechanic_assignment:
+                has_active_personal_pause = WorkOrderPause.objects.filter(
+                    work_order=work_order,
+                    mechanic_assignment=mechanic_assignment,
+                    is_personal_pause=True,
+                    is_active=True,
+                    end_datetime__isnull=True
+                ).exists()
+
     # Obtener datos relacionados
     mechanic_assignments = work_order.mechanic_assignments.select_related('mechanic').filter(is_active=True)
     spare_part_usages = work_order.spare_part_usages.select_related('repuesto')
     tasks = Task.objects.filter(work_order=work_order).select_related('service_type', 'supervisor')
+
+    # Obtener información de stock para cada repuesto utilizado
+    from repuestos.models import SparePartStock
+    spare_part_stock_info = []
+    stock_warnings = []
+    
+    for usage in spare_part_usages:
+        try:
+            stock_info = SparePartStock.objects.get(repuesto=usage.repuesto)
+            available_stock = stock_info.current_stock
+            required_quantity = usage.quantity_used
+            has_sufficient_stock = available_stock >= required_quantity
+            
+            spare_part_stock_info.append({
+                'usage': usage,
+                'available_stock': available_stock,
+                'has_sufficient_stock': has_sufficient_stock,
+                'stock_status': 'sufficient' if has_sufficient_stock else 'insufficient'
+            })
+            
+            if not has_sufficient_stock:
+                stock_warnings.append({
+                    'repuesto': usage.repuesto.name,
+                    'required': required_quantity,
+                    'available': available_stock,
+                    'shortage': required_quantity - available_stock
+                })
+                
+        except SparePartStock.DoesNotExist:
+            # Si no hay información de stock, asumir que no hay stock disponible
+            spare_part_stock_info.append({
+                'usage': usage,
+                'available_stock': 0,
+                'has_sufficient_stock': False,
+                'stock_status': 'no_stock_info'
+            })
+            stock_warnings.append({
+                'repuesto': usage.repuesto.name,
+                'required': usage.quantity_used,
+                'available': 0,
+                'shortage': usage.quantity_used
+            })
 
     # Obtener diagnósticos e incidentes asociados
     from documents.models import Diagnostics
@@ -393,6 +493,16 @@ def orden_trabajo_detail(request, work_order_id):
     # Obtener imágenes de la orden de trabajo
     work_order_images = work_order.images.all().order_by('-uploaded_at')
 
+    # Obtener historial de pausas de la orden de trabajo
+    work_order_pauses = WorkOrderPause.objects.filter(
+        work_order=work_order,
+        is_active=True
+    ).select_related(
+        'mechanic_assignment__mechanic',
+        'pause_type',
+        'created_by'
+    ).order_by('-start_datetime')
+
     # Formularios para agregar elementos
     mechanic_form = WorkOrderMechanicForm()
     spare_part_form = SparePartUsageForm()
@@ -401,17 +511,102 @@ def orden_trabajo_detail(request, work_order_id):
     total_mechanic_hours = sum(assignment.hours_worked for assignment in mechanic_assignments)
     total_spare_parts_cost = sum(usage.total_cost for usage in spare_part_usages)
 
+    # Información de tiempo de trabajo
+    work_started = work_order.work_started_at
+    tentative_completion = work_order.tentative_completion_datetime
+    total_pause_time = work_order.total_pause_time
+    active_mechanic_assignments = work_order.mechanic_assignments.filter(is_active=True)
+    active_mechanic_count = active_mechanic_assignments.count()
+
+    # Calcular tiempo de trabajo real para cada mecánico asignado
+    from django.utils import timezone
+    total_real_work_time = 0
+    
+    # Calcular horas asignadas basadas en tareas
+    total_task_hours = 0
+    if tasks:
+        for task in tasks:
+            if task.start_datetime and task.end_datetime:
+                task_duration = task.end_datetime - task.start_datetime
+                total_task_hours += task_duration.total_seconds() / 3600
+    
+    # Si no hay tareas, usar el tiempo estimado del work order
+    if total_task_hours == 0:
+        total_task_hours = work_order.estimated_work_duration
+    
+    # Asignar horas de tareas a cada mecánico activo
+    active_mechanics_count = active_mechanic_assignments.count()
+    if active_mechanics_count > 0:
+        hours_per_mechanic = total_task_hours / active_mechanics_count
+        for assignment in active_mechanic_assignments:
+            assignment.task_assigned_hours = hours_per_mechanic
+    
+    if work_started:
+        total_elapsed = timezone.now() - work_started
+        total_elapsed_hours = total_elapsed.total_seconds() / 3600
+        
+        for assignment in mechanic_assignments:
+            # Calcular todas las pausas del mecánico para esta orden de trabajo
+            mechanic_pauses = WorkOrderPause.objects.filter(
+                work_order=work_order,
+                mechanic_assignment=assignment
+            )
+            
+            total_pause_hours = 0
+            for pause in mechanic_pauses:
+                if pause.end_datetime:
+                    # Pausa completada
+                    total_pause_hours += (pause.duration_minutes or 0) / 60
+                else:
+                    # Pausa activa
+                    elapsed_pause = timezone.now() - pause.start_datetime
+                    total_pause_hours += elapsed_pause.total_seconds() / 3600
+            
+            # Tiempo real de trabajo = tiempo total transcurrido - tiempo total de pausas
+            real_work_time = max(0, total_elapsed_hours - total_pause_hours)
+            # Agregar el tiempo calculado como atributo del objeto assignment
+            assignment.real_work_time = real_work_time
+            total_real_work_time += real_work_time
+
+    # Preparar datos de pausas para JavaScript
+    import json
+    from django.core.serializers.json import DjangoJSONEncoder
+    
+    pauses_data = {}
+    for assignment in mechanic_assignments:
+        pauses = WorkOrderPause.objects.filter(work_order=work_order, mechanic_assignment=assignment)
+        pauses_data[str(assignment.id_assignment)] = [
+            {
+                'start': pause.start_datetime.isoformat(),
+                'end': pause.end_datetime.isoformat() if pause.end_datetime else None,
+                'duration': pause.duration_minutes
+            } for pause in pauses
+        ]
+    
     context = {
         'work_order': work_order,
         'mechanic_assignments': mechanic_assignments,
         'spare_part_usages': spare_part_usages,
+        'spare_part_stock_info': spare_part_stock_info,
+        'stock_warnings': stock_warnings,
         'tasks': tasks,
         'related_diagnostics': related_diagnostics,
         'work_order_images': work_order_images,
+        'work_order_pauses': work_order_pauses,
         'mechanic_form': mechanic_form,
         'spare_part_form': spare_part_form,
         'total_mechanic_hours': total_mechanic_hours,
         'total_spare_parts_cost': total_spare_parts_cost,
+        'has_active_pauses': has_active_pauses,
+        'is_assigned_mechanic': is_assigned_mechanic,
+        'has_active_personal_pause': has_active_personal_pause,
+        'work_started': work_started,
+        'tentative_completion': tentative_completion,
+        'total_pause_time': total_pause_time,
+        'active_mechanic_assignments': active_mechanic_assignments,
+        'active_mechanic_count': active_mechanic_count,
+        'total_real_work_time': total_real_work_time,
+        'pauses_data': json.dumps(pauses_data, cls=DjangoJSONEncoder),
     }
 
     return render(request, 'agenda/orden_trabajo_detail.html', context)
@@ -1177,4 +1372,138 @@ def orden_trabajo_assign_service_type(request, work_order_id):
         'work_order': work_order,
         'available_service_types': available_service_types,
         'current_service_type': work_order.service_type,
+    })
+
+
+@login_required
+def orden_trabajo_pausa_personal(request, work_order_id):
+    """Vista para que mecánicos registren pausas personales en una OT"""
+    work_order = get_object_or_404(WorkOrder, id_work_order=work_order_id)
+
+    # Verificar que el usuario sea mecánico asignado a esta OT
+    if not hasattr(request.user, 'flotauser'):
+        messages.error(request, 'No tienes permisos para registrar pausas')
+        return redirect('orden_trabajo_detail', work_order_id=work_order.id_work_order)
+
+    user_mechanic = request.user.flotauser
+    mechanic_assignment = WorkOrderMechanic.objects.filter(
+        work_order=work_order,
+        mechanic=user_mechanic,
+        is_active=True
+    ).first()
+
+    if not mechanic_assignment:
+        messages.error(request, 'No estás asignado a esta orden de trabajo')
+        return redirect('orden_trabajo_detail', work_order_id=work_order.id_work_order)
+
+    if request.method == 'POST':
+        reason = request.POST.get('reason')
+        if reason:
+            from pausas.models import WorkOrderPause, PauseType
+            pause_type, created = PauseType.objects.get_or_create(
+                id_pause_type='PERSONAL',
+                defaults={
+                    'name': 'Pausa Personal',
+                    'requires_authorization': False,
+                    'is_active': True
+                }
+            )
+
+            WorkOrderPause.objects.create(
+                work_order=work_order,
+                mechanic_assignment=mechanic_assignment,
+                pause_type=pause_type,
+                reason=reason,
+                start_datetime=timezone.now(),
+                is_personal_pause=True,
+                created_by=user_mechanic
+            )
+            messages.success(request, 'Pausa personal registrada exitosamente')
+            return redirect('orden_trabajo_detail', work_order_id=work_order.id_work_order)
+        else:
+            messages.error(request, 'Debes proporcionar un motivo para la pausa')
+
+    return render(request, 'agenda/orden_trabajo_pausa_personal.html', {
+        'work_order': work_order,
+    })
+
+
+@login_required
+def orden_trabajo_pausa_personal_end(request, work_order_id):
+    """Vista para que mecánicos terminen sus propias pausas personales"""
+    work_order = get_object_or_404(WorkOrder, id_work_order=work_order_id)
+
+    # Verificar que el usuario sea mecánico asignado a esta OT
+    if not hasattr(request.user, 'flotauser'):
+        messages.error(request, 'No tienes permisos para terminar pausas')
+        return redirect('orden_trabajo_detail', work_order_id=work_order.id_work_order)
+
+    user_mechanic = request.user.flotauser
+    mechanic_assignment = WorkOrderMechanic.objects.filter(
+        work_order=work_order,
+        mechanic=user_mechanic,
+        is_active=True
+    ).first()
+
+    if not mechanic_assignment:
+        messages.error(request, 'No estás asignado a esta orden de trabajo')
+        return redirect('orden_trabajo_detail', work_order_id=work_order.id_work_order)
+
+    # Buscar pausa personal activa del mecánico en esta OT
+    active_personal_pause = WorkOrderPause.objects.filter(
+        work_order=work_order,
+        mechanic_assignment=mechanic_assignment,
+        is_personal_pause=True,
+        is_active=True,
+        end_datetime__isnull=True
+    ).first()
+
+    if not active_personal_pause:
+        messages.error(request, 'No tienes una pausa personal activa en esta orden de trabajo')
+        return redirect('orden_trabajo_detail', work_order_id=work_order.id_work_order)
+
+    if request.method == 'POST':
+        # Terminar la pausa
+        active_personal_pause.end_datetime = timezone.now()
+        active_personal_pause.save()
+        messages.success(request, f'Pausa personal finalizada. Duración: {active_personal_pause.duration_display}')
+        return redirect('orden_trabajo_detail', work_order_id=work_order.id_work_order)
+
+    return render(request, 'agenda/orden_trabajo_pausa_personal_end.html', {
+        'work_order': work_order,
+        'pause': active_personal_pause,
+    })
+
+
+@login_required
+def orden_trabajo_start_work(request, work_order_id):
+    """Vista para registrar el inicio de trabajos en una OT"""
+    work_order = get_object_or_404(WorkOrder, id_work_order=work_order_id)
+
+    # Verificar permisos - solo supervisores o administradores pueden iniciar trabajos
+    if not hasattr(request.user, 'flotauser'):
+        messages.error(request, 'No tienes permisos para iniciar trabajos')
+        return redirect('orden_trabajo_detail', work_order_id=work_order.id_work_order)
+
+    user = request.user.flotauser
+    
+    # Verificar que sea supervisor de la OT o administrador
+    if user.role not in ['supervisor', 'admin'] and work_order.supervisor != user:
+        messages.error(request, 'Solo el supervisor asignado puede iniciar los trabajos')
+        return redirect('orden_trabajo_detail', work_order_id=work_order.id_work_order)
+
+    if request.method == 'POST':
+        if work_order.work_started_at:
+            messages.warning(request, 'Los trabajos ya habían sido iniciados')
+        else:
+            from django.utils import timezone
+            work_order.work_started_at = timezone.now()
+            work_order.save()
+            messages.success(request, f'Trabajos iniciados exitosamente a las {work_order.work_started_at.strftime("%H:%M")}')
+
+        return redirect('orden_trabajo_detail', work_order_id=work_order.id_work_order)
+
+    return render(request, 'agenda/orden_trabajo_start_work.html', {
+        'work_order': work_order,
+        'active_mechanic_count': work_order.mechanic_assignments.filter(is_active=True).count(),
     })

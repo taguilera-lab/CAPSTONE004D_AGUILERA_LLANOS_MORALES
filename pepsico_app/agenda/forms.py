@@ -138,15 +138,15 @@ class WorkOrderForm(forms.ModelForm):
 class WorkOrderMechanicForm(forms.ModelForm):
     class Meta:
         model = WorkOrderMechanic
-        fields = ['mechanic', 'hours_worked']
+        fields = ['mechanic']
         widgets = {
             'hours_worked': forms.NumberInput(attrs={'step': '0.25', 'min': '0'}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Filtrar solo usuarios con roles de mecánico (no supervisores)
-        self.fields['mechanic'].queryset = FlotaUser.objects.filter(role__is_supervisor_role=False)
+        # Filtrar solo usuarios con rol de mecánico
+        self.fields['mechanic'].queryset = FlotaUser.objects.filter(role__name='Mecánico')
 
 
 class SparePartUsageForm(forms.ModelForm):

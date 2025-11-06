@@ -300,6 +300,7 @@ class WorkOrder(models.Model):
     status = models.ForeignKey(
         WorkOrderStatus, on_delete=models.CASCADE, db_column='status_id')
     created_datetime = models.DateTimeField(auto_now_add=True)
+    work_started_at = models.DateTimeField(null=True, blank=True, help_text="Fecha y hora en que se inició el trabajo")
     estimated_completion = models.DateTimeField(null=True, blank=True)
     actual_completion = models.DateTimeField(null=True, blank=True)
     total_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -315,6 +316,66 @@ class WorkOrder(models.Model):
             return f"OT-{self.id_work_order} - {self.ingreso.patent}"
         else:
             return f"OT-{self.id_work_order} - Sin ingreso"
+
+    def get_search_display(self):
+        """Método para mostrar información detallada en búsquedas"""
+        if self.ingreso:
+            return f"OT-{self.id_work_order} - {self.ingreso.patent} - {self.ingreso.patent.type.name if self.ingreso.patent.type else 'Sin tipo'}"
+        else:
+            return f"OT-{self.id_work_order} - Sin ingreso"
+
+    @property
+    def total_pause_time(self):
+        """Calcula el tiempo total de pausas en minutos"""
+        from pausas.models import WorkOrderPause
+        pauses = WorkOrderPause.objects.filter(work_order=self, is_active=True)
+        total_minutes = 0
+        for pause in pauses:
+            if pause.duration_minutes:
+                total_minutes += pause.duration_minutes
+        return total_minutes
+
+    @property
+    def estimated_work_duration(self):
+        """Calcula la duración estimada del trabajo en horas basado en las tareas asignadas"""
+        from .models import Task
+        tasks = Task.objects.filter(work_order=self)
+        
+        if not tasks.exists():
+            # Si no hay tareas, usar las asignaciones de mecánicos como fallback
+            return sum(assignment.hours_worked for assignment in self.mechanic_assignments.filter(is_active=True))
+        
+        total_hours = 0
+        for task in tasks:
+            if task.start_datetime and task.end_datetime:
+                # Calcular duración en horas
+                duration = task.end_datetime - task.start_datetime
+                total_hours += duration.total_seconds() / 3600  # Convertir a horas
+        
+        return total_hours if total_hours > 0 else sum(assignment.hours_worked for assignment in self.mechanic_assignments.filter(is_active=True))
+
+    @property
+    def tentative_completion_datetime(self):
+        """Calcula la fecha y hora tentativa de finalización"""
+        if not self.work_started_at:
+            return None
+        
+        # Calcular tiempo total estimado en minutos
+        estimated_hours = self.estimated_work_duration
+        if estimated_hours == 0:
+            return None
+            
+        estimated_minutes = estimated_hours * 60
+        
+        # Sumar tiempo de pausas
+        total_pause_minutes = self.total_pause_time
+        
+        # Tiempo total necesario
+        total_required_minutes = estimated_minutes + total_pause_minutes
+        
+        # Calcular fecha tentativa
+        from django.utils import timezone
+        return self.work_started_at + timezone.timedelta(minutes=total_required_minutes)
 
     class Meta:
         db_table = 'WorkOrders'
@@ -445,6 +506,9 @@ class WorkOrderMechanic(models.Model):
 
     def __str__(self):
         return f"{self.work_order} - {self.mechanic.name}"
+
+    def get_search_display(self):
+        return f"{self.work_order.get_search_display()} - {self.mechanic.name}"
 
     class Meta:
         db_table = 'WorkOrderMechanics'

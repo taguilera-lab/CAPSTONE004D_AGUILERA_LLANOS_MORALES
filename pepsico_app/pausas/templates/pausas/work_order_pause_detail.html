@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Detalle de Pausa - OT-{{ pause.work_order.id_work_order }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-lg-8 mx-auto">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h4 class="mb-0">
+            <i class="fas fa-pause-circle"></i> Detalle de Pausa
+          </h4>
+          <div>
+            <a href="{% url 'pausas:work_order_pause_list' %}" class="btn btn-secondary btn-sm">
+              <i class="fas fa-arrow-left"></i> Volver
+            </a>
+            {% if not pause.is_completed %}
+            <a href="{% url 'pausas:work_order_pause_end' pause.id_pause %}" class="btn btn-success btn-sm">
+              <i class="fas fa-stop"></i> Finalizar Pausa
+            </a>
+            {% endif %}
+          </div>
+        </div>
+        <div class="card-body">
+          <!-- Información Principal -->
+          <div class="row mb-4">
+            <div class="col-md-6">
+              <h5>Información General</h5>
+              <table class="table table-sm">
+                <tr>
+                  <th width="40%">Orden de Trabajo:</th>
+                  <td>
+                    <a href="#" class="text-decoration-none">
+                      OT-{{ pause.work_order.id_work_order }}
+                    </a>
+                  </td>
+                </tr>
+                <tr>
+                  <th>Mecánico:</th>
+                  <td>
+                    {% if pause.mechanic_assignment %}
+                      {{ pause.mechanic_assignment.mechanic.name }}
+                    {% else %}
+                      <span class="text-muted">General</span>
+                    {% endif %}
+                  </td>
+                </tr>
+                <tr>
+                  <th>Tipo de Pausa:</th>
+                  <td>
+                    <span class="badge bg-secondary">{{ pause.pause_type.name }}</span>
+                  </td>
+                </tr>
+                <tr>
+                  <th>Estado:</th>
+                  <td>
+                    {% if pause.is_completed %}
+                      <span class="badge bg-success">
+                        <i class="fas fa-check"></i> Completada
+                      </span>
+                    {% else %}
+                      <span class="badge bg-warning">
+                        <i class="fas fa-play"></i> Activa
+                      </span>
+                    {% endif %}
+                  </td>
+                </tr>
+              </table>
+            </div>
+            <div class="col-md-6">
+              <h5>Tiempos</h5>
+              <table class="table table-sm">
+                <tr>
+                  <th width="40%">Inicio:</th>
+                  <td>{{ pause.start_datetime|date:"d/m/Y H:i:s" }}</td>
+                </tr>
+                {% if pause.end_datetime %}
+                <tr>
+                  <th>Fin:</th>
+                  <td>{{ pause.end_datetime|date:"d/m/Y H:i:s" }}</td>
+                </tr>
+                {% endif %}
+                <tr>
+                  <th>Duración:</th>
+                  <td>
+                    {% if pause.is_completed %}
+                      <strong>{{ pause.duration_display }}</strong>
+                    {% else %}
+                      <span class="text-warning">{{ pause.start_datetime|timesince }}</span>
+                      <small class="text-muted">(en curso)</small>
+                    {% endif %}
+                  </td>
+                </tr>
+              </table>
+            </div>
+          </div>
+
+          <!-- Detalles de la Pausa -->
+          <div class="row mb-4">
+            <div class="col-12">
+              <h5>Detalles</h5>
+              <div class="card bg-light">
+                <div class="card-body">
+                  <h6>Motivo:</h6>
+                  <p class="mb-3">{{ pause.reason }}</p>
+
+                  {% if pause.affected_spare_part %}
+                  <h6>Repuesto Afectado:</h6>
+                  <p class="mb-3">
+                    <strong>{{ pause.affected_spare_part.name }}</strong>
+                    {% if pause.affected_spare_part.part_number %}
+                    <br><small class="text-muted">Número de parte: {{ pause.affected_spare_part.part_number }}</small>
+                    {% endif %}
+                  </p>
+                  {% endif %}
+
+                  {% if pause.notes %}
+                  <h6>Notas Adicionales:</h6>
+                  <p class="mb-0">{{ pause.notes }}</p>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Información de Autorización -->
+          {% if pause.requires_authorization %}
+          <div class="row mb-4">
+            <div class="col-12">
+              <h5>Autorización</h5>
+              <div class="card {% if pause.authorized_by %}bg-success text-white{% else %}bg-warning{% endif %}">
+                <div class="card-body">
+                  {% if pause.authorized_by %}
+                    <div class="d-flex align-items-center">
+                      <i class="fas fa-check-circle me-2"></i>
+                      <div>
+                        <strong>Autorizada</strong>
+                        <br><small>Por: {{ pause.authorized_by.name }} el {{ pause.authorized_at|date:"d/m/Y H:i" }}</small>
+                      </div>
+                    </div>
+                  {% else %}
+                    <div class="d-flex align-items-center">
+                      <i class="fas fa-exclamation-triangle me-2"></i>
+                      <div>
+                        <strong>Pendiente de Autorización</strong>
+                        <br><small>Esta pausa requiere aprobación antes de continuar</small>
+                        {% if not pause.is_completed %}
+                        <br>
+                        <a href="{% url 'pausas:work_order_pause_authorize' pause.id_pause %}" class="btn btn-sm btn-primary mt-2">
+                          <i class="fas fa-check"></i> Autorizar Ahora
+                        </a>
+                        {% endif %}
+                      </div>
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endif %}
+
+          <!-- Información del Usuario -->
+          <div class="row">
+            <div class="col-12">
+              <h5>Registro</h5>
+              <table class="table table-sm">
+                <tr>
+                  <th width="40%">Creada por:</th>
+                  <td>{{ pause.created_by.name }}</td>
+                </tr>
+                <tr>
+                  <th>Fecha de creación:</th>
+                  <td>{{ pause.created_at|date:"d/m/Y H:i:s" }}</td>
+                </tr>
+                {% if pause.updated_by %}
+                <tr>
+                  <th>Última modificación:</th>
+                  <td>Por {{ pause.updated_by.name }} el {{ pause.updated_at|date:"d/m/Y H:i:s" }}</td>
+                </tr>
+                {% endif %}
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

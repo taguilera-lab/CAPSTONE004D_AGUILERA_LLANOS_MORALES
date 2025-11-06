@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'login',
     'agenda',
     'repuestos',
+    'pausas',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

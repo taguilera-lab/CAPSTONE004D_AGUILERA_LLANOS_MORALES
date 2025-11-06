@@ -96,9 +96,9 @@
                   <td>{{ stock_info.supplier.name|default:"Sin proveedor" }}</td>
                   <td>
                     <span class="badge bg-{% if stock_info.is_low_stock %}danger{% elif stock_info.current_stock == 0 %}dark{% else %}success{% endif %}">
-                      {{ stock_info.current_stock }}
+                      {% if stock_info.current_stock == 0 %}Sin stock{% else %}{{ stock_info.current_stock }}{% endif %}
                     </span>
-                    {% if stock_info.is_low_stock %}
+                    {% if stock_info.is_low_stock and stock_info.current_stock > 0 %}
                     <small class="text-danger">(Mín: {{ stock_info.minimum_stock }})</small>
                     {% endif %}
                   </td>
