@@ -3,6 +3,10 @@
 
 {% block title %}Orden de Compra {{ order.order_number }}{% endblock %}
 
+{% block static %}
+<script src="{% static 'js/purchase_order_detail.js' %}"></script>
+{% endblock %}
+
 {% block content %}
 <div class="container mt-4">
   <div class="row">
@@ -384,19 +388,4 @@
   </div>
 </div>
 
-<script>
-function changeStatus(newStatus) {
-  const statusTexts = {
-    'PENDING': 'Pendiente',
-    'APPROVED': 'Aprobada',
-    'ORDERED': 'Ordenada',
-    'RECEIVED': 'Recibida',
-    'CANCELLED': 'Cancelada'
-  };
-
-  document.getElementById('newStatusInput').value = newStatus;
-  document.getElementById('statusText').textContent = statusTexts[newStatus];
-  new bootstrap.Modal(document.getElementById('statusModal')).show();
-}
-</script>
 {% endblock %}

@@ -130,10 +130,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 for (let i = 0; i < paragraphs.length; i++) {
                     const text = paragraphs[i].textContent.trim();
                     if (text.includes('Repuestos Emitidos:')) {
-                        // Extraer el texto del badge
+                        // Extraer el texto del badge (ahora incluye íconos)
                         const badge = paragraphs[i].querySelector('.badge');
                         if (badge) {
-                            partsIssuedText = badge.textContent.trim().toLowerCase();
+                            // Obtener solo el texto visible, ignorando los íconos
+                            const badgeText = badge.textContent.trim();
+                            // Extraer solo "Sí" o "No" del texto
+                            if (badgeText.includes('Sí')) {
+                                partsIssuedText = 'sí';
+                            } else if (badgeText.includes('No')) {
+                                partsIssuedText = 'no';
+                            }
                         }
                         break;
                     }

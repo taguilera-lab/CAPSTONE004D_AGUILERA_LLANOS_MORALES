@@ -273,3 +273,25 @@ class SparePartSearchForm(forms.Form):
             'class': 'form-select'
         })
     )
+
+
+class SupplierSearchForm(forms.Form):
+    """Formulario de búsqueda de proveedores"""
+    search = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Buscar por nombre, contacto, teléfono...'
+        })
+    )
+    is_active = forms.ChoiceField(
+        choices=[
+            ('', 'Todos'),
+            ('active', 'Activos'),
+            ('inactive', 'Inactivos'),
+        ],
+        required=False,
+        widget=forms.Select(attrs={
+            'class': 'form-select'
+        })
+    )

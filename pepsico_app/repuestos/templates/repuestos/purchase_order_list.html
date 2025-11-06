@@ -37,10 +37,10 @@
         </div>
         <div class="card-body">
           <form method="get" class="row g-3">
-            <div class="col-md-3">
+            <div class="col-md-2">
               <label for="id_supplier" class="form-label">Proveedor</label>
               <select name="supplier" id="id_supplier" class="form-select">
-                <option value="">Todos los proveedores</option>
+                <option value="">Todos</option>
                 {% for supplier in suppliers %}
                 <option value="{{ supplier.pk }}" {% if request.GET.supplier == supplier.pk|stringformat:"s" %}selected{% endif %}>
                   {{ supplier.name }}
@@ -53,11 +53,12 @@
               <label for="id_status" class="form-label">Estado</label>
               <select name="status" id="id_status" class="form-select">
                 <option value="">Todos</option>
-                <option value="draft" {% if request.GET.status == 'draft' %}selected{% endif %}>Borrador</option>
-                <option value="sent" {% if request.GET.status == 'sent' %}selected{% endif %}>Enviada</option>
-                <option value="approved" {% if request.GET.status == 'approved' %}selected{% endif %}>Aprobada</option>
-                <option value="received" {% if request.GET.status == 'received' %}selected{% endif %}>Recibida</option>
-                <option value="cancelled" {% if request.GET.status == 'cancelled' %}selected{% endif %}>Cancelada</option>
+                <option value="DRAFT" {% if request.GET.status == 'DRAFT' %}selected{% endif %}>Borrador</option>
+                <option value="PENDING" {% if request.GET.status == 'PENDING' %}selected{% endif %}>Pendiente</option>
+                <option value="APPROVED" {% if request.GET.status == 'APPROVED' %}selected{% endif %}>Aprobada</option>
+                <option value="ORDERED" {% if request.GET.status == 'ORDERED' %}selected{% endif %}>Ordenada</option>
+                <option value="RECEIVED" {% if request.GET.status == 'RECEIVED' %}selected{% endif %}>Recibida</option>
+                <option value="CANCELLED" {% if request.GET.status == 'CANCELLED' %}selected{% endif %}>Cancelada</option>
               </select>
             </div>
 
@@ -71,15 +72,24 @@
               <input type="date" name="date_to" id="id_date_to" class="form-control" value="{{ request.GET.date_to }}">
             </div>
 
-            <div class="col-md-3">
+            <div class="col-md-2">
               <label for="id_created_by" class="form-label">Creado por</label>
               <select name="created_by" id="id_created_by" class="form-select">
-                <option value="">Todos los usuarios</option>
+                <option value="">Todos</option>
                 {% for user in users %}
                 <option value="{{ user.pk }}" {% if request.GET.created_by == user.pk|stringformat:"s" %}selected{% endif %}>
                   {{ user.name }}
                 </option>
                 {% endfor %}
+              </select>
+            </div>
+
+            <div class="col-md-2">
+              <label for="id_stock_updated" class="form-label">Stock Actualizado</label>
+              <select name="stock_updated" id="id_stock_updated" class="form-select">
+                <option value="">Todos</option>
+                <option value="yes" {% if request.GET.stock_updated == 'yes' %}selected{% endif %}>Sí</option>
+                <option value="no" {% if request.GET.stock_updated == 'no' %}selected{% endif %}>No</option>
               </select>
             </div>
 

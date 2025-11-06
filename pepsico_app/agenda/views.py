@@ -3,6 +3,7 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from documents.models import Ingreso, MaintenanceSchedule, Vehicle, Route, WorkOrder, WorkOrderStatus, WorkOrderMechanic, SparePartUsage, Repuesto, Task, Incident, IngresoImage
+from repuestos.models import SparePartStock
 from .forms import IngresoForm, AgendarIngresoForm, WorkOrderForm, WorkOrderMechanicForm, SparePartUsageForm
 from django.utils.safestring import mark_safe
 from django.utils import timezone
@@ -486,7 +487,17 @@ def orden_trabajo_add_spare_part(request, work_order_id):
         if form.is_valid():
             spare_part_usage = form.save(commit=False)
             spare_part_usage.work_order = work_order
-            spare_part_usage.total_cost = spare_part_usage.quantity_used * spare_part_usage.unit_cost
+            
+            # Obtener el costo unitario del stock del repuesto
+            try:
+                stock_info = SparePartStock.objects.get(repuesto=spare_part_usage.repuesto)
+                unit_cost = stock_info.unit_cost
+            except SparePartStock.DoesNotExist:
+                # Si no hay información de stock, usar costo 0
+                unit_cost = 0
+            
+            spare_part_usage.unit_cost = unit_cost
+            spare_part_usage.total_cost = spare_part_usage.quantity_used * unit_cost
             spare_part_usage.save()
 
             # Actualizar el costo total de la orden de trabajo

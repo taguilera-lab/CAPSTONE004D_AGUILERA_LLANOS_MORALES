@@ -11,7 +11,7 @@ from .models import (
 )
 from .forms import (
     SparePartCategoryForm, SupplierForm, SparePartStockForm, StockMovementForm,
-    PurchaseOrderForm, PurchaseOrderItemForm, SparePartSearchForm
+    PurchaseOrderForm, PurchaseOrderItemForm, SparePartSearchForm, SupplierSearchForm
 )
 from documents.models import Repuesto
 
@@ -102,10 +102,39 @@ def category_delete(request, pk):
 
 # Gestión de Proveedores
 @login_required
+@login_required
 def supplier_list(request):
-    """Lista de proveedores"""
-    suppliers = Supplier.objects.all().order_by('name')
-    return render(request, 'repuestos/supplier_list.html', {'suppliers': suppliers})
+    """Lista de proveedores con filtros de búsqueda"""
+    # Procesar formulario de búsqueda
+    search_form = SupplierSearchForm(request.GET)
+    suppliers = Supplier.objects.all()
+
+    if search_form.is_valid():
+        search = search_form.cleaned_data.get('search')
+        is_active = search_form.cleaned_data.get('is_active')
+
+        if search:
+            suppliers = suppliers.filter(
+                Q(name__icontains=search) |
+                Q(contact_person__icontains=search) |
+                Q(phone__icontains=search) |
+                Q(email__icontains=search)
+            )
+
+        if is_active:
+            if is_active == 'active':
+                suppliers = suppliers.filter(is_active=True)
+            elif is_active == 'inactive':
+                suppliers = suppliers.filter(is_active=False)
+
+    suppliers = suppliers.order_by('name')
+
+    context = {
+        'suppliers': suppliers,
+        'search_form': search_form,
+    }
+
+    return render(request, 'repuestos/supplier_list.html', context)
 
 
 @login_required
@@ -341,7 +370,7 @@ def stock_movement_list(request):
     this_week_movements = movements.filter(performed_at__gte=week_ago).count()
 
     # Filtros
-    repuesto_filter = request.GET.get('repuesto')
+    repuesto_filter = request.GET.get('spare_part')
     type_filter = request.GET.get('type')
     date_from = request.GET.get('date_from')
     date_to = request.GET.get('date_to')
@@ -358,9 +387,9 @@ def stock_movement_list(request):
     if user_filter:
         movements = movements.filter(performed_by__pk=user_filter)
 
-    # Lista de usuarios para el filtro
+    # Lista de usuarios para el filtro (solo bodegueros)
     from documents.models import FlotaUser
-    users = FlotaUser.objects.all().order_by('name')
+    users = FlotaUser.objects.filter(role__name='Bodeguero').order_by('name')
 
     paginator = Paginator(movements, 50)
     page_number = request.GET.get('page')
@@ -434,6 +463,15 @@ def stock_movement_create(request):
             movement.performed_by = request.user.flotauser if hasattr(request.user, 'flotauser') else None
             movement.save()
 
+            # Actualizar stock
+            stock_info.current_stock = movement.new_stock
+            stock_info.save()
+
+            # Si es una salida con OT asociada, marcar como repuestos emitidos
+            if movement.movement_type == 'OUT' and movement.work_order:
+                movement.work_order.parts_issued = True
+                movement.work_order.save()
+
             messages.success(request, 'Movimiento de stock registrado exitosamente.')
             return redirect('repuestos:stock_movement_list')
     else:
@@ -454,6 +492,7 @@ def purchase_order_list(request):
     date_from = request.GET.get('date_from')
     date_to = request.GET.get('date_to')
     user_filter = request.GET.get('created_by')
+    stock_updated_filter = request.GET.get('stock_updated')
 
     if supplier_filter:
         orders = orders.filter(supplier__pk=supplier_filter)
@@ -465,6 +504,11 @@ def purchase_order_list(request):
         orders = orders.filter(order_date__lte=date_to)
     if user_filter:
         orders = orders.filter(created_by__pk=user_filter)
+    if stock_updated_filter:
+        if stock_updated_filter == 'yes':
+            orders = orders.filter(stock_updated_manually=True)
+        elif stock_updated_filter == 'no':
+            orders = orders.filter(stock_updated_manually=False)
 
     # Estadísticas de órdenes por estado (sin aplicar filtros)
     all_orders = PurchaseOrder.objects.all()
@@ -481,7 +525,7 @@ def purchase_order_list(request):
     # Datos para los filtros
     suppliers = Supplier.objects.all().order_by('name')
     from documents.models import FlotaUser
-    users = FlotaUser.objects.all().order_by('name')
+    users = FlotaUser.objects.filter(role__name='Bodeguero').order_by('name')
 
     context = {
         'page_obj': page_obj,

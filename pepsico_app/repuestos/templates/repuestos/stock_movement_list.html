@@ -39,22 +39,16 @@
           <form method="get" class="row g-3">
             <div class="col-md-3">
               <label for="id_spare_part" class="form-label">Repuesto</label>
-              <select name="spare_part" id="id_spare_part" class="form-select">
-                <option value="">Todos los repuestos</option>
-                {% for stock in spare_parts %}
-                <option value="{{ stock.pk }}" {% if request.GET.spare_part == stock.pk|stringformat:"s" %}selected{% endif %}>
-                  {{ stock.repuesto.name }}
-                </option>
-                {% endfor %}
-              </select>
+              <input type="text" name="spare_part" id="id_spare_part" class="form-control"
+                     value="{{ request.GET.spare_part }}" placeholder="Buscar por nombre de repuesto">
             </div>
 
             <div class="col-md-2">
               <label for="id_movement_type" class="form-label">Tipo</label>
-              <select name="movement_type" id="id_movement_type" class="form-select">
+              <select name="type" id="id_movement_type" class="form-select">
                 <option value="">Todos</option>
-                <option value="in" {% if request.GET.movement_type == 'in' %}selected{% endif %}>Entrada</option>
-                <option value="out" {% if request.GET.movement_type == 'out' %}selected{% endif %}>Salida</option>
+                <option value="IN" {% if request.GET.type == 'IN' %}selected{% endif %}>Entrada</option>
+                <option value="OUT" {% if request.GET.type == 'OUT' %}selected{% endif %}>Salida</option>
               </select>
             </div>
 
@@ -156,7 +150,7 @@
                   <td>
                     {{ movement.reason|truncatechars:30 }}
                     {% if movement.work_order %}
-                    <br><small class="text-muted">OT: {{ movement.work_order.id }}</small>
+                    <br><small class="text-muted">OT: {{ movement.work_order.id_work_order }}</small>
                     {% endif %}
                     {% if movement.purchase_order %}
                     <br><small class="text-muted">OC: {{ movement.purchase_order.order_number }}</small>

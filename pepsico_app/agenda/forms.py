@@ -152,10 +152,9 @@ class WorkOrderMechanicForm(forms.ModelForm):
 class SparePartUsageForm(forms.ModelForm):
     class Meta:
         model = SparePartUsage
-        fields = ['repuesto', 'quantity_used', 'unit_cost', 'notes']
+        fields = ['repuesto', 'quantity_used', 'notes']
         widgets = {
             'quantity_used': forms.NumberInput(attrs={'min': '1'}),
-            'unit_cost': forms.NumberInput(attrs={'step': '0.01', 'min': '0'}),
             'notes': forms.Textarea(attrs={'rows': 2}),
         }
 
