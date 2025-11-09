@@ -260,6 +260,7 @@ def ingreso_detail(request, pk):
         'related_incidents': unique_incidents
     })
 
+@login_required
 def registrar_salida(request):
     if request.method == 'POST':
         ingreso_id = request.POST.get('ingreso')
@@ -269,8 +270,9 @@ def registrar_salida(request):
         if autorizar:
             ingreso.authorization = True
             ingreso.exit_datetime = exit_datetime
-            # Asumir que request.user es FlotaUser o agregar lógica
-            # ingreso.exit_registered_by = request.user.flotauser  # Ajustar según auth
+            # Registrar quién registró la salida
+            if hasattr(request, 'user') and request.user.is_authenticated and hasattr(request.user, 'flotauser'):
+                ingreso.exit_registered_by = request.user.flotauser
             ingreso.save()
             return redirect('ingresos_list')
         else:
@@ -377,8 +379,10 @@ def orden_trabajo_list(request):
         'ingreso__patent', 'ingreso__chofer', 'ingreso__patent__site', 'status'
     ).prefetch_related('diagnostics__incidents__vehicle').order_by('-created_datetime')
 
-    # Obtener estados para el filtro
-    work_order_statuses = WorkOrderStatus.objects.all()
+    # Obtener estados para el filtro (excluyendo pausada, cancelada y sin orden)
+    work_order_statuses = WorkOrderStatus.objects.exclude(
+        name__in=['Pausada', 'Cancelada', 'Sin Orden']
+    )
 
     # Crear una lista con información de todas las órdenes de trabajo
     work_orders_data = []

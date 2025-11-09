@@ -57,8 +57,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // Filtrar por fecha de salida
                 const filterExitDate = document.getElementById('filter-exit').value;
-                if (filterExitDate && exitDate && exitDate !== 'Pendiente' && !isDateInRange(exitDate, filterExitDate)) {
-                    showCard = false;
+                if (filterExitDate) {
+                    // Si hay filtro de salida aplicado, solo mostrar tarjetas con fecha de salida válida que coincida
+                    if (!exitDate || exitDate === 'Pendiente' || !isDateInRange(exitDate, filterExitDate)) {
+                        showCard = false;
+                    }
                 }
 
                 // Filtrar por mes/año
@@ -84,20 +87,20 @@ document.addEventListener('DOMContentLoaded', function() {
         switch (parseInt(columnIndex)) {
             case 1: // Patente
                 return card.querySelector('.patent-badge').textContent;
-            case 2: // Servicio
-                return card.querySelector('.info-row:nth-child(1) .info-value').textContent;
             case 5: // Chofer
-                return card.querySelector('.info-row:nth-child(4) .info-value').textContent;
+                return card.querySelector('.info-row:nth-child(3) .info-value').textContent;
             case 6: // Sucursal
-                return card.querySelector('.info-row:nth-child(5) .info-value').textContent;
+                return card.querySelector('.info-row:nth-child(4) .info-value').textContent;
             case 7: // Agendado
                 const badge = card.querySelector('.card-status .badge');
                 return badge ? badge.textContent : '';
             case 8: // Autorización
-                const authBadge = card.querySelector('.info-row:nth-child(6) .badge');
+                const authBadge = card.querySelector('.info-row:nth-child(5) .badge');
                 return authBadge ? authBadge.textContent : '';
             case 9: // Entrada Registrada Por
                 return card.querySelector('.info-row:nth-child(7) .info-value').textContent;
+            case 10: // Salida Registrada Por
+                return card.querySelector('.info-row:nth-child(8) .info-value').textContent;
             default:
                 return '';
         }
@@ -105,13 +108,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Función para obtener la fecha de entrada de la tarjeta
     function getCardEntryDate(card) {
-        const entryRow = card.querySelector('.info-row:nth-child(2) .info-value');
+        const entryRow = card.querySelector('.info-row:nth-child(1) .info-value');
         return entryRow ? entryRow.textContent.trim() : '';
     }
 
     // Función para obtener la fecha de salida de la tarjeta
     function getCardExitDate(card) {
-        const exitRow = card.querySelector('.info-row:nth-child(3) .info-value');
+        const exitRow = card.querySelector('.info-row:nth-child(2) .info-value');
         return exitRow ? exitRow.textContent.trim() : '';
     }
 

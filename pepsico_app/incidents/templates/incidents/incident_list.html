@@ -97,9 +97,9 @@ function changeStatus(incidentId, newStatus) {
           <select class="form-select" id="filter-status">
             <option value="">Todos los estados</option>
             <option value="Reportada">Reportada</option>
-            <option value="En_revision">En revisión</option>
+            <option value="Diagnostico_In_Situ">Diagnóstico In Situ</option>
+            <option value="OT_Generada">OT Generada</option>
             <option value="Resuelta">Resuelta</option>
-            <option value="Cerrada">Cerrada</option>
           </select>
         </div>
         <div class="col-md-3">
@@ -233,12 +233,12 @@ function changeStatus(incidentId, newStatus) {
           {% with latest_diagnostic=incident.latest_diagnostic.0 %}
           {% if latest_diagnostic.status == 'Reportada' %}
             <span class="badge bg-warning">Reportada</span>
-          {% elif latest_diagnostic.status == 'En_revision' %}
-            <span class="badge bg-info">En revisión</span>
+          {% elif latest_diagnostic.status == 'Diagnostico_In_Situ' %}
+            <span class="badge bg-info">Diagnóstico In Situ</span>
+          {% elif latest_diagnostic.status == 'OT_Generada' %}
+            <span class="badge bg-primary">OT Generada</span>
           {% elif latest_diagnostic.status == 'Resuelta' %}
             <span class="badge bg-success">Resuelta</span>
-          {% elif latest_diagnostic.status == 'Cerrada' %}
-            <span class="badge bg-secondary">Cerrada</span>
           {% else %}
             <span class="badge bg-light">{{ latest_diagnostic.get_status_display|default:"Sin estado" }}</span>
           {% endif %}
@@ -251,19 +251,19 @@ function changeStatus(incidentId, newStatus) {
       {% else %}
       <div class="card-header">
         <div class="d-flex justify-content-between align-items-center">
-          <h6 class="mb-0">
+                    <h6 class="card-title">
             <i class="fas fa-car"></i> <strong>{{ incident.vehicle.patent }}</strong>
           </h6>
           {% if incident.latest_diagnostic %}
           {% with latest_diagnostic=incident.latest_diagnostic.0 %}
           {% if latest_diagnostic.status == 'Reportada' %}
             <span class="badge bg-warning">Reportada</span>
-          {% elif latest_diagnostic.status == 'En_revision' %}
-            <span class="badge bg-info">En revisión</span>
+          {% elif latest_diagnostic.status == 'Diagnostico_In_Situ' %}
+            <span class="badge bg-info">Diagnóstico In Situ</span>
+          {% elif latest_diagnostic.status == 'OT_Generada' %}
+            <span class="badge bg-primary">OT Generada</span>
           {% elif latest_diagnostic.status == 'Resuelta' %}
             <span class="badge bg-success">Resuelta</span>
-          {% elif latest_diagnostic.status == 'Cerrada' %}
-            <span class="badge bg-secondary">Cerrada</span>
           {% else %}
             <span class="badge bg-light">{{ latest_diagnostic.get_status_display|default:"Sin estado" }}</span>
           {% endif %}

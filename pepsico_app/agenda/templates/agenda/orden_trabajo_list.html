@@ -48,23 +48,22 @@
           <label for="filter-status" class="form-label">Estado</label>
           <select class="form-select filter-input" id="filter-status" data-column="2">
             <option value="">Todos</option>
-            <option value="Sin Orden">Sin Orden</option>
             {% for status in work_order_statuses %}
             <option value="{{ status.name }}">{{ status.name }}</option>
             {% endfor %}
           </select>
         </div>
         <div class="col-md-2">
-          <label for="filter-entry-date" class="form-label">Fecha de Creación</label>
+          <label for="filter-entry-date" class="form-label">Fecha de Creación OT</label>
           <input type="date" class="form-control" id="filter-entry-date">
         </div>
         <div class="col-md-2">
-          <label for="filter-month-year" class="form-label">Mes y Año de Creación</label>
+          <label for="filter-month-year" class="form-label">Mes y Año de Creación OT</label>
           <input type="month" class="form-control" id="filter-month-year">
         </div>
         <div class="col-md-2">
           <label for="filter-chofer" class="form-label">Vendedor/Observaciones</label>
-          <input type="text" class="form-control filter-input" id="filter-chofer" data-column="4" placeholder="Buscar por chofer u observaciones">
+          <input type="text" class="form-control filter-input" id="filter-chofer" data-column="4" placeholder="Buscar por vendedor u observaciones">
         </div>
         <div class="col-md-2">
           <label for="filter-parts-issued" class="form-label">Repuestos Emitidos</label>
@@ -123,7 +122,7 @@
               <strong>Entrada:</strong> {{ item.ingreso.entry_datetime|date:"d/m/Y H:i" }}
             </p>
             <p class="mb-1">
-              <strong>Chofer:</strong> {{ item.ingreso.chofer.name }}
+              <strong>Vendedor:</strong> {{ item.ingreso.chofer.name }}
             </p>
             <p class="mb-1">
               <strong>Sucursal:</strong> {{ item.ingreso.patent.site.name }}

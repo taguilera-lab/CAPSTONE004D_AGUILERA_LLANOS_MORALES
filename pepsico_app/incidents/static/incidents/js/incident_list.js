@@ -3,6 +3,14 @@
 document.addEventListener('DOMContentLoaded', function() {
     console.log('incident_list.js loaded');
 
+    // Mapa para convertir valores internos de estado a texto mostrado
+    const statusDisplayMap = {
+        'Reportada': 'reportada',
+        'Diagnostico_In_Situ': 'diagnóstico in situ',
+        'OT_Generada': 'ot generada',
+        'Resuelta': 'resuelta'
+    };
+
     // Elementos del DOM
     const filterForm = document.getElementById('incident-filters');
     const container = document.getElementById('incidents-container');
@@ -112,7 +120,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Filtro por estado
-        if (filters.status && cardData.status !== filters.status.toLowerCase()) {
+        if (filters.status && cardData.status !== statusDisplayMap[filters.status]) {
             return false;
         }
 

@@ -67,25 +67,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
 
-            // Filtro de fecha de entrada
+            // Filtro de fecha de creación de OT
             if (fechaFilter && show) {
                 const paragraphs = card.querySelectorAll('.card-body p');
-                let entradaText = '';
+                let creadaText = '';
                 for (let i = 0; i < paragraphs.length; i++) {
                     const text = paragraphs[i].textContent.trim();
-                    if (text.includes('Entrada:')) {
-                        entradaText = text.replace(/Entrada\s*:/, '').trim();
+                    if (text.includes('Creada:')) {
+                        creadaText = text.replace(/Creada\s*:/, '').trim();
                         break;
                     }
                 }
 
-                if (entradaText) {
-                    const datePart = entradaText.split(' ')[0];
+                if (creadaText) {
+                    const datePart = creadaText.split(' ')[0];
                     const dateParts = datePart.split('/');
                     if (dateParts.length === 3) {
                         const formattedDate = `${dateParts[2]}-${dateParts[1].padStart(2, '0')}-${dateParts[0].padStart(2, '0')}`;
                         show = (formattedDate === fechaFilter);
-                        console.log('Comparando fecha:', formattedDate, 'vs', fechaFilter, 'resultado:', show);
+                        console.log('Comparando fecha de creación:', formattedDate, 'vs', fechaFilter, 'resultado:', show);
                     } else {
                         show = false;
                     }
@@ -94,27 +94,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
 
-            // Filtro de mes y año
+            // Filtro de mes y año de creación de OT
             if (mesAnioFilter && show) {
                 const paragraphs = card.querySelectorAll('.card-body p');
-                let entradaText = '';
+                let creadaText = '';
                 for (let i = 0; i < paragraphs.length; i++) {
                     const text = paragraphs[i].textContent.trim();
-                    if (text.includes('Entrada:')) {
-                        entradaText = text.replace(/Entrada\s*:/, '').trim();
+                    if (text.includes('Creada:')) {
+                        creadaText = text.replace(/Creada\s*:/, '').trim();
                         break;
                     }
                 }
 
-                if (entradaText) {
-                    const datePart = entradaText.split(' ')[0];
+                if (creadaText) {
+                    const datePart = creadaText.split(' ')[0];
                     const dateParts = datePart.split('/');
                     if (dateParts.length === 3) {
                         const year = dateParts[2];
                         const month = dateParts[1].padStart(2, '0');
                         const cardMonthYear = `${year}-${month}`;
                         show = (cardMonthYear === mesAnioFilter);
-                        console.log('Comparando mes/año:', cardMonthYear, 'vs', mesAnioFilter, 'resultado:', show);
+                        console.log('Comparando mes/año de creación:', cardMonthYear, 'vs', mesAnioFilter, 'resultado:', show);
                     } else {
                         show = false;
                     }
