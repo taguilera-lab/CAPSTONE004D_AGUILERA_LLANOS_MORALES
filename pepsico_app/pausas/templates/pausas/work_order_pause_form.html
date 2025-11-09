@@ -14,6 +14,12 @@
           </h4>
         </div>
         <div class="card-body">
+          <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle"></i>
+            <strong>Importante:</strong> Todas las pausas requieren asignar un mecánico específico,
+            salvo la pausa global por falta de repuestos (STOCK) que afecta a todos los mecánicos.
+          </div>
+
           <form method="post" id="pause-form">
             {% csrf_token %}
 
@@ -31,13 +37,13 @@
             <!-- Selección de Mecánico -->
             <div class="mb-3">
               <label for="{{ form.mechanic_assignment.id_for_label }}" class="form-label">
-                Mecánico Asignado
+                Mecánico Asignado <span class="text-danger" id="mechanic-required">*</span>
               </label>
               {{ form.mechanic_assignment }}
               {% if form.mechanic_assignment.errors %}
                 <div class="text-danger">{{ form.mechanic_assignment.errors.0 }}</div>
               {% endif %}
-              <div class="form-text">Opcional: deje vacío para pausa general en la OT</div>
+              <div class="form-text">Seleccione el mecánico afectado por la pausa</div>
             </div>
 
             <!-- Tipo de Pausa -->
@@ -202,6 +208,34 @@ $(document).ready(function() {
   // Inicializar campos
   toggleSparePartField();
   toggleAuthorizationField();
+
+  // Lógica para mostrar/ocultar campo de mecánico según tipo de pausa
+  const pauseTypeSelect = document.getElementById('{{ form.pause_type.id_for_label }}');
+  const mechanicField = document.getElementById('{{ form.mechanic_assignment.id_for_label }}').closest('.mb-3');
+  const mechanicRequired = document.getElementById('mechanic-required');
+  const mechanicInput = document.getElementById('{{ form.mechanic_assignment.id_for_label }}');
+
+  function toggleMechanicField() {
+    const selectedPauseType = pauseTypeSelect.value;
+    
+    if (selectedPauseType === 'STOCK') {
+      // Para STOCK, ocultar campo de mecánico y quitar requerido
+      mechanicField.style.display = 'none';
+      mechanicRequired.style.display = 'none';
+      mechanicInput.required = false;
+    } else {
+      // Para otros tipos, mostrar campo de mecánico y hacer requerido
+      mechanicField.style.display = 'block';
+      mechanicRequired.style.display = 'inline';
+      mechanicInput.required = true;
+    }
+  }
+
+  // Ejecutar al cargar la página
+  toggleMechanicField();
+  
+  // Ejecutar cuando cambie el tipo de pausa
+  pauseTypeSelect.addEventListener('change', toggleMechanicField);
 });
 </script>
 {% endblock %}

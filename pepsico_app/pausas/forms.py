@@ -138,6 +138,20 @@ class WorkOrderPauseForm(forms.ModelForm):
             instance.save()
         return instance
 
+    def clean(self):
+        cleaned_data = super().clean()
+        pause_type = cleaned_data.get('pause_type')
+        mechanic_assignment = cleaned_data.get('mechanic_assignment')
+        
+        # Si no es pausa por stock, se requiere mecánico
+        if pause_type and pause_type.id_pause_type != 'STOCK' and not mechanic_assignment:
+            raise forms.ValidationError(
+                'Para este tipo de pausa se requiere seleccionar un mecánico específico. '
+                'Solo las pausas por falta de repuestos (STOCK) afectan a todos los mecánicos.'
+            )
+        
+        return cleaned_data
+
 
 class QuickPauseForm(forms.Form):
     """Formulario rápido para crear pausas comunes"""
@@ -271,3 +285,17 @@ class QuickPauseForm(forms.Form):
         if spare_part:
             return spare_part
         return None
+
+    def clean(self):
+        cleaned_data = super().clean()
+        pause_type = cleaned_data.get('pause_type')
+        mechanic_id = cleaned_data.get('mechanic_id')
+        
+        # Si no es pausa por stock, se requiere mecánico
+        if pause_type and pause_type.id_pause_type != 'STOCK' and not mechanic_id:
+            raise forms.ValidationError(
+                'Para este tipo de pausa se requiere seleccionar un mecánico específico. '
+                'Solo las pausas por falta de repuestos (STOCK) afectan a todos los mecánicos.'
+            )
+        
+        return cleaned_data

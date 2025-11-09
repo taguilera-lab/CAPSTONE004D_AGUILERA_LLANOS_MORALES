@@ -13,6 +13,17 @@ from django.utils import timezone
 import json
 
 
+def home(request):
+    """Vista de la portada de la aplicación"""
+    context = {
+        'vehicles_count': Vehicle.objects.count(),
+        'ingresos_count': Ingreso.objects.filter(exit_datetime__isnull=True).count(),
+        'workorders_count': WorkOrder.objects.filter(status__name__in=['En Progreso', 'Pendiente']).count(),
+        'incidents_count': Incident.objects.filter(diagnostics__status__in=['Reportada', 'En Progreso']).distinct().count(),
+    }
+    return render(request, 'agenda/home.html', context)
+
+
 def calculate_working_hours_elapsed(start_datetime, end_datetime):
     """Calcula las horas transcurridas dentro del horario laboral (7:30 AM - 4:30 PM)"""
     # Horario laboral: 7:30 AM - 4:30 PM
@@ -141,7 +152,7 @@ def calendario(request):
 def ingresos_list(request):
     ingresos = Ingreso.objects.select_related(
         'patent', 'patent__site', 'entry_registered_by', 'exit_registered_by', 'schedule'
-    ).prefetch_related('work_orders').all()
+    ).prefetch_related('work_orders', 'diagnostics').all()
     return render(request, 'agenda/ingresos_list.html', {'ingresos': ingresos})
 
 def ingreso_create_select(request):
@@ -229,7 +240,10 @@ def ingreso_create_select(request):
     })
 
 def ingreso_detail(request, pk):
-    ingreso = get_object_or_404(Ingreso, pk=pk)
+    ingreso = get_object_or_404(
+        Ingreso.objects.prefetch_related('work_orders', 'diagnostics'), 
+        pk=pk
+    )
     # Relacionar con agendamientos por patent
     schedules = MaintenanceSchedule.objects.filter(patent=ingreso.patent)
     # Obtener imágenes relacionadas con el ingreso

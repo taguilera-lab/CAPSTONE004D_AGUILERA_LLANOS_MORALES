@@ -399,3 +399,24 @@
     padding: 12px 15px;
   }
 }
+
+/* Estilos para badges de estado */
+.status-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 5px;
+}
+
+.status-badges .badge {
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.status-badges .badge i {
+  font-size: 10px;
+}

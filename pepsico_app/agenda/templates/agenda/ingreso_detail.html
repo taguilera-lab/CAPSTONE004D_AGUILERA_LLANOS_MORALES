@@ -80,6 +80,20 @@ document.addEventListener('DOMContentLoaded', function() {
           <span class="authorization-no">Pendiente</span>
         {% endif %}
       </div>
+      
+      <!-- Badges de estado -->
+      <div class="detail-field">
+        <strong>Estado:</strong>
+        <div class="status-badges">
+          {% if ingreso.diagnostics.exists %}
+            <span class="badge bg-info"><i class="fas fa-stethoscope"></i> Diagnóstico Ordenado</span>
+          {% endif %}
+          {% if ingreso.work_orders.exists %}
+            <span class="badge bg-primary"><i class="fas fa-tools"></i> OT Ordenada</span>
+          {% endif %}
+        </div>
+      </div>
+      
       <div class="detail-field">
         <strong>Salida Registrada Por:</strong> {{ ingreso.exit_registered_by|default:"-" }}
       </div>

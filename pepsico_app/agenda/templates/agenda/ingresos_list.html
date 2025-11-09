@@ -121,6 +121,9 @@
               {% if ingreso.exit_datetime %}
                 <span class="badge bg-success">Completado</span>
               {% endif %}
+              {% if ingreso.diagnostics.exists %}
+                <span class="badge bg-warning">Diagnóstico Realizado</span>
+              {% endif %}
             </div>
           </div>
         </div>
