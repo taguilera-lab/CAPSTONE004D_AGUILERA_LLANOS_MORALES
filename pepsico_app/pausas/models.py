@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from datetime import datetime, time, timedelta
 from documents.models import WorkOrder, WorkOrderMechanic, FlotaUser
 
 class PauseType(models.Model):
@@ -76,14 +77,83 @@ class WorkOrderPause(models.Model):
     def save(self, *args, **kwargs):
         # Calcular duración si end_datetime está establecido
         if self.end_datetime and self.start_datetime:
-            duration = self.end_datetime - self.start_datetime
-            self.duration_minutes = int(duration.total_seconds() / 60)
+            self.duration_minutes = self.calculate_working_hours_duration()
 
         # Establecer si requiere autorización basado en el tipo de pausa
         if self.pause_type:
             self.requires_authorization = self.pause_type.requires_authorization
 
         super().save(*args, **kwargs)
+
+    def calculate_working_hours_duration(self):
+        """Calcula la duración de la pausa solo dentro del horario laboral (7:30 AM - 4:30 PM)"""
+        if not self.end_datetime or not self.start_datetime:
+            return 0
+        
+        start = self.start_datetime
+        end = self.end_datetime
+        
+        # Horario laboral: 7:30 AM - 4:30 PM
+        work_start = time(7, 30)
+        work_end = time(16, 30)
+        
+        total_duration = 0
+        
+        # Si la pausa está dentro del mismo día
+        if start.date() == end.date():
+            # Ajustar start y end al horario laboral
+            effective_start = max(start.time(), work_start) if start.time() >= work_start else work_start
+            effective_end = min(end.time(), work_end) if end.time() <= work_end else work_end
+            
+            if effective_start < effective_end:
+                duration = datetime.combine(start.date(), effective_end) - datetime.combine(start.date(), effective_start)
+                total_duration = duration.total_seconds() / 60
+        else:
+            # Pausa que cruza días
+            current_date = start.date()
+            
+            # Día de inicio
+            if start.time() < work_end:
+                effective_start = max(start.time(), work_start)
+                effective_end = work_end
+                if effective_start < effective_end:
+                    duration = datetime.combine(current_date, effective_end) - datetime.combine(current_date, effective_start)
+                    total_duration += duration.total_seconds() / 60
+            
+            # Días completos entre inicio y fin
+            current_date += timedelta(days=1)
+            while current_date < end.date():
+                # Día completo de trabajo
+                duration = datetime.combine(current_date, work_end) - datetime.combine(current_date, work_start)
+                total_duration += duration.total_seconds() / 60
+                current_date += timedelta(days=1)
+            
+            # Día de fin
+            if end.time() > work_start:
+                effective_start = work_start
+                effective_end = min(end.time(), work_end)
+                if effective_start < effective_end:
+                    duration = datetime.combine(end.date(), effective_end) - datetime.combine(end.date(), effective_start)
+                    total_duration += duration.total_seconds() / 60
+        
+        return int(total_duration)
+
+    def calculate_working_hours_duration_active(self):
+        """Calcula la duración efectiva de una pausa activa dentro del horario laboral"""
+        if self.end_datetime:
+            return self.duration_minutes or 0
+        
+        # Para pausa activa, calcular hasta ahora
+        from django.utils import timezone
+        now = timezone.now()
+        
+        # Crear una pausa temporal con end_datetime = now
+        temp_pause = WorkOrderPause(
+            start_datetime=self.start_datetime,
+            end_datetime=now
+        )
+        
+        return temp_pause.calculate_working_hours_duration()
 
     @property
     def is_completed(self):

@@ -309,42 +309,41 @@ def quick_pause_create(request):
             
             # Si es pausa por falta de repuestos (STOCK), afecta a todos los mecánicos
             if pause_type.id_pause_type == 'STOCK':
-                # Obtener todos los mecánicos asignados activos
-                active_mechanics = WorkOrderMechanic.objects.filter(
+                # Verificar si ya hay una pausa por stock activa
+                existing_stock_pause = WorkOrderPause.objects.filter(
                     work_order=work_order,
-                    is_active=True
+                    pause_type=pause_type,
+                    is_active=True,
+                    end_datetime__isnull=True
+                ).first()
+                
+                if existing_stock_pause:
+                    messages.warning(request, 'Ya existe una pausa por falta de repuestos activa para esta orden de trabajo.')
+                    return redirect('pausas:work_order_pause_list')
+                
+                # Crear una pausa global que afecta a todos los mecánicos
+                pause = WorkOrderPause(
+                    work_order=work_order,
+                    mechanic_assignment=None,  # Pausa global
+                    pause_type=pause_type,
+                    reason=form.cleaned_data['reason'],
+                    start_datetime=timezone.now(),
+                    affected_spare_part=form.clean_spare_part_id(),
+                    required_quantity=form.cleaned_data.get('required_quantity'),
+                    created_by=request.user.flotauser if hasattr(request.user, 'flotauser') else None
                 )
-                
-                # Crear una pausa para cada mecánico
-                pauses_created = 0
-                for mechanic_assignment in active_mechanics:
-                    pause = WorkOrderPause(
-                        work_order=work_order,
-                        mechanic_assignment=mechanic_assignment,
-                        pause_type=pause_type,
-                        reason=form.cleaned_data['reason'],
-                        start_datetime=timezone.now(),
-                        affected_spare_part=form.clean_spare_part_id(),
-                        required_quantity=form.cleaned_data.get('required_quantity'),
-                        created_by=request.user.flotauser if hasattr(request.user, 'flotauser') else None
-                    )
 
-                    # Si es pausa por stock, obtener cantidad disponible
-                    if pause.affected_spare_part:
-                        try:
-                            from repuestos.models import SparePartStock
-                            stock_info = SparePartStock.objects.get(repuesto=pause.affected_spare_part)
-                            pause.available_quantity = stock_info.current_stock
-                        except:
-                            pass
+                # Si es pausa por stock, obtener cantidad disponible
+                if pause.affected_spare_part:
+                    try:
+                        from repuestos.models import SparePartStock
+                        stock_info = SparePartStock.objects.get(repuesto=pause.affected_spare_part)
+                        pause.available_quantity = stock_info.current_stock
+                    except:
+                        pass
 
-                    pause.save()
-                    pauses_created += 1
-                
-                if pauses_created > 0:
-                    messages.success(request, f'Pausa por falta de repuestos registrada para {pauses_created} mecánicos.')
-                else:
-                    messages.warning(request, 'No hay mecánicos activos para pausar.')
+                pause.save()
+                messages.success(request, 'Pausa por falta de repuestos registrada. Todos los mecánicos están pausados.')
                     
             else:
                 # Para otros tipos de pausa, crear pausa normal (individual)

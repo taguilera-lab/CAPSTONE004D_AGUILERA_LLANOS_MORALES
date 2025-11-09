@@ -48,7 +48,7 @@
 
           <p class="text-info">
             <i class="fas fa-info-circle"></i>
-            Se crearán tareas automáticamente según experiencia y especialización para cada mecánico asignado. Especifique las horas estimadas para cada tarea.
+            Se crearán tareas automáticamente según experiencia y especialización para cada mecánico asignado.
           </p>
 
           <form method="post">
@@ -76,16 +76,6 @@
                           </small>
                         </div>
                       </div>
-                    </div>
-                    <div class="mb-3">
-                      <label for="hours_{{ task.assignment.id_assignment }}" class="form-label">
-                        Horas estimadas para completar la tarea
-                      </label>
-                      <input type="number" step="0.5" min="0" max="24" class="form-control"
-                             id="hours_{{ task.assignment.id_assignment }}"
-                             name="hours_{{ task.assignment.id_assignment }}"
-                             placeholder="0.0" required>
-                      <div class="form-text">Tiempo estimado en horas para completar esta tarea específica.</div>
                     </div>
                   </div>
                 </div>

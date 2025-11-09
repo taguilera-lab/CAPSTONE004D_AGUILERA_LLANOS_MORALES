@@ -167,9 +167,9 @@ function changeStatus(incidentId, newStatus) {
           <i class="fas fa-plus"></i> Reportar Incidente
         </a>
       {% elif user.is_authenticated and user.flotauser and user.flotauser.role.name == 'Recepcionista de Vehículos' %}
-        <span class="text-muted">Como recepcionista, puedes generar órdenes de trabajo para incidentes específicos</span>
+        <!-- Mensaje eliminado -->
       {% elif user.is_authenticated and user.flotauser and user.flotauser.role.name == 'Supervisor' %}
-        <span class="text-muted">Como supervisor, puedes editar incidentes específicos</span>
+        <span class="text-muted">Como supervisor, puedes generar órdenes de trabajo para incidentes específicos</span>
       {% elif user.is_authenticated and user.flotauser and user.flotauser.role.name == 'Jefe de Flota' %}
         <span class="text-muted">Como jefe de flota, puedes gestionar el estado de los incidentes</span>
       {% elif user.is_authenticated and user.flotauser and user.flotauser.role.name == 'Mecánico' %}

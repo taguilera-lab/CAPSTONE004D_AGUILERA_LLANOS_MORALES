@@ -22,6 +22,7 @@ urlpatterns = [
     path('ordenes-trabajo/<int:work_order_id>/completar/', views.orden_trabajo_complete, name='orden_trabajo_complete'),
     path('ordenes-trabajo/<int:work_order_id>/agregar-fotos/', views.orden_trabajo_add_photo, name='orden_trabajo_add_photo'),
     path('ordenes-trabajo/<int:work_order_id>/agregar-tareas-auto/', views.orden_trabajo_add_tasks_auto, name='orden_trabajo_add_tasks_auto'),
+    path('ordenes-trabajo/<int:work_order_id>/agregar-tarea-mecanico/<int:assignment_id>/', views.orden_trabajo_add_task_single, name='orden_trabajo_add_task_single'),
     path('ordenes-trabajo/tarea/<int:task_id>/editar/', views.orden_trabajo_edit_task, name='orden_trabajo_edit_task'),
     path('ordenes-trabajo/<int:work_order_id>/asignar-supervisor/', views.orden_trabajo_assign_supervisor, name='orden_trabajo_assign_supervisor'),
     path('ordenes-trabajo/<int:work_order_id>/asignar-tipo-servicio/', views.orden_trabajo_assign_service_type, name='orden_trabajo_assign_service_type'),

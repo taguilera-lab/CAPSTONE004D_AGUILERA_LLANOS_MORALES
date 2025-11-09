@@ -39,6 +39,7 @@ urlpatterns = [
     path('ordenes-compra/<int:pk>/editar/', views.purchase_order_update, name='purchase_order_update'),
     path('ordenes-compra/<int:pk>/cambiar-estado/', views.purchase_order_change_status, name='purchase_order_change_status'),
     path('ordenes-compra/<int:pk>/actualizar-stock/', views.purchase_order_update_stock_status, name='purchase_order_update_stock_status'),
+    path('ordenes-compra/<int:pk>/eliminar/', views.purchase_order_delete, name='purchase_order_delete'),
 
     # API
     path('api/repuesto/<int:repuesto_id>/stock/', views.get_spare_part_stock, name='get_spare_part_stock'),

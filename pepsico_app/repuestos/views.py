@@ -50,12 +50,16 @@ def repuestos_dashboard(request):
         current_stock__lte=F('minimum_stock')
     ).select_related('repuesto')[:5]
 
+    # Órdenes de compra pendientes (no recibidas)
+    pending_purchase_orders = PurchaseOrder.objects.exclude(status='RECEIVED').count()
+
     context = {
         'total_repuestos': total_repuestos,
         'low_stock_count': low_stock_count,
         'out_of_stock_count': out_of_stock_count,
         'recent_movements': recent_movements,
         'low_stock_alerts': low_stock_alerts,
+        'pending_purchase_orders': pending_purchase_orders,
     }
 
     return render(request, 'repuestos/dashboard.html', context)
@@ -754,6 +758,26 @@ def purchase_order_update_stock_status(request, pk):
         messages.success(request, f'Stock de la orden {status_text} manualmente.')
     
     return redirect('repuestos:purchase_order_detail', pk=pk)
+
+
+@login_required
+def purchase_order_delete(request, pk):
+    """Eliminar una orden de compra (solo para bodegueros)"""
+    order = get_object_or_404(PurchaseOrder, pk=pk)
+    
+    # Verificar permisos: solo bodegueros pueden eliminar
+    if request.user.flotauser.role.name.lower() != 'bodeguero':
+        messages.error(request, 'No tienes permisos para eliminar órdenes de compra.')
+        return redirect('repuestos:purchase_order_list')
+    
+    if request.method == 'POST':
+        order_number = order.order_number
+        order.delete()
+        messages.success(request, f'Orden de compra {order_number} eliminada exitosamente.')
+        return redirect('repuestos:purchase_order_list')
+    
+    # Si no es POST, redirigir a la lista
+    return redirect('repuestos:purchase_order_list')
 
 
 # API endpoints para AJAX

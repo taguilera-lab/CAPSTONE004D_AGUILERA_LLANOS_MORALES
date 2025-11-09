@@ -671,8 +671,7 @@
             </div>
             {% else %}
             <h6 class="text-primary mb-2">
-              <i class="fas fa-wrench"></i> Diagnóstico In Situ
-              <span class="badge bg-info ms-2">Sin Incidente</span>
+              <i class="fas fa-wrench"></i> Diagnóstico
             </h6>
             <div class="row">
               <div class="col-sm-6">
@@ -694,7 +693,7 @@
               <i class="fas fa-external-link-alt"></i> Ver Incidente
             </a>
             {% else %}
-            <span class="text-muted small">Diagnóstico in situ</span>
+            <span class="text-muted small">Diagnóstico</span>
             {% endif %}
           </div>
         </div>
@@ -791,6 +790,20 @@
             </div>
           </div>
 
+          <!-- Indicador de pausa por stock -->
+          {% if global_active_pause %}
+          <div class="alert alert-warning mt-3" role="alert">
+            <h6 class="alert-heading"><i class="fas fa-exclamation-triangle"></i> Pausa por Falta de Repuestos Activa</h6>
+            <p class="mb-2">Todos los mecánicos están pausados desde {{ global_active_pause.start_datetime|date:"d/m/Y H:i" }}.</p>
+            <p class="mb-0">Razón: {{ global_active_pause.reason }}</p>
+            <div class="mt-3">
+              <a href="{% url 'pausas:work_order_pause_end' global_active_pause.pk %}" class="btn btn-success btn-sm">
+                <i class="fas fa-play"></i> Terminar Pausa por Repuestos
+              </a>
+            </div>
+          </div>
+          {% endif %}
+
           <!-- Botones para mecánicos asignados -->
           {% if is_assigned_mechanic %}
           <div class="d-flex justify-content-center mb-3 mt-4">
@@ -852,7 +865,9 @@
                     </th>
                     <th>Mecánico</th>
                     <th>Tiempo de Trabajo</th>
+                    <th>Estado</th>
                     <th>Asignado</th>
+                    <th>Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -871,7 +886,32 @@
                         <small class="text-muted">(asignado)</small>
                       {% endif %}
                     </td>
+                    <td>
+                      {% if assignment.is_paused %}
+                        <span class="badge bg-warning">
+                          <i class="fas fa-pause"></i> Pausado
+                        </span>
+                      {% else %}
+                        <span class="badge bg-success">
+                          <i class="fas fa-play"></i> Trabajando
+                        </span>
+                      {% endif %}
+                    </td>
                     <td>{{ assignment.assigned_datetime|date:"d/m/Y" }}</td>
+                    <td>
+                      {% if work_order.status.name != 'Completada' %}
+                      <a href="{% url 'orden_trabajo_add_task_single' work_order.id_work_order assignment.id_assignment %}" class="btn btn-sm btn-outline-success me-1" title="Crear tarea individual">
+                        <i class="fas fa-plus"></i> Tarea
+                      </a>
+                      {% endif %}
+                      <form method="post" style="display: inline;" onsubmit="return confirm('¿Estás seguro de que deseas eliminar a {{ assignment.mechanic.name }} de esta orden de trabajo?');">
+                        {% csrf_token %}
+                        <input type="hidden" name="delete_mechanic" value="{{ assignment.id_assignment }}">
+                        <button type="submit" class="btn btn-sm btn-danger">
+                          <i class="fas fa-trash"></i> Eliminar
+                        </button>
+                      </form>
+                    </td>
                   </tr>
                   {% endfor %}
                 </tbody>
@@ -890,6 +930,8 @@
                         {% endif %}
                       </strong>
                     </td>
+                    <td></td>
+                    <td></td>
                     <td></td>
                   </tr>
                 </tfoot>
@@ -966,8 +1008,8 @@
                         </span>
                       {% endif %}
                     </td>
-                    <td>${{ stock_info.usage.unit_cost|floatformat:2 }}</td>
-                    <td>${{ stock_info.usage.total_cost|floatformat:2 }}</td>
+                    <td>${{ stock_info.unit_cost|floatformat:2 }}</td>
+                    <td>${{ stock_info.total_cost|floatformat:2 }}</td>
                   </tr>
                   {% endfor %}
                 </tbody>
@@ -1070,6 +1112,7 @@
                   <th>Fin</th>
                   <th>Duración</th>
                   <th>Estado</th>
+                  <th>Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -1127,6 +1170,15 @@
                       </span>
                     {% endif %}
                   </td>
+                  <td>
+                    {% if not pause.end_datetime %}
+                      <a href="{% url 'pausas:work_order_pause_end' pause.pk %}" class="btn btn-sm btn-outline-danger" title="Terminar pausa">
+                        <i class="fas fa-stop"></i> Terminar
+                      </a>
+                    {% else %}
+                      <span class="text-muted">-</span>
+                    {% endif %}
+                  </td>
                 </tr>
                 {% endfor %}
               </tbody>
@@ -1159,32 +1211,53 @@
               <thead>
                 <tr>
                   <th>Descripción</th>
-                  <th>Servicio</th>
                   <th>Urgencia</th>
                   <th>Inicio</th>
                   <th>Fin</th>
-                  <th>Supervisor</th>
+                  <th>Horas Asignadas</th>
+                  <th>Mecánico Asignado</th>
                   <th>Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 {% for task in tasks %}
                 <tr>
-                  <td>{{ task.description|truncatechars:50 }}</td>
-                  <td>{{ task.service_type.name }}</td>
+                  <td>{{ task.task.description|truncatechars:50 }}</td>
                   <td>
-                    <span class="badge bg-{% if task.urgency == 'Alta' %}danger{% elif task.urgency == 'Media' %}warning{% else %}info{% endif %}">
-                      {{ task.urgency }}
+                    <span class="badge bg-{% if task.task.urgency == 'Alta' %}danger{% elif task.task.urgency == 'Media' %}warning{% else %}info{% endif %}">
+                      {{ task.task.urgency }}
                     </span>
                   </td>
-                  <td>{{ task.start_datetime|date:"d/m/Y H:i" }}</td>
-                  <td>{% if task.end_datetime %}{{ task.end_datetime|date:"d/m/Y H:i" }}{% else %}-{% endif %}</td>
-                  <td>{% if task.supervisor %}{{ task.supervisor.name }}{% else %}-{% endif %}</td>
+                  <td>{{ task.task.start_datetime|date:"d/m/Y H:i" }}</td>
+                  <td>{% if task.task.end_datetime %}{{ task.task.end_datetime|date:"d/m/Y H:i" }}{% else %}-{% endif %}</td>
+                  <td>
+                    {% if task.assigned_hours %}
+                      {{ task.assigned_hours|floatformat:1 }} horas
+                    {% else %}
+                      -
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% for assignment in task.task.taskassignment_set.all %}
+                      {{ assignment.user.name }}{% if not forloop.last %}, {% endif %}
+                    {% empty %}
+                      -
+                    {% endfor %}
+                  </td>
                   <td>
                     {% if work_order.status.name != 'Completada' %}
-                    <a href="{% url 'orden_trabajo_edit_task' task.id_task %}" class="btn btn-sm btn-outline-primary" title="Editar tarea">
+                    <a href="{% url 'orden_trabajo_edit_task' task.task.id_task %}" class="btn btn-sm btn-outline-primary" title="Editar tarea">
                       <i class="fas fa-edit"></i> Editar
                     </a>
+                    {% if is_jefe_taller %}
+                    <form method="post" style="display: inline;" onsubmit="return confirm('¿Está seguro de que desea eliminar esta tarea? Esta acción no se puede deshacer.');">
+                      {% csrf_token %}
+                      <input type="hidden" name="delete_task" value="{{ task.task.id_task }}">
+                      <button type="submit" class="btn btn-sm btn-outline-danger ms-1" title="Eliminar tarea">
+                        <i class="fas fa-trash"></i> Eliminar
+                      </button>
+                    </form>
+                    {% endif %}
                     {% endif %}
                   </td>
                 </tr>
@@ -1225,42 +1298,11 @@ function openImageModal(imageUrl, name, description, date, user) {
 // Datos para actualización de tiempo
 const workStartedAt = new Date('{{ work_started.isoformat }}');
 const pausesData = JSON.parse('{{ pauses_data|escapejs }}');
-
-// Función para actualizar tiempos de trabajo en tiempo real
-function updateWorkTimes() {
-    const now = new Date();
-    const totalElapsed = (now - workStartedAt) / 3600000; // horas
-    let totalReal = 0;
-
+const mechanicAssignments = [
     {% for assignment in mechanic_assignments %}
-    {
-        const assignmentId = {{ assignment.id_assignment }};
-        const pauses = pausesData[assignmentId.toString()] || [];
-        let totalPause = 0;
-
-        pauses.forEach(pause => {
-            if (pause.end) {
-                totalPause += (pause.duration || 0) / 60;
-            } else {
-                const start = new Date(pause.start);
-                totalPause += (now - start) / 3600000;
-            }
-        });
-
-        const realTime = Math.max(0, totalElapsed - totalPause);
-        const element = document.getElementById('real-time-' + assignmentId);
-        if (element) {
-            element.textContent = realTime.toFixed(2) + ' h';
-        }
-        totalReal += realTime;
-    }
+    {id: {{ assignment.id_assignment }}},
     {% endfor %}
-
-    const totalElement = document.getElementById('total-real-time');
-    if (totalElement) {
-        totalElement.textContent = totalReal.toFixed(2) + ' h (real)';
-    }
-}
+];
 
 // Actualizar tiempos cada segundo
 setInterval(updateWorkTimes, 1000);

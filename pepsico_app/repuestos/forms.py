@@ -174,7 +174,7 @@ class StockMovementForm(forms.ModelForm):
             pass
         
         # Filtrar órdenes de compra que no estén completadas
-        self.fields['purchase_order'].queryset = PurchaseOrder.objects.exclude(status='RECEIVED')
+        self.fields['purchase_order'].queryset = PurchaseOrder.objects.all()
 
 
 class PurchaseOrderForm(forms.ModelForm):

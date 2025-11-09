@@ -339,6 +339,7 @@ class WorkOrder(models.Model):
     def estimated_work_duration(self):
         """Calcula la duración estimada del trabajo en horas basado en las tareas asignadas"""
         from .models import Task
+        from agenda.views import calculate_working_hours_elapsed
         tasks = Task.objects.filter(work_order=self)
         
         if not tasks.exists():
@@ -348,34 +349,31 @@ class WorkOrder(models.Model):
         total_hours = 0
         for task in tasks:
             if task.start_datetime and task.end_datetime:
-                # Calcular duración en horas
-                duration = task.end_datetime - task.start_datetime
-                total_hours += duration.total_seconds() / 3600  # Convertir a horas
+                # Para tareas completadas o con fecha final estimada, calcular horas laborales
+                total_hours += calculate_working_hours_elapsed(task.start_datetime, task.end_datetime)
         
         return total_hours if total_hours > 0 else sum(assignment.hours_worked for assignment in self.mechanic_assignments.filter(is_active=True))
 
     @property
     def tentative_completion_datetime(self):
-        """Calcula la fecha y hora tentativa de finalización"""
+        """Calcula la fecha y hora tentativa de finalización considerando solo horas laborales"""
         if not self.work_started_at:
             return None
         
-        # Calcular tiempo total estimado en minutos
+        # Calcular tiempo total estimado en horas
         estimated_hours = self.estimated_work_duration
         if estimated_hours == 0:
             return None
             
-        estimated_minutes = estimated_hours * 60
+        # Sumar tiempo de pausas en horas (considerando que las pausas ya están calculadas dentro de jornada)
+        total_pause_hours = self.total_pause_time / 60
         
-        # Sumar tiempo de pausas
-        total_pause_minutes = self.total_pause_time
+        # Tiempo total necesario en horas
+        total_required_hours = estimated_hours + total_pause_hours
         
-        # Tiempo total necesario
-        total_required_minutes = estimated_minutes + total_pause_minutes
-        
-        # Calcular fecha tentativa
-        from django.utils import timezone
-        return self.work_started_at + timezone.timedelta(minutes=total_required_minutes)
+        # Usar la función para calcular fecha considerando solo horas laborales
+        from agenda.views import calculate_completion_datetime
+        return calculate_completion_datetime(self.work_started_at, total_required_hours)
 
     class Meta:
         db_table = 'WorkOrders'

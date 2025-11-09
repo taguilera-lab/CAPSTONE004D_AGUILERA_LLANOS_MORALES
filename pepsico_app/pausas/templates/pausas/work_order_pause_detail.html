@@ -32,7 +32,7 @@
                 <tr>
                   <th width="40%">Orden de Trabajo:</th>
                   <td>
-                    <a href="#" class="text-decoration-none">
+                    <a href="{% url 'orden_trabajo_detail' pause.work_order.id_work_order %}" class="text-decoration-none">
                       OT-{{ pause.work_order.id_work_order }}
                     </a>
                   </td>
