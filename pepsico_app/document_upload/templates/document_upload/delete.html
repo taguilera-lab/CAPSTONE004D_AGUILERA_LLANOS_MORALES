@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Eliminar Documento{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-md-6 mx-auto">
+      <div class="card border-danger">
+        <div class="card-header bg-danger text-white">
+          <h5 class="mb-0">
+            <i class="fas fa-exclamation-triangle"></i> Confirmar Eliminación
+          </h5>
+        </div>
+        <div class="card-body">
+          <p class="mb-4">¿Estás seguro de que quieres eliminar el siguiente documento?</p>
+
+          <div class="card mb-4">
+            <div class="card-body">
+              <h6 class="card-title">{{ document.title }}</h6>
+              {% if document.description %}
+                <p class="card-text text-muted">{{ document.description }}</p>
+              {% endif %}
+              <div class="row">
+                <div class="col-sm-6">
+                  <small class="text-muted">
+                    <i class="fas fa-calendar"></i> Subido: {{ document.uploaded_at|date:"d/m/Y H:i" }}
+                  </small>
+                </div>
+                <div class="col-sm-6">
+                  <small class="text-muted">
+                    <i class="fas fa-user"></i> Por: {{ document.uploaded_by.get_full_name|default:document.uploaded_by.username }}
+                  </small>
+                </div>
+              </div>
+              {% if document.document_type %}
+                <div class="mt-2">
+                  <span class="badge bg-info">{{ document.document_type.name }}</span>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle"></i>
+            <strong>Advertencia:</strong> Esta acción no se puede deshacer. El archivo será eliminado permanentemente del sistema.
+          </div>
+
+          <form method="post">
+            {% csrf_token %}
+            <div class="d-flex justify-content-end gap-2">
+              <a href="{% url 'document_upload:document_list' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-times"></i> Cancelar
+              </a>
+              <button type="submit" class="btn btn-danger">
+                <i class="fas fa-trash"></i> Eliminar Documento
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.card {
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.border-danger {
+  border-color: #dc3545 !important;
+}
+</style>
+{% endblock %}

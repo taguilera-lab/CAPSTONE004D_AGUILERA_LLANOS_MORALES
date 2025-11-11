@@ -37,7 +37,7 @@
         <a href="{% url 'repuestos:dashboard' %}" class="icon-doc">Repuestos</a>
         <a href="{% url 'pausas:dashboard' %}" class="icon-doc">Pausas</a>
         <a href="{% url 'datos' %}" class="icon-doc">Datos</a>
-        <a href="#" class="icon-doc">Reportes</a>
+  <a href="{% url 'document_upload:dashboard' %}" class="icon-doc">Reportes</a>
         {% if user.is_authenticated %}
           <a href="{% url 'user_dashboard' %}" class="icon-user">Mi Perfil</a>
           <a href="{% url 'logout' %}" class="icon-logout">Salir</a>

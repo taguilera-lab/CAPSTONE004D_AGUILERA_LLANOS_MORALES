@@ -4,6 +4,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.utils import timezone
 
 
 class Site(models.Model):
@@ -479,14 +480,16 @@ class Notification(models.Model):
 
 class Report(models.Model):
     id_report = models.AutoField(primary_key=True)
-    type = models.CharField(max_length=50)
-    generated_datetime = models.DateTimeField()
-    data = models.JSONField()
+    type = models.ForeignKey(
+        'document_upload.ReportType', on_delete=models.SET_NULL, null=True, blank=True, related_name='reports')
+    generated_datetime = models.DateTimeField(default=timezone.now)
+    data = models.TextField(blank=True, default='')
     user = models.ForeignKey(
-        FlotaUser, on_delete=models.CASCADE, db_column='user_id')
+        FlotaUser, on_delete=models.SET_NULL, null=True, blank=True, db_column='user_id')
 
     def __str__(self):
-        return f"{self.id_report} - {self.type}"
+        type_name = self.type.name if self.type else "Sin tipo"
+        return f"Reporte #{self.id_report} - {type_name}"
 
     class Meta:
         db_table = 'Reports'

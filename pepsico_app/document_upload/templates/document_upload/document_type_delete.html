@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Eliminar Tipo de Documento{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+      <div class="card border-danger">
+        <div class="card-header bg-danger text-white">
+          <h4 class="mb-0">
+            <i class="fas fa-exclamation-triangle"></i> Confirmar Eliminación
+          </h4>
+        </div>
+        <div class="card-body">
+          <p class="mb-3">
+            ¿Estás seguro de que deseas eliminar el tipo de documento <strong>"{{ document_type.name }}"</strong>?
+          </p>
+
+          {% if documents_count > 0 %}
+            <div class="alert alert-warning">
+              <i class="fas fa-exclamation-circle"></i>
+              <strong>Advertencia:</strong> Este tipo de documento está asociado a {{ documents_count }} documento(s).
+              Al eliminarlo, estos documentos quedarán sin tipo de documento asignado.
+            </div>
+          {% endif %}
+
+          <div class="d-flex justify-content-between">
+            <a href="{% url 'document_upload:document_type_list' %}" class="btn btn-secondary">
+              <i class="fas fa-arrow-left"></i> Cancelar
+            </a>
+            <form method="post" class="d-inline">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-danger">
+                <i class="fas fa-trash"></i> Eliminar
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
