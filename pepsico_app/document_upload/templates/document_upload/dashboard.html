@@ -13,61 +13,6 @@
     </div>
   </div>
 
-  <div class="row mb-4">
-    <div class="col-md-3 mb-3 mb-md-0">
-      <div class="card bg-primary text-white h-100">
-        <div class="card-body">
-          <div class="d-flex justify-content-between align-items-center">
-            <div>
-              <p class="text-uppercase mb-1 small">Total reportes</p>
-              <h2 class="mb-0">{{ total_reports }}</h2>
-            </div>
-            <i class="fas fa-layer-group fa-2x"></i>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-3 mb-3 mb-md-0">
-      <div class="card bg-success text-white h-100">
-        <div class="card-body">
-          <div class="d-flex justify-content-between align-items-center">
-            <div>
-              <p class="text-uppercase mb-1 small">Generados hoy</p>
-              <h2 class="mb-0">{{ reports_today }}</h2>
-            </div>
-            <i class="fas fa-calendar-day fa-2x"></i>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-3 mb-3 mb-md-0">
-      <div class="card bg-warning text-white h-100">
-        <div class="card-body">
-          <div class="d-flex justify-content-between align-items-center">
-            <div>
-              <p class="text-uppercase mb-1 small">Últimos 7 días</p>
-              <h2 class="mb-0">{{ reports_last_week }}</h2>
-            </div>
-            <i class="fas fa-history fa-2x"></i>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-3">
-      <div class="card bg-dark text-white h-100">
-        <div class="card-body">
-          <div class="d-flex justify-content-between align-items-center">
-            <div>
-              <p class="text-uppercase mb-1 small">Tipos activos</p>
-              <h2 class="mb-0">{{ report_types_count }}</h2>
-            </div>
-              <i class="fas fa-tags fa-2x"></i>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <!-- Accesos Rápidos -->
   <div class="row mb-4">
     <div class="col-12">
@@ -90,23 +35,13 @@
               </a>
             </div>
             <div class="col-md-3">
-              <a href="{% url 'datos' %}#tabla-reports" class="btn btn-outline-primary w-100">
-                <i class="fas fa-list"></i> Ver reportes
-              </a>
-            </div>
-            <div class="col-md-3">
-              <a href="{% url 'create_form' %}#form-report" class="btn btn-outline-warning w-100">
+              <a href="{% url 'document_upload:reports_dashboard' %}" class="btn btn-outline-warning w-100">
                 <i class="fas fa-file-signature"></i> Generar reporte
               </a>
             </div>
             <div class="col-md-3">
               <a href="{% url 'document_upload:document_type_list' %}" class="btn btn-outline-secondary w-100">
                 <i class="fas fa-tags"></i> Gestionar tipos de documento
-              </a>
-            </div>
-            <div class="col-md-3">
-              <a href="{% url 'document_upload:report_type_list' %}" class="btn btn-outline-primary w-100">
-                <i class="fas fa-file-signature"></i> Gestionar tipos de reporte
               </a>
             </div>
             <div class="col-md-3">
@@ -120,7 +55,7 @@
               </a>
             </div>
             <div class="col-md-3">
-              <a href="{% url 'calendario' %}" class="btn btn-outline-light w-100">
+              <a href="{% url 'calendario' %}" class="btn btn-outline-primary w-100">
                 <i class="fas fa-calendar"></i> Agenda
               </a>
             </div>
@@ -181,150 +116,6 @@
             </div>
             <i class="fas fa-hdd fa-2x"></i>
           </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="row">
-    <div class="col-lg-6 mb-4">
-      <div class="card h-100">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <h5 class="mb-0">
-            <i class="fas fa-chart-pie"></i> Reportes por tipo
-          </h5>
-          <span class="badge bg-secondary">{{ reports_by_type|length }} / {{ report_types_count }}</span>
-        </div>
-        <div class="card-body">
-          {% if reports_by_type %}
-          <div class="table-responsive">
-            <table class="table table-sm mb-0">
-              <thead>
-                <tr>
-                  <th>Tipo</th>
-                  <th class="text-end">Cantidad</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for report_type in reports_by_type %}
-                <tr>
-                  <td>{{ report_type.type_name|default:"Sin tipo" }}</td>
-                  <td class="text-end">
-                    <span class="badge bg-primary">{{ report_type.count }}</span>
-                  </td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-          {% else %}
-          <p class="text-muted mb-0">Aún no hay datos para mostrar.</p>
-          {% endif %}
-        </div>
-      </div>
-    </div>
-    <div class="col-lg-6 mb-4">
-      <div class="card h-100">
-        <div class="card-header">
-          <h5 class="mb-0">
-            <i class="fas fa-wave-square"></i> Tendencia semanal
-          </h5>
-        </div>
-        <div class="card-body">
-          {% if daily_activity %}
-            {% for day in daily_activity %}
-            <div class="mb-3">
-              <div class="d-flex justify-content-between">
-                <span>{{ day.date|date:"d M" }}</span>
-                <strong>{{ day.count }}</strong>
-              </div>
-              <div class="progress" style="height: 6px;">
-                <div
-                  class="progress-bar bg-info"
-                  role="progressbar"
-                  aria-valuemin="0"
-                  aria-valuemax="{{ max_daily_activity }}"
-                  aria-valuenow="{{ day.count }}">
-                </div>
-              </div>
-            </div>
-            {% endfor %}
-          {% else %}
-          <p class="text-muted mb-0">Sin actividad registrada en los últimos días.</p>
-          {% endif %}
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="row">
-    <div class="col-lg-6 mb-4">
-      <div class="card h-100">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <h5 class="mb-0">
-            <i class="fas fa-user-tie"></i> Usuarios más activos
-          </h5>
-          <span class="badge bg-dark">Usuarios con reportes: {{ active_users }}</span>
-        </div>
-        <div class="card-body">
-          {% if top_report_users %}
-          <div class="table-responsive">
-            <table class="table table-sm mb-0">
-              <thead>
-                <tr>
-                  <th>Usuario</th>
-                  <th>Rol</th>
-                  <th class="text-end">Reportes</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for user in top_report_users %}
-                <tr>
-                  <td>{{ user.user__name|default:"Sin nombre" }}</td>
-                  <td>{{ user.user__role__name|default:"Sin rol" }}</td>
-                  <td class="text-end">
-                    <span class="badge bg-success">{{ user.count }}</span>
-                  </td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-          {% else %}
-          <p class="text-muted mb-0">Aún no hay usuarios con reportes registrados.</p>
-          {% endif %}
-        </div>
-      </div>
-    </div>
-    <div class="col-lg-6 mb-4">
-      <div class="card h-100">
-        <div class="card-header">
-          <h5 class="mb-0">
-            <i class="fas fa-clipboard-list"></i> Reportes recientes
-          </h5>
-        </div>
-        <div class="card-body">
-          {% if recent_reports %}
-          <div class="list-group list-group-flush">
-            {% for report in recent_reports %}
-            <div class="list-group-item">
-              <div class="d-flex justify-content-between">
-                <div>
-                  <h6 class="mb-1">Reporte #{{ report.id_report }} - {{ report.type }}</h6>
-                  <small class="text-muted">
-                    {{ report.user.name|default:"Sin usuario" }}
-                    {% if report.user.role %} · {{ report.user.role.name }} {% endif %}
-                  </small>
-                </div>
-                <small class="text-muted">{{ report.generated_datetime|date:"d/m/Y H:i" }}</small>
-              </div>
-              <p class="mb-0 text-muted">{{ report.data|truncatechars:100 }}</p>
-            </div>
-            {% endfor %}
-          </div>
-          {% else %}
-          <p class="text-muted mb-0">Sin reportes recientes para mostrar.</p>
-          {% endif %}
         </div>
       </div>
     </div>
@@ -455,7 +246,7 @@
             <div class="list-group-item">
               <div class="d-flex justify-content-between">
                 <div>
-                  <h6 class="mb-1">{{ doc.file_name }}</h6>
+                  <h6 class="mb-1">{{ doc.title }}</h6>
                   <small class="text-muted">
                     {{ doc.uploaded_by.first_name }} {{ doc.uploaded_by.last_name }}
                     {% if doc.document_type %} · {{ doc.document_type.name }} {% endif %}
@@ -496,23 +287,13 @@
               </a>
             </div>
             <div class="col-md-3">
-              <a href="{% url 'datos' %}#tabla-reports" class="btn btn-outline-primary w-100">
-                <i class="fas fa-list"></i> Ver reportes
-              </a>
-            </div>
-            <div class="col-md-3">
-              <a href="{% url 'create_form' %}#form-report" class="btn btn-outline-warning w-100">
+              <a href="{% url 'document_upload:reports_dashboard' %}" class="btn btn-outline-warning w-100">
                 <i class="fas fa-file-signature"></i> Generar reporte
               </a>
             </div>
             <div class="col-md-3">
               <a href="{% url 'document_upload:document_type_list' %}" class="btn btn-outline-secondary w-100">
                 <i class="fas fa-tags"></i> Gestionar tipos de documento
-              </a>
-            </div>
-            <div class="col-md-3">
-              <a href="{% url 'document_upload:report_type_list' %}" class="btn btn-outline-primary w-100">
-                <i class="fas fa-file-signature"></i> Gestionar tipos de reporte
               </a>
             </div>
             <div class="col-md-3">
@@ -526,7 +307,7 @@
               </a>
             </div>
             <div class="col-md-3">
-              <a href="{% url 'calendario' %}" class="btn btn-outline-light w-100">
+              <a href="{% url 'calendario' %}" class="btn btn-outline-primary w-100">
                 <i class="fas fa-calendar"></i> Agenda
               </a>
             </div>

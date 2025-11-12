@@ -190,7 +190,7 @@ $(document).ready(function() {
           mechanicField.empty();
           mechanicField.append('<option value="">Seleccione mecánico (opcional)</option>');
           $.each(data.mechanics, function(index, mechanic) {
-            mechanicField.append('<option value="' + mechanic.id_mechanic_assignment + '">' + mechanic.mechanic__name + '</option>');
+            mechanicField.append('<option value="' + mechanic.id_assignment + '">' + mechanic.mechanic__name + '</option>');
           });
         },
         error: function(xhr, status, error) {

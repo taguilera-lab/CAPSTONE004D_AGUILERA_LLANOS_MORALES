@@ -366,8 +366,12 @@ class WorkOrder(models.Model):
         if estimated_hours == 0:
             return None
             
+        # Convertir a Decimal para consistencia
+        from decimal import Decimal
+        estimated_hours = Decimal(estimated_hours)
+        
         # Sumar tiempo de pausas en horas (considerando que las pausas ya están calculadas dentro de jornada)
-        total_pause_hours = self.total_pause_time / 60
+        total_pause_hours = Decimal(self.total_pause_time) / 60
         
         # Tiempo total necesario en horas
         total_required_hours = estimated_hours + total_pause_hours
@@ -406,6 +410,7 @@ class TaskAssignment(models.Model):
         Task, on_delete=models.CASCADE, db_column='task_id')
     user = models.ForeignKey(
         FlotaUser, on_delete=models.CASCADE, db_column='user_id')
+    assigned_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return f"{self.id_assignment} - {self.task} - {self.user}"

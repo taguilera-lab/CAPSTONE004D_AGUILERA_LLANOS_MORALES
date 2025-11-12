@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - {{ role }}{% endblock %}
+
+{% block static %}
+<link rel="stylesheet" href="{% static 'login/css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="contenedor">
+    <div class="formulario">
+        <h2>Bienvenido, {{ role }}</h2>
+
+        <div class="dashboard-section">
+            <h3><i class="fas fa-tools"></i> Supervisión de Órdenes de Trabajo</h3>
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-value">{{ features.active_work_orders }}</div>
+                    <div class="kpi-label">OT Activas</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">{{ features.completed_this_month }}</div>
+                    <div class="kpi-label">OT Completadas (Mes)</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">{{ features.efficiency }}%</div>
+                    <div class="kpi-label">Eficiencia del Taller</div>
+                </div>
+            </div>
+            <div class="dashboard-actions">
+                <a href="{% url 'orden_trabajo_list' %}" class="btn btn-primary">
+                    <i class="fas fa-list"></i> Ver Todas las OT
+                </a>
+            </div>
+        </div>
+
+        <div class="dashboard-section">
+            <h3><i class="fas fa-stethoscope"></i> Supervisión de Diagnósticos</h3>
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-value">{{ features.pending_diagnostics }}</div>
+                    <div class="kpi-label">Diagnósticos Pendientes</div>
+                </div>
+            </div>
+            <div class="dashboard-actions">
+                <a href="{% url 'diagnostics:diagnostics_list' %}" class="btn btn-primary">
+                    <i class="fas fa-list"></i> Ver Diagnósticos
+                </a>
+                <a href="{% url 'diagnostics:diagnostics_create_multiple' %}" class="btn btn-secondary">
+                    <i class="fas fa-plus"></i> Asignar Diagnóstico
+                </a>
+            </div>
+        </div>
+
+        <div class="dashboard-actions">
+            <a href="{% url 'logout' %}" class="btn btn-secondary">Cerrar Sesión</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

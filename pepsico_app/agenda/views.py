@@ -25,26 +25,28 @@ def home(request):
 
 
 def calculate_working_hours_elapsed(start_datetime, end_datetime):
-    """Calcula las horas transcurridas dentro del horario laboral (7:30 AM - 4:30 PM)"""
+    """Calcula las horas transcurridas TOTALES (24 horas) - TEMPORAL PARA PRUEBAS"""
+    # TEMPORALMENTE COMENTADO: Cálculo considerando solo horario laboral (7:30 AM - 4:30 PM)
+    """
     # Horario laboral: 7:30 AM - 4:30 PM
     work_start = time(7, 30)
     work_end = time(16, 30)
-    
+
     total_hours = 0
-    
+
     # Si está dentro del mismo día
     if start_datetime.date() == end_datetime.date():
         # Ajustar start y end al horario laboral
         effective_start = max(start_datetime.time(), work_start) if start_datetime.time() >= work_start else work_start
         effective_end = min(end_datetime.time(), work_end) if end_datetime.time() <= work_end else work_end
-        
+
         if effective_start < effective_end:
             duration = datetime.combine(start_datetime.date(), effective_end) - datetime.combine(start_datetime.date(), effective_start)
             total_hours = duration.total_seconds() / 3600
     else:
         # Trabajo que cruza días
         current_date = start_datetime.date()
-        
+
         # Día de inicio
         if start_datetime.time() < work_end:
             effective_start = max(start_datetime.time(), work_start)
@@ -52,7 +54,7 @@ def calculate_working_hours_elapsed(start_datetime, end_datetime):
             if effective_start < effective_end:
                 duration = datetime.combine(current_date, effective_end) - datetime.combine(current_date, effective_start)
                 total_hours += duration.total_seconds() / 3600
-        
+
         # Días completos entre inicio y fin
         current_date += timedelta(days=1)
         while current_date < end_datetime.date():
@@ -60,7 +62,7 @@ def calculate_working_hours_elapsed(start_datetime, end_datetime):
             duration = datetime.combine(current_date, work_end) - datetime.combine(current_date, work_start)
             total_hours += duration.total_seconds() / 3600
             current_date += timedelta(days=1)
-        
+
         # Día de fin
         if end_datetime.time() > work_start:
             effective_start = work_start
@@ -68,8 +70,13 @@ def calculate_working_hours_elapsed(start_datetime, end_datetime):
             if effective_start < effective_end:
                 duration = datetime.combine(end_datetime.date(), effective_end) - datetime.combine(end_datetime.date(), effective_start)
                 total_hours += duration.total_seconds() / 3600
-    
+
     return total_hours
+    """
+
+    # CÁLCULO TEMPORAL: Horas totales sin restricciones de horario laboral (24 horas)
+    duration = end_datetime - start_datetime
+    return duration.total_seconds() / 3600
 
 
 def calculate_completion_datetime(start_datetime, total_hours):
@@ -79,19 +86,19 @@ def calculate_completion_datetime(start_datetime, total_hours):
     daily_work_hours = 9  # 7:30 to 16:30 = 9 hours
     
     current_datetime = start_datetime
-    remaining_hours = total_hours
+    remaining_hours = float(total_hours)
     
     while remaining_hours > 0:
         # Si current_datetime está fuera de jornada, mover al próximo inicio de jornada
         if current_datetime.time() < work_start:
-            current_datetime = datetime.combine(current_datetime.date(), work_start)
+            current_datetime = timezone.make_aware(datetime.combine(current_datetime.date(), work_start))
         elif current_datetime.time() > work_end:
-            current_datetime = datetime.combine(current_datetime.date() + timedelta(days=1), work_start)
+            current_datetime = timezone.make_aware(datetime.combine(current_datetime.date() + timedelta(days=1), work_start))
         
         # Calcular horas disponibles en el día actual
-        day_end = datetime.combine(current_datetime.date(), work_end)
+        day_end = timezone.make_aware(datetime.combine(current_datetime.date(), work_end))
         if current_datetime >= day_end:
-            current_datetime = datetime.combine(current_datetime.date() + timedelta(days=1), work_start)
+            current_datetime = timezone.make_aware(datetime.combine(current_datetime.date() + timedelta(days=1), work_start))
             continue
         
         available_hours = (day_end - current_datetime).total_seconds() / 3600
@@ -99,7 +106,7 @@ def calculate_completion_datetime(start_datetime, total_hours):
             current_datetime += timedelta(hours=remaining_hours)
             remaining_hours = 0
         else:
-            current_datetime = datetime.combine(current_datetime.date() + timedelta(days=1), work_start)
+            current_datetime = timezone.make_aware(datetime.combine(current_datetime.date() + timedelta(days=1), work_start))
             remaining_hours -= available_hours
     
     return current_datetime
@@ -676,6 +683,29 @@ def orden_trabajo_detail(request, work_order_id):
             if task_info['assigned_hours']:
                 mechanic_task_hours += task_info['assigned_hours']
         assignment.task_assigned_hours = mechanic_task_hours
+        assignment.has_tasks = len(mechanic_tasks) > 0
+    
+    # Calcular has_tasks para todos los mechanic_assignments (incluyendo inactivos)
+    for assignment in mechanic_assignments:
+        mechanic_tasks = [t for t in tasks_with_hours if any(ta.user == assignment.mechanic for ta in t['task'].taskassignment_set.all())]
+        assignment.has_tasks = len(mechanic_tasks) > 0
+        
+        # Calcular la fecha de inicio de tareas para este mecánico
+        if assignment.has_tasks and work_started:
+            mechanic_task_assignments = []
+            for task_info in tasks_with_hours:
+                for ta in task_info['task'].taskassignment_set.all():
+                    if ta.user == assignment.mechanic:
+                        mechanic_task_assignments.append(ta)
+            
+            if mechanic_task_assignments:
+                # Usar la fecha assigned_at más antigua de las asignaciones de tarea
+                earliest_task_assignment = min(mechanic_task_assignments, key=lambda ta: ta.assigned_at)
+                assignment.task_start_time = timezone.now()
+            else:
+                assignment.task_start_time = work_started
+        else:
+            assignment.task_start_time = assignment.assigned_datetime
     
     if work_started:
         # Verificar si hay pausa global activa (afecta a todos los mecánicos)
@@ -688,25 +718,57 @@ def orden_trabajo_detail(request, work_order_id):
         
         # Calcular tiempo real de trabajo sumando intervalos entre pausas
         for assignment in mechanic_assignments:
-            if global_active_pause:
-                # Si hay pausa global activa, calcular tiempo hasta el inicio de la pausa global
-                real_work_time = calculate_working_hours_elapsed(work_started, global_active_pause.start_datetime)
-            else:
-                # Lógica normal por mecánico
-                # Obtener todas las pausas del mecánico ordenadas por start_datetime
+            # Verificar si el mecánico tiene tareas asignadas
+            mechanic_has_tasks = any(
+                any(ta.user == assignment.mechanic for ta in task_info['task'].taskassignment_set.all())
+                for task_info in tasks_with_hours
+            )
+            
+            # Solo calcular tiempo si el mecánico tiene tareas asignadas
+            if mechanic_has_tasks:
+                # Determinar el punto de inicio del cálculo para este mecánico
+                # Usar la fecha de la primera tarea asignada
+                mechanic_task_assignments = []
+                for task_info in tasks_with_hours:
+                    for ta in task_info['task'].taskassignment_set.all():
+                        if ta.user == assignment.mechanic:
+                            mechanic_task_assignments.append(ta)
+                
+                if mechanic_task_assignments:
+                    earliest_task_assignment = min(mechanic_task_assignments, key=lambda ta: ta.assigned_at)
+                    mechanic_start_time = timezone.now()
+                else:
+                    mechanic_start_time = work_started
+                
+                # Obtener todas las pausas relevantes para este mecánico:
+                # - Pausas individuales del mecánico
+                # - Pausas globales (que afectan a todos los mecánicos)
                 mechanic_pauses = WorkOrderPause.objects.filter(
                     work_order=work_order,
                     mechanic_assignment=assignment
                 ).order_by('start_datetime')
                 
-                # Verificar si hay una pausa activa (sin end_datetime)
-                active_pause = mechanic_pauses.filter(end_datetime__isnull=True).first()
+                global_pauses = WorkOrderPause.objects.filter(
+                    work_order=work_order,
+                    mechanic_assignment__isnull=True
+                ).order_by('start_datetime')
+                
+                # Combinar todas las pausas relevantes
+                all_pauses = list(mechanic_pauses) + list(global_pauses)
+                all_pauses.sort(key=lambda x: x.start_datetime)
+                
+                # Verificar si hay una pausa activa (individual o global)
+                active_pause = None
+                for pause in all_pauses:
+                    if not pause.end_datetime:
+                        active_pause = pause
+                        break
                 
                 # Calcular intervalos de trabajo
                 real_work_time = 0
-                previous_end = work_started
+                previous_end = mechanic_start_time
                 
-                for pause in mechanic_pauses:
+                for pause in all_pauses:
                     if pause.end_datetime:  # Pausa completada
                         # Intervalo desde previous_end hasta pause.start_datetime
                         if previous_end < pause.start_datetime:
@@ -723,6 +785,9 @@ def orden_trabajo_detail(request, work_order_id):
                 # Si no hay pausa activa, agregar intervalo desde previous_end hasta ahora
                 if not active_pause:
                     real_work_time += calculate_working_hours_elapsed(previous_end, timezone.now())
+            else:
+                # Si no tiene tareas asignadas, tiempo = 0
+                real_work_time = 0
             
             # Agregar el tiempo calculado como atributo del objeto assignment
             assignment.real_work_time = real_work_time
@@ -1603,7 +1668,6 @@ def orden_trabajo_edit_task(request, task_id):
         # Procesar el formulario
         description = request.POST.get('description')
         urgency = request.POST.get('urgency')
-        hours = request.POST.get('hours')
 
         # Validar datos
         if not description or not urgency:
@@ -1611,20 +1675,9 @@ def orden_trabajo_edit_task(request, task_id):
             messages.error(request, 'La descripción y urgencia son obligatorias')
             return redirect('orden_trabajo_edit_task', task_id=task.id_task)
 
-        try:
-            hours = float(hours) if hours else 0
-        except ValueError:
-            hours = 0
-
         # Actualizar la tarea
         task.description = description
         task.urgency = urgency
-
-        if hours > 0:
-            task.end_datetime = calculate_completion_datetime(task.start_datetime, hours)
-        else:
-            task.end_datetime = None
-
         task.save()
 
         from django.contrib import messages
@@ -1632,15 +1685,9 @@ def orden_trabajo_edit_task(request, task_id):
         return redirect('orden_trabajo_detail', work_order_id=task.work_order.id_work_order)
 
     # GET request - mostrar formulario de edición
-    # Calcular horas actuales si existe end_datetime
-    current_hours = 0
-    if task.end_datetime:
-        current_hours = calculate_working_hours_elapsed(task.start_datetime, task.end_datetime)
-
     return render(request, 'agenda/orden_trabajo_edit_task.html', {
         'task': task,
         'assigned_mechanic': assigned_mechanic,
-        'current_hours': current_hours,
     })
 
 

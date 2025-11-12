@@ -39,6 +39,21 @@
                 <div class="text-danger">{{ form.id_pause_type.errors.0 }}</div>
               {% endif %}
               <div class="form-text">Identificador único en mayúsculas (ej: "STOCK", "BREAK")</div>
+              
+              <!-- Sugerencias de tipos existentes -->
+              {% if existing_pause_types %}
+              <div class="mt-2">
+                <small class="text-muted">Tipos sugeridos (existentes + comunes):</small>
+                <div class="d-flex flex-wrap gap-1 mt-1">
+                  {% for id_type, name in existing_pause_types %}
+                  <button type="button" class="btn btn-sm btn-outline-secondary" 
+                          onclick="document.getElementById('{{ form.id_pause_type.id_for_label }}').value='{{ id_type }}'; document.getElementById('{{ form.name.id_for_label }}').value='{{ name }}'">
+                    {{ id_type }}
+                  </button>
+                  {% endfor %}
+                </div>
+              </div>
+              {% endif %}
             </div>
 
             <!-- Descripción -->

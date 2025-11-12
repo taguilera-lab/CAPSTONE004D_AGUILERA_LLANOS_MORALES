@@ -876,10 +876,19 @@
                     <td>
                       <input type="checkbox" value="{{ assignment.id_assignment }}" onchange="updateDeleteButton('mechanics-table')">
                     </td>
-                    <td>{{ assignment.mechanic.name }}</td>
+                    <td>
+                      {{ assignment.mechanic.name }}
+                      {% if assignment.has_tasks == False %}
+                        <span class="badge bg-secondary ms-1">
+                          <i class="fas fa-exclamation-triangle"></i> Sin tareas
+                        </span>
+                      {% endif %}
+                    </td>
                     <td>
                       {% if work_started %}
-                        <span id="real-time-{{ assignment.id_assignment }}">{{ assignment.real_work_time|floatformat:2 }} h</span>
+                        <span id="real-time-{{ assignment.id_assignment }}">
+                          {% if assignment.has_tasks %}0.00 h{% else %}{{ assignment.real_work_time|floatformat:2 }} h{% endif %}
+                        </span>
                         <small class="text-muted">(real)</small>
                       {% else %}
                         {{ assignment.hours_worked|floatformat:2 }} h
@@ -887,7 +896,11 @@
                       {% endif %}
                     </td>
                     <td>
-                      {% if assignment.is_paused %}
+                      {% if assignment.has_tasks == False %}
+                        <span class="badge bg-secondary">
+                          <i class="fas fa-exclamation-triangle"></i> Sin tareas
+                        </span>
+                      {% elif assignment.is_paused %}
                         <span class="badge bg-warning">
                           <i class="fas fa-pause"></i> Pausado
                         </span>
@@ -1300,13 +1313,9 @@ const workStartedAt = new Date('{{ work_started.isoformat }}');
 const pausesData = JSON.parse('{{ pauses_data|escapejs }}');
 const mechanicAssignments = [
     {% for assignment in mechanic_assignments %}
-    {id: {{ assignment.id_assignment }}},
+    {id: {{ assignment.id_assignment }}, assignedAt: new Date('{{ assignment.assigned_datetime.isoformat }}'), taskStartTime: new Date('{{ assignment.task_start_time.isoformat }}'), hasTasks: {{ assignment.has_tasks|yesno:"true,false" }}},
     {% endfor %}
 ];
-
-// Actualizar tiempos cada segundo
-setInterval(updateWorkTimes, 1000);
-updateWorkTimes(); // Ejecutar inmediatamente
 {% endif %}
 </script>
 {% endblock %}

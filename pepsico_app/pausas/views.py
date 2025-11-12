@@ -92,9 +92,29 @@ def pause_type_create(request):
     else:
         form = PauseTypeForm()
 
+    # Obtener tipos de pausa existentes
+    existing_pause_types = list(PauseType.objects.filter(is_active=True).order_by('name').values_list('id_pause_type', 'name'))
+    
+    # Definir sugerencias comunes programadas
+    common_suggestions = [
+        ('STOCK', 'Falta de Repuestos'),
+        ('BREAK', 'Descanso'),
+        ('LUNCH', 'Almuerzo'),
+        ('MEETING', 'Reunión'),
+        ('MAINTENANCE', 'Mantenimiento Equipo'),
+        ('TRAINING', 'Capacitación'),
+        ('SUPPLIES', 'Falta de Insumos'),
+        ('TOOLS', 'Falta de Herramientas'),
+    ]
+    
+    # Combinar tipos existentes con sugerencias comunes, evitando duplicados
+    existing_ids = {item[0] for item in existing_pause_types}
+    all_suggestions = existing_pause_types + [item for item in common_suggestions if item[0] not in existing_ids]
+
     return render(request, 'pausas/pause_type_form.html', {
         'form': form,
-        'title': 'Crear Tipo de Pausa'
+        'title': 'Crear Tipo de Pausa',
+        'existing_pause_types': all_suggestions,
     })
 
 
@@ -392,7 +412,7 @@ def ajax_load_mechanics(request):
         work_order_id=work_order_id,
         is_active=True
     ).select_related('mechanic').values(
-        'id_mechanic_assignment',
+        'id_assignment',
         'mechanic__name'
     )
 

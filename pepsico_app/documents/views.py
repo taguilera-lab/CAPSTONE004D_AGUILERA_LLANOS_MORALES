@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.apps import apps
 from .models import Site, SAPEquipment, CECO, VehicleType, VehicleStatus, Vehicle, Role, UserStatus, FlotaUser, Route, Ingreso, ServiceType, Task, TaskAssignment, Pause, Document, Repuesto, Notification, Report, MaintenanceSchedule, WorkOrder, WorkOrderStatus, WorkOrderMechanic, SparePartUsage, WorkOrderImage, IngresoImage, Incident, IncidentImage, Diagnostics
 from .forms import (
@@ -255,6 +256,7 @@ def eliminar_registros(request):
     except Exception as e:
         return JsonResponse({'success': False, 'message': f'Error al eliminar: {str(e)}'})
 
+@login_required
 def datos(request):
     context = {
         'sites': Site.objects.all(),
@@ -289,6 +291,7 @@ def datos(request):
     }
     return render(request, 'documents/datos.html', context)
 
+@login_required
 def busqueda_patente(request):
     context = {
         'vehicles': Vehicle.objects.all(),
@@ -299,6 +302,7 @@ def busqueda_patente(request):
     }
     return render(request, 'documents/busqueda-patente.html', context)
 
+@login_required
 def create_form(request):
     forms = {
         'site': SiteForm(),

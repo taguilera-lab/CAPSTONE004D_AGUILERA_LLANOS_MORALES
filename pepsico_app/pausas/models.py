@@ -86,32 +86,34 @@ class WorkOrderPause(models.Model):
         super().save(*args, **kwargs)
 
     def calculate_working_hours_duration(self):
-        """Calcula la duración de la pausa solo dentro del horario laboral (7:30 AM - 4:30 PM)"""
+        """Calcula la duración de la pausa TOTAL (sin restricción de horario laboral)"""
         if not self.end_datetime or not self.start_datetime:
             return 0
-        
+
+        # TEMPORALMENTE COMENTADO: Cálculo considerando solo horario laboral (7:30 AM - 4:30 PM)
+        """
         start = self.start_datetime
         end = self.end_datetime
-        
+
         # Horario laboral: 7:30 AM - 4:30 PM
         work_start = time(7, 30)
         work_end = time(16, 30)
-        
+
         total_duration = 0
-        
+
         # Si la pausa está dentro del mismo día
         if start.date() == end.date():
             # Ajustar start y end al horario laboral
             effective_start = max(start.time(), work_start) if start.time() >= work_start else work_start
             effective_end = min(end.time(), work_end) if end.time() <= work_end else work_end
-            
+
             if effective_start < effective_end:
                 duration = datetime.combine(start.date(), effective_end) - datetime.combine(start.date(), effective_start)
                 total_duration = duration.total_seconds() / 60
         else:
             # Pausa que cruza días
             current_date = start.date()
-            
+
             # Día de inicio
             if start.time() < work_end:
                 effective_start = max(start.time(), work_start)
@@ -119,7 +121,7 @@ class WorkOrderPause(models.Model):
                 if effective_start < effective_end:
                     duration = datetime.combine(current_date, effective_end) - datetime.combine(current_date, effective_start)
                     total_duration += duration.total_seconds() / 60
-            
+
             # Días completos entre inicio y fin
             current_date += timedelta(days=1)
             while current_date < end.date():
@@ -127,7 +129,7 @@ class WorkOrderPause(models.Model):
                 duration = datetime.combine(current_date, work_end) - datetime.combine(current_date, work_start)
                 total_duration += duration.total_seconds() / 60
                 current_date += timedelta(days=1)
-            
+
             # Día de fin
             if end.time() > work_start:
                 effective_start = work_start
@@ -135,8 +137,13 @@ class WorkOrderPause(models.Model):
                 if effective_start < effective_end:
                     duration = datetime.combine(end.date(), effective_end) - datetime.combine(end.date(), effective_start)
                     total_duration += duration.total_seconds() / 60
-        
+
         return int(total_duration)
+        """
+
+        # CÁLCULO TEMPORAL: Duración total sin restricciones de horario laboral
+        duration = self.end_datetime - self.start_datetime
+        return int(duration.total_seconds() / 60)
 
     def calculate_working_hours_duration_active(self):
         """Calcula la duración efectiva de una pausa activa dentro del horario laboral"""
@@ -163,14 +170,28 @@ class WorkOrderPause(models.Model):
     @property
     def duration_display(self):
         """Muestra la duración en formato legible"""
-        if self.duration_minutes:
+        if self.end_datetime and self.start_datetime:
+            # Si la pausa está terminada, calcular duración en tiempo real
+            duration_minutes = self.calculate_working_hours_duration()
+            if duration_minutes > 0:
+                hours = duration_minutes // 60
+                minutes = duration_minutes % 60
+                if hours > 0:
+                    return f"{hours}h {minutes}m"
+                else:
+                    return f"{minutes}m"
+            else:
+                return "Completada (0m)"
+        elif self.duration_minutes:
+            # Usar duración pre-calculada si existe
             hours = self.duration_minutes // 60
             minutes = self.duration_minutes % 60
             if hours > 0:
                 return f"{hours}h {minutes}m"
             else:
                 return f"{minutes}m"
-        return "En curso"
+        else:
+            return "En curso"
 
     class Meta:
         db_table = 'WorkOrderPauses'

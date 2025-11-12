@@ -1,5 +1,6 @@
 from django import forms
 from documents.models import Ingreso, Vehicle, ServiceType, FlotaUser, Route, Site, MaintenanceSchedule, UserStatus, WorkOrder, WorkOrderStatus, WorkOrderMechanic, SparePartUsage, Repuesto, Incident
+from repuestos.models import SparePartStock
 
 class IngresoForm(forms.ModelForm):
     route = forms.ModelChoiceField(queryset=Route.objects.all(), required=False, label="Ruta")
@@ -160,5 +161,6 @@ class SparePartUsageForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Solo mostrar repuestos disponibles (quantity > 0)
-        self.fields['repuesto'].queryset = Repuesto.objects.filter(quantity__gt=0)
+        # Mostrar todos los repuestos registrados en el módulo de repuestos (con SparePartStock activo)
+        registered_spare_parts = SparePartStock.objects.filter(is_active=True).values_list('repuesto', flat=True)
+        self.fields['repuesto'].queryset = Repuesto.objects.filter(id_repuesto__in=registered_spare_parts)

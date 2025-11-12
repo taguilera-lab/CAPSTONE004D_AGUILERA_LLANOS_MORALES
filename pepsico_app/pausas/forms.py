@@ -258,7 +258,7 @@ class QuickPauseForm(forms.Form):
 
         # Agregar datos de repuestos
         from repuestos.models import SparePartStock
-        spare_parts = SparePartStock.objects.filter(current_stock__gt=0).select_related('repuesto').order_by('repuesto__name')
+        spare_parts = SparePartStock.objects.filter(current_stock__gte=0).select_related('repuesto').order_by('repuesto__name')
         spare_part_data = []
         for sp in spare_parts:
             spare_part_data.append({
