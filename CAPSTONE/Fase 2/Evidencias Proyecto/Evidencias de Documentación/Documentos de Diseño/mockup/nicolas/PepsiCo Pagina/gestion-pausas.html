@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PepsiCo — Gestión de Pausas</title>
+  <link rel="stylesheet" href="Css/fontello.css">
+  <link rel="stylesheet" href="Css/gestion-pausas.css">
+</head>
+<body>
+  <header class="barra-superior">
+        <div class="notificaciones">
+    <i class="icon-bell"></i>
+    <span class="badge">5</span> <!--Prueba, es para avisar que hay notificaciones-->
+  </div>
+  </header>
+  <img src="Images/PepsiCoLogo.png" alt="PepsiCo" class="logo">
+
+  <div class="btn-menu">
+    <label for="btn-menu" class="icon-menu" aria-label="Abrir menú"></label>
+  </div>
+  <input type="checkbox" id="btn-menu" />
+  <div class="container-menu">
+    <div class="cont-menu" role="navigation" aria-label="Menú lateral">
+      <label for="btn-menu" class="close icon-equis" aria-label="Cerrar menú"></label>
+      <nav>
+        <a href="#" class="icon-home">Inicio</a>
+        <a href="#" class="icon-truck">Ingresos</a>
+        <a href="#" class="icon-pause">Pausas</a>
+        <a href="#" class="icon-doc-text-inv">Documentos</a>
+        <a href="#" class="icon-doc">Reportes</a>
+        <a href="#" class="icon-user">Mi Perfil</a>
+        <a href="login.html" class="icon-logout">Salir</a>
+      </nav>
+    </div>
+  </div>
+  <main class="center-wrapper">
+    <section class="panel-transparente" aria-labelledby="titulo-pausas">
+      <header class="panel-header">
+        <h2 id="titulo-pausas">Registrar Pausa</h2>
+      </header>
+      <div class="panel-body">
+        <form class="form-simple" autocomplete="off">
+          <div class="field">
+            <label for="motivo">Motivo</label>
+            <select id="motivo" required>
+              <option value="" hidden>Selecciona un motivo…</option>
+              <option value="colacion">Colación</option>
+              <option value="repuestos">Retiro de repuestos</option>
+              <option value="limpieza">Limpieza de área</option>
+              <option value="otros">Otros</option>
+            </select>
+          </div>
+          <div class="field field-inline">
+            <label for="duracion">Duración (min)</label>
+            <input id="duracion" type="number" min="1" max="180" placeholder="Ej: 15" required>
+          </div>
+
+          <div class="field field-inline">
+            <label for="autorizacion">Autorización (Contraseña)</label>
+            <input id="autorizacion" type="password" placeholder="Ingrese su contraseña" required>
+          </div>
+
+          <div class="field field-inline">
+            <label for="vehiculo">Vehículo asociado (patente)</label>
+            <input id="vehiculo" type="text" placeholder="Ej: ABCD12" required>
+          </div>
+          <div class="acciones">
+            <button type="submit" class="btn-primario">Iniciar Pausa</button>
+          </div>
+        </form>
+        <hr class="separador">
+        <h3 class="subtitulo">Pausas Activas</h3>
+        <div class="tabla-wrapper pausas-scroll" tabindex="0" aria-label="Tabla de pausas activas (scroll interno)">
+          <table class="tabla-ligera tabla-horizontal">
+            <thead>
+              <tr>
+                <th>Patente</th>
+                <th>Motivo</th>
+                <th>Inicio</th>
+                <th>Duración</th>
+                <th>Autorizó</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>ABC-123</td><td>Colación</td><td>12:05</td><td>00:15</td><td>Supervisor</td></tr>
+              <tr><td>XYZ-987</td><td>Repuestos</td><td>12:20</td><td>00:07</td><td>J. de Flota</td></tr>
+              <tr><td>ABC-123</td><td>Colación</td><td>12:05</td><td>00:15</td><td>Supervisor</td></tr>
+              <tr><td>XYZ-987</td><td>Repuestos</td><td>12:20</td><td>00:07</td><td>J. de Flota</td></tr>
+              <tr><td>ABC-123</td><td>Colación</td><td>12:05</td><td>00:15</td><td>Supervisor</td></tr>
+              <tr><td>XYZ-987</td><td>Repuestos</td><td>12:20</td><td>00:07</td><td>J. de Flota</td></tr>
+              <tr><td>ABC-123</td><td>Colación</td><td>12:05</td><td>00:15</td><td>Supervisor</td></tr>
+              <tr><td>XYZ-987</td><td>Repuestos</td><td>12:20</td><td>00:07</td><td>J. de Flota</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <footer class="panel-footer">
+        <div class="buscador">
+          <label for="buscar-patente">Buscar patente</label>
+          <div class="input-buscar">
+            <input id="buscar-patente" type="text" placeholder="Ej: ABC123">
+            <button class="btn-primario">Buscar</button>
+          </div>
+        </div>
+      </footer>
+    </section>
+  </main>
+</body>
+</html>

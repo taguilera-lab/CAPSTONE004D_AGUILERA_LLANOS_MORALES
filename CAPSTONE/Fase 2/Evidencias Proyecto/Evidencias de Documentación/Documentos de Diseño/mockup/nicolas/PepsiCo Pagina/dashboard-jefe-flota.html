@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PepsiCo — Dashboard Jefe de Flota</title>
+  <link rel="stylesheet" href="Css/fontello.css">
+  <link rel="stylesheet" href="Css/dashboard-jefe-flota.css">
+</head>
+<body>
+  <header class="barra-superior">
+      <div class="notificaciones">
+    <i class="icon-bell"></i>
+    <span class="badge">5</span> <!--Prueba, es para avisar que hay notificaciones-->
+  </div>
+  </header>
+  <img src="Images/PepsiCoLogo.png" alt="PepsiCo" class="logo">
+  <div class="btn-menu">
+    <label for="btn-menu" class="icon-menu" aria-label="Abrir menú"></label>
+  </div>
+  <input type="checkbox" id="btn-menu" />
+  <div class="container-menu">
+    <nav class="cont-menu" aria-label="Menú lateral">
+      <label for="btn-menu" class="close icon-equis" aria-label="Cerrar menú"></label>
+        <a href="#" class="icon-home">Inicio</a>
+        <a href="#" class="icon-truck">Ingresos</a>
+        <a href="#" class="icon-pause">Pausas</a>
+        <a href="#" class="icon-doc-text-inv">Documentos</a>
+        <a href="#" class="icon-doc">Reportes</a>
+        <a href="#" class="icon-user">Mi Perfil</a>
+        <a href="login.html" class="icon-logout">Salir</a>
+    </nav>
+  </div>
+  <main class="center-wrapper">
+    <section class="panel-transparente" aria-labelledby="titulo-dashboard">
+      <header class="panel-header">
+        <h2 id="titulo-dashboard">Indicadores</h2>
+        <p class="resumen-kpi">
+          Vehículos hoy: <strong>15</strong> &nbsp;|&nbsp; Horas Hombre: <strong>120</strong>
+        </p>
+      </header>
+      <div class="panel-body">
+        <div class="chart-placeholder" role="img" aria-label="Espacio reservado para gráfico"> <!--Generé un espacio para colocar el grafico-->
+          <span>Gráfico de productividad (placeholder)</span>
+        </div>
+        <h3 class="subtitulo">Vehículos Pendientes</h3>
+        <div class="tabla-wrapper tabla-scroll" tabindex="0" aria-label="Tabla de vehículos pendientes (scroll interno)">
+          <table class="tabla-ligera tabla-horizontal">
+            <thead>
+              <tr>
+                <th>Patente</th>
+                <th>Estado</th>
+                <th>Ingreso</th>
+                <th>Asignado a</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>ABC-123</td><td>Diagnóstico</td><td>09:10</td><td>Mecánico 1</td></tr>
+              <tr><td>XYZ-987</td><td>En reparación</td><td>10:20</td><td>Mecánico 2</td></tr>
+              <tr><td>QWE-456</td><td>Esperando repuesto</td><td>11:05</td><td>Mecánico 3</td></tr>
+              <tr><td>JKL-555</td><td>Pruebas finales</td><td>11:40</td><td>Mecánico 4</td></tr>
+              <tr><td>RTY-112</td><td>Limpieza</td><td>12:00</td><td>Mecánico 2</td></tr>
+              <tr><td>UIO-654</td><td>Diagnóstico</td><td>12:40</td><td>Mecánico 1</td></tr>
+              <tr><td>BNM-321</td><td>Entrega programada</td><td>13:10</td><td>Mecánico 5</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="buscador">
+          <label for="buscar-patente">Buscar patente</label>
+          <div class="input-buscar">
+            <input id="buscar-patente" type="text" placeholder="Ej: ABC123">
+            <button class="btn-primario">Buscar</button>
+          </div>
+        </div>
+        <div class="acciones">
+          <button class="btn-primario">Generar Reporte</button>
+          <button class="btn-primario">Supervisar Tareas</button>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

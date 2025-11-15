@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mi Perfil</title>
+  <link rel="stylesheet" href="Css/perfil.css">
+  <link rel="stylesheet" href="Css/fontello.css">
+</head>
+<body>
+  <!-- Barra superior -->
+  <header class="barra-superior"></header>
+  <img src="Images/PepsiCoLogo.png" alt="logo" class="logo">
+
+  <!-- Botón menú -->
+  <div class="btn-menu">
+    <label for="btn-menu" class="icon-menu" aria-label="Abrir menú"></label>
+  </div>
+  <input type="checkbox" id="btn-menu" />
+
+  <!-- Menú lateral -->
+  <div class="container-menu">
+    <div class="cont-menu" role="navigation" aria-label="Menú lateral">
+      <label for="btn-menu" class="close icon-equis" aria-label="Cerrar menú"></label>
+      <nav>
+        <a href="Pag-inicio.html" class="icon-home">Inicio</a>
+        <a href="registro_ingreso.html" class="icon-truck">Ingresos</a>
+        <a href="agenda_ingresos.html" class="icon-calendar">Agenda</a>
+        <a href="documentos.html" class="icon-doc-text-inv">Documentos</a>
+        <a href="#" class="icon-doc">Reportes</a>
+        <a href="perfil.html" class="icon-user">Mi Perfil</a>
+        <a href="login.html" class="icon-logout">Salir</a>
+      </nav>
+    </div>
+  </div>
+
+  <!-- Contenido principal -->
+  <main class="contenedor">
+    <section class="perfil-card">
+      <h2>Mi Perfil</h2>
+
+      <!-- Imagen circular del usuario -->
+      <div class="imagen-usuario">
+        <img src="Images/UsuarioLogo.png" alt="Usuario" class="usuario-logo">
+      </div>
+
+      <!-- Datos dinámicos del usuario -->
+      <p><strong>Nombre:</strong> <span id="nombre-usuario">[Nombre]</span></p>
+      <p><strong>Rol:</strong> <span id="rol-usuario">[Rol]</span></p>
+      <p><strong>Dispositivo:</strong> <span id="dispositivo-usuario">[Detectado]</span></p>
+
+      <!-- Botones -->
+      <div class="botones">
+        <button class="btn-actualizar">Actualizar</button>
+        <a href="login.html" class="btn-cerrar">Cerrar Sesión</a>
+      </div>
+    </section>
+  </main>
+
+  <!-- Pie de página -->
+  <footer>
+    <p>© PepsiCo | Sistema de Gestión Vehicular</p>
+  </footer>
+
+  <!-- Script para simular datos dinámicos -->
+  <script>
+    const nombre = "Michelle Morales";
+    const rol = "Mecánico";
+    const dispositivo = navigator.userAgent.includes("Mobile") ? "Celular 📱" : "Computador 💻";
+
+    document.getElementById("nombre-usuario").textContent = nombre;
+    document.getElementById("rol-usuario").textContent = rol;
+    document.getElementById("dispositivo-usuario").textContent = dispositivo;
+  </script>
+</body>
+</html>

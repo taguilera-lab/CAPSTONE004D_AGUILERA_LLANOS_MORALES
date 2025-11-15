@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PepsiCo — Gestión de Repuestos</title>
+  <link rel="stylesheet" href="Css/fontello.css">
+  <link rel="stylesheet" href="Css/gestion-repuestos.css">
+</head>
+<body>
+  <header class="barra-superior"></header>
+    <div class="notificaciones">
+    <i class="icon-bell"></i>
+    <span class="badge">5</span> <!--Prueba, es para avisar que hay notificaciones-->
+  </div>
+
+  <img src="Images/PepsiCoLogo.png" alt="PepsiCo" class="logo">
+  <div class="btn-menu">
+    <label for="btn-menu" class="icon-menu" aria-label="Abrir menú"></label>
+  </div>
+  <input type="checkbox" id="btn-menu" />
+  <div class="container-menu">
+    <nav class="cont-menu" aria-label="Menú lateral">
+      <label for="btn-menu" class="close icon-equis" aria-label="Cerrar menú"></label>
+        <a href="#" class="icon-home">Inicio</a>
+        <a href="#" class="icon-truck">Ingresos</a>
+        <a href="#" class="icon-pause">Pausas</a>
+        <a href="#" class="icon-doc-text-inv">Documentos</a>
+        <a href="#" class="icon-doc">Reportes</a>
+        <a href="#" class="icon-user">Mi Perfil</a>
+        <a href="login.html" class="icon-logout">Salir</a>
+    </nav>
+  </div>
+  <main class="center-wrapper">
+    <section class="panel-transparente" aria-labelledby="titulo-repuestos">
+      <header class="panel-header">
+        <h2 id="titulo-repuestos">Gestión Repuestos</h2>
+      </header>
+      <div class="panel-body">
+        <div class="group">
+          <label for="buscar">Buscar</label>
+          <div class="input-icon">
+            <input id="buscar" type="text" placeholder="Buscar por nombre">
+          </div>
+        </div>
+        <div class="group">
+          <label>Stock</label>
+          <div class="tabla-wrapper stock-scroll" tabindex="0" aria-label="Tabla de stock (desplazable)">
+            <table class="tabla-ligera tabla-horizontal">
+              <thead>
+                <tr><th>Item</th><th>Cantidad</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Batería</td><td>5</td></tr>
+                <tr><td>Neumáticos</td><td>8</td></tr>
+                <tr><td>Filtros de aire</td><td>12</td></tr> <!--Los repeti para probar el scroll interno-->
+                <tr><td>Pastillas de freno</td><td>20</td></tr>
+                <tr><td>Neumáticos</td><td>8</td></tr>
+                <tr><td>Filtros de aire</td><td>12</td></tr>
+                <tr><td>Pastillas de freno</td><td>20</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="group-inline">
+          <div class="group">
+            <label for="cantidad">Entregar</label>
+            <input id="cantidad" type="number" min="1" placeholder="Cantidad">
+          </div>
+          <div class="group">
+            <label for="patente">Asociar Vehículo</label>
+            <input id="patente" type="text" placeholder="Patente (Ej: ABCD12)">
+          </div>
+        </div>
+
+        <div class="acciones">
+          <button class="btn-primario">Registrar Entrega</button>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

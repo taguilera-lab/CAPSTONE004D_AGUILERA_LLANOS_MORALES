@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Registro Ingreso Vehículo</title>
+  <link rel="stylesheet" href="Css/registro_ingreso.css">
+  <link rel="stylesheet" href="Css/fontello.css">
+</head>
+<body>
+  <!-- Barra superior -->
+  <header class="barra-superior"></header>
+  <img src="Images/PepsiCoLogo.png" alt="logo" class="logo">
+
+  <!-- Botón menú -->
+  <div class="btn-menu">
+    <label for="btn-menu" class="icon-menu" aria-label="Abrir menú"></label>
+  </div>
+  <input type="checkbox" id="btn-menu" />
+
+  <!-- Menú lateral -->
+  <div class="container-menu">
+    <div class="cont-menu" role="navigation" aria-label="Menú lateral">
+      <label for="btn-menu" class="close icon-equis" aria-label="Cerrar menú"></label>
+      <nav>
+        <a href="Pag-inicio.html" class="icon-home">Inicio</a>
+        <a href="registro_ingreso.html" class="icon-truck">Ingresos</a>
+        <a href="agenda_ingresos.html" class="icon-calendar">Agenda</a>
+        <a href="documentos.html" class="icon-doc-text-inv">Documentos</a>
+        <a href="#" class="icon-doc">Reportes</a>
+        <a href="perfil.html" class="icon-user">Mi Perfil</a>
+        <a href="login.html" class="icon-logout">Salir</a>
+      </nav>
+    </div>
+  </div>
+
+  <!-- Contenido principal -->
+  <main class="contenedor">
+    <form class="formulario">
+      <h2>Registro Ingreso Vehículo </h2>
+
+      <div class="campo">
+        <label for="patente">Vehículo (Patente):</label>
+        <input type="text" id="patente" name="patente" placeholder="Ej: ABCD-12" required>
+      </div>
+
+      <div class="campo">
+        <label>Estado:</label>
+        <div class="estado-opciones">
+          <label><input type="radio" name="estado" value="bueno" required> Bueno</label>
+          <label><input type="radio" name="estado" value="malo" required> Malo</label>
+        </div>
+      </div>
+
+      <div class="campo">
+        <label for="foto">Subir Foto:</label>
+        <input type="file" id="foto" name="foto" accept="image/*">
+      </div>
+
+      <div class="campo firma">
+        <label>Firma Digital:</label>
+        <canvas id="firma" width="300" height="150" style="border:1px solid #ccc; background-color:#fff;"></canvas>
+        <button type="button" id="limpiarFirma">Limpiar Firma</button>
+      </div>
+
+      <div class="botones">
+        <button type="submit" class="btn-registrar">Registrar Ingreso</button>
+        <button type="reset" class="btn-cancelar">Cancelar</button>
+      </div>
+    </form>
+  </main>
+
+  <!-- Pie de página -->
+  <footer>
+    <p>© PepsiCo | Sistema de Gestión Vehicular</p>
+  </footer>
+
+  <!-- Script firma digital -->
+  <script>
+    const canvas = document.getElementById("firma");
+    const ctx = canvas.getContext("2d");
+    let dibujando = false;
+
+    canvas.addEventListener("mousedown", () => dibujando = true);
+    canvas.addEventListener("mouseup", () => { dibujando = false; ctx.beginPath(); });
+    canvas.addEventListener("mousemove", dibujar);
+
+    function dibujar(e) {
+      if (!dibujando) return;
+      ctx.lineWidth = 2;
+      ctx.lineCap = "round";
+      ctx.strokeStyle = "#000";
+      ctx.lineTo(e.offsetX, e.offsetY);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(e.offsetX, e.offsetY);
+    }
+
+    document.getElementById("limpiarFirma").addEventListener("click", () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    });
+  </script>
+</body>
+</html>

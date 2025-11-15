@@ -1,0 +1,1 @@
+Los archivos FONT y Fontello.css son de una pagina de iconos gratuitos que descargué para hacer el menú lateral. Borrarlo va a hacer que esos iconos ya no estén y va a petar la pagina.

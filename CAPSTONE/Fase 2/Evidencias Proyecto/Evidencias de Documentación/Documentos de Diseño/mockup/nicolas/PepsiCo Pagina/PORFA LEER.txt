@@ -1,0 +1,16 @@
+No borrar los archivos de la carpeta font ni el archivo fontello.css.
+Contienen los íconos usados en el menú, botones y la campana de notificaciones.
+
+Hice algunos arreglos con ChatGPT:
+
+-Implementé y arreglé el scroll interno en las tablas y paneles.
+
+-Dejé los comentarios que generó en el código explicando los cambios, por si se requiere modificarlos en el futuro.
+
+- Para dashboard jefe de flota le pedi que me generara un espacio para colocar el grafico de productividad
+
+
+Verás en el codigo en los archivos css que utilicé Webkit para que ciertos efectos visuales funcionen bien en navegadores como Chrome, Safari u otros basados en WebKit.
+Son líneas de compatibilidad que aseguran que el diseño se vea igual en todos los navegadores.
+
+Si necesitas que haga algún arreglo me avisas.

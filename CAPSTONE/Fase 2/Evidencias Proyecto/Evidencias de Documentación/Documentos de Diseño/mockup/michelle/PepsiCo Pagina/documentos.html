@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Documentos Vehiculares</title>
+  <link rel="stylesheet" href="Css/documentos.css">
+  <link rel="stylesheet" href="Css/fontello.css">
+</head>
+<body>
+  <!-- Barra superior -->
+  <header class="barra-superior"></header>
+  <img src="Images/PepsiCoLogo.png" alt="logo" class="logo">
+
+  <!-- Botón menú -->
+  <div class="btn-menu">
+    <label for="btn-menu" class="icon-menu" aria-label="Abrir menú"></label>
+  </div>
+  <input type="checkbox" id="btn-menu" />
+
+  <!-- Menú lateral -->
+  <div class="container-menu">
+    <div class="cont-menu" role="navigation" aria-label="Menú lateral">
+      <label for="btn-menu" class="close icon-equis" aria-label="Cerrar menú"></label>
+      <nav>
+        <a href="#" class="icon-home">Inicio</a>
+        <a href="registro_ingreso.html" class="icon-truck">Ingresos</a>
+        <a href="#" class="icon-pause">Pausas</a>
+        <a href="documentos.html" class="icon-doc-text-inv">Documentos</a>
+        <a href="#" class="icon-doc">Reportes</a>
+        <a href="perfil.html" class="icon-user">Mi Perfil</a>
+        <a href="login.html" class="icon-logout">Salir</a>
+      </nav>
+    </div>
+  </div>
+
+  <!-- Contenido principal -->
+  <main class="contenedor">
+    <form class="formulario">
+      <h2>Documentos Vehiculo</h2>
+
+      <!-- Buscador por patente -->
+      <div class="campo buscador">
+        <label for="patente">Buscar por Patente:</label>
+        <div class="busqueda">
+          <input type="text" id="patente" name="patente" placeholder="Ej: ABCD-12" required>
+          <button type="button" class="btn-buscar" aria-label="Buscar"><span class="icon-search"></span></button>
+        </div>
+      </div>
+
+      <!-- Subir archivo -->
+      <div class="campo">
+        <label for="archivo">Subir Documento:</label>
+        <input type="file" id="archivo" name="archivo" accept=".pdf,image/*">
+      </div>
+
+      <!-- Lista de documentos -->
+      <div class="campo lista-documentos">
+        <label>Documentos disponibles:</label>
+        <ul>
+          <li><label><input type="checkbox" name="doc1"> Revisión Técnica.pdf</label></li>
+          <li><label><input type="checkbox" name="doc2"> Seguro Vehicular.jpg</label></li>
+          <li><label><input type="checkbox" name="doc3"> Mantención 2025.pdf</label></li>
+        </ul>
+      </div>
+
+      <!-- Botón descargar histórico -->
+      <div class="botones">
+        <button type="submit" class="btn-descargar">Descargar Histórico</button>
+      </div>
+    </form>
+  </main>
+
+  <!-- Pie de página -->
+  <footer>
+    <p>© PepsiCo | Sistema de Gestión Vehicular</p>
+  </footer>
+</body>
+</html>
