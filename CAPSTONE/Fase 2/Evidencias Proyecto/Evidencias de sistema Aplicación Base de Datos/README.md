@@ -60,9 +60,17 @@ El sistema optimiza procesos de taller, mejora la trazabilidad de vehículos y p
    ```
 
 5. **Carga datos iniciales** (opcional, si hay fixtures):
-   ```bash
-   python manage.py loaddata initial_data.json  # Si existe
-   ```
+  ```bash
+  # Los fixtures se encuentran en la carpeta `fixtures/` en la raíz del proyecto.
+  # Ejemplo: cargar un fixture concreto desde la carpeta `fixtures/`:
+  python manage.py loaddata fixtures/01_documents_basic.json
+
+  # O para cargar varios fixtures a la vez:
+  python manage.py loaddata fixtures/01_documents_basic.json fixtures/02_users.json fixtures/03_vehicles.json
+
+  # También hay un script de conveniencia que carga los fixtures definidos:
+  ./fixtures/load_fixtures.sh
+  ```
 
 6. **Ejecuta el servidor de desarrollo**:
    ```bash
