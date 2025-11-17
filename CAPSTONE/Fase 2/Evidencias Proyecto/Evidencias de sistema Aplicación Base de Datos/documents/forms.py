@@ -3,7 +3,9 @@ from .models import (
     Site, SAPEquipment, CECO, VehicleType, VehicleStatus, Vehicle,
     Role, UserStatus, FlotaUser, Route, ServiceType, Ingreso,
     Task, TaskAssignment, Pause, Document, Repuesto, Notification,
-    Report, MaintenanceSchedule, Incident, Diagnostics, IncidentImage
+    Report, MaintenanceSchedule, Incident, Diagnostics, IncidentImage,
+    WorkOrderStatus, WorkOrder, WorkOrderMechanic, WorkOrderImage,
+    SparePartUsage, IngresoImage
 )
 
 class SiteForm(forms.ModelForm):
@@ -337,4 +339,90 @@ class MaintenanceScheduleForm(forms.ModelForm):
             'expected_chofer': forms.Select(attrs={'class': 'form-control'}),
             'status': forms.Select(attrs={'class': 'form-control'}),
             'observations': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Observaciones'}),
+        }
+
+
+class WorkOrderStatusForm(forms.ModelForm):
+    class Meta:
+        model = WorkOrderStatus
+        fields = ['name', 'description', 'color']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre del estado'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Descripción'}),
+            'color': forms.TextInput(attrs={'class': 'form-control', 'type': 'color', 'placeholder': 'Color'}),
+        }
+
+
+class WorkOrderForm(forms.ModelForm):
+    class Meta:
+        model = WorkOrder
+        fields = [
+            'ingreso', 'service_type', 'status', 'work_started_at',
+            'estimated_completion', 'actual_completion', 'total_cost',
+            'observations', 'parts_issued', 'created_by', 'supervisor'
+        ]
+        widgets = {
+            'ingreso': forms.Select(attrs={'class': 'form-control'}),
+            'service_type': forms.Select(attrs={'class': 'form-control'}),
+            'status': forms.Select(attrs={'class': 'form-control'}),
+            'work_started_at': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
+            'estimated_completion': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
+            'actual_completion': forms.DateTimeInput(attrs={'class': 'form-control', 'type': 'datetime-local'}),
+            'total_cost': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'observations': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Observaciones'}),
+            'parts_issued': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'created_by': forms.Select(attrs={'class': 'form-control'}),
+            'supervisor': forms.Select(attrs={'class': 'form-control'}),
+        }
+
+
+class WorkOrderMechanicForm(forms.ModelForm):
+    class Meta:
+        model = WorkOrderMechanic
+        fields = ['work_order', 'mechanic', 'hours_worked', 'is_active']
+        widgets = {
+            'work_order': forms.Select(attrs={'class': 'form-control'}),
+            'mechanic': forms.Select(attrs={'class': 'form-control'}),
+            'hours_worked': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+
+class WorkOrderImageForm(forms.ModelForm):
+    class Meta:
+        model = WorkOrderImage
+        fields = ['work_order', 'name', 'description', 'image', 'uploaded_by']
+        widgets = {
+            'work_order': forms.Select(attrs={'class': 'form-control'}),
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre de la imagen'}),
+            'description': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Descripción'}),
+            'image': forms.FileInput(attrs={'class': 'form-control'}),
+            'uploaded_by': forms.Select(attrs={'class': 'form-control'}),
+        }
+
+
+class SparePartUsageForm(forms.ModelForm):
+    class Meta:
+        model = SparePartUsage
+        fields = ['work_order', 'repuesto', 'quantity_used', 'unit_cost', 'total_cost', 'notes']
+        widgets = {
+            'work_order': forms.Select(attrs={'class': 'form-control'}),
+            'repuesto': forms.Select(attrs={'class': 'form-control'}),
+            'quantity_used': forms.NumberInput(attrs={'class': 'form-control'}),
+            'unit_cost': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'total_cost': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Notas'}),
+        }
+
+
+class IngresoImageForm(forms.ModelForm):
+    class Meta:
+        model = IngresoImage
+        fields = ['ingreso', 'name', 'description', 'image', 'uploaded_by']
+        widgets = {
+            'ingreso': forms.Select(attrs={'class': 'form-control'}),
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre de la imagen'}),
+            'description': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Descripción'}),
+            'image': forms.FileInput(attrs={'class': 'form-control'}),
+            'uploaded_by': forms.Select(attrs={'class': 'form-control'}),
         }

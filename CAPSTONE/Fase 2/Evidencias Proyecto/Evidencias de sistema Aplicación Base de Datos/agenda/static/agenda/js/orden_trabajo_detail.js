@@ -98,6 +98,165 @@ function deleteSelectedItems(tableId) {
   form.submit();
 }
 
+// Función para calcular horas transcurridas dentro del horario laboral (7:30 AM - 4:30 PM)
+function calculateWorkingHoursElapsed(startDatetime, endDatetime) {
+    // TEMPORAL: Cálculo de tiempo total sin restricciones de horario laboral (24 horas)
+    // Código original comentado:
+    /*
+    const workStart = new Date(endDatetime);
+    workStart.setHours(7, 30, 0, 0);
+    const workEnd = new Date(endDatetime);
+    workEnd.setHours(16, 30, 0, 0);
+
+    let totalHours = 0;
+
+    // Si está dentro del mismo día
+    if (startDatetime.toDateString() === endDatetime.toDateString()) {
+        const effectiveStart = new Date(Math.max(startDatetime, workStart));
+        const effectiveEnd = new Date(Math.min(endDatetime, workEnd));
+
+        if (effectiveStart < effectiveEnd) {
+            totalHours = (effectiveEnd - effectiveStart) / 3600000; // convertir a horas
+        }
+    } else {
+        // Trabajo que cruza días
+        let currentDate = new Date(startDatetime);
+        currentDate.setHours(0, 0, 0, 0);
+
+        // Día de inicio
+        if (startDatetime < workEnd) {
+            const effectiveStart = new Date(Math.max(startDatetime, workStart));
+            const effectiveEnd = workEnd;
+            if (effectiveStart < effectiveEnd) {
+                totalHours += (effectiveEnd - effectiveStart) / 3600000;
+            }
+        }
+
+        // Días completos entre inicio y fin
+        currentDate.setDate(currentDate.getDate() + 1);
+        while (currentDate < endDatetime) {
+            // Día completo de trabajo
+            const dayStart = new Date(currentDate);
+            dayStart.setHours(7, 30, 0, 0);
+            const dayEnd = new Date(currentDate);
+            dayEnd.setHours(16, 30, 0, 0);
+            totalHours += (dayEnd - dayStart) / 3600000;
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+
+        // Día de fin
+        if (endDatetime > workStart) {
+            const effectiveStart = workStart;
+            const effectiveEnd = new Date(Math.min(endDatetime, workEnd));
+            if (effectiveStart < effectiveEnd) {
+                totalHours += (effectiveEnd - effectiveStart) / 3600000;
+            }
+        }
+    }
+
+    return totalHours;
+    */
+
+    // Cálculo temporal: tiempo total en horas (24/7)
+    return (endDatetime - startDatetime) / 3600000; // convertir milisegundos a horas
+}
+
+// Función para actualizar los tiempos de trabajo en tiempo real
+function updateWorkTimes() {
+    // Verificar si las variables globales existen
+    if (typeof workStartedAt === 'undefined' || typeof pausesData === 'undefined' || typeof mechanicAssignments === 'undefined') {
+        return;
+    }
+    
+    const now = new Date();
+    let totalReal = 0;
+
+    // Obtener el ID de la orden de trabajo para el almacenamiento persistente
+    const workOrderId = document.getElementById('work-order-id')?.value;
+
+    // Verificar si hay pausa global activa
+    const globalPauses = pausesData['global'] || [];
+    const globalActivePause = globalPauses.find(p => !p.end);
+
+    mechanicAssignments.forEach(assignment => {
+        const assignmentId = assignment.id;
+        const assignedAt = assignment.assignedAt;
+        const taskStartTime = assignment.taskStartTime;
+        const hasTasks = assignment.hasTasks;
+        
+        // Solo calcular tiempo si el mecánico tiene tareas asignadas
+        if (hasTasks) {
+            // Para mecánicos con tareas, usar un tiempo de inicio persistente en sessionStorage
+            const storageKey = `taskStartTime_${workOrderId}_${assignmentId}`;
+            let storedTime = sessionStorage.getItem(storageKey);
+            if (!storedTime) {
+                storedTime = new Date().toISOString();
+                sessionStorage.setItem(storageKey, storedTime);
+            }
+            const mechanicStartTime = new Date(storedTime);
+            
+            // Obtener todas las pausas relevantes para este mecánico:
+            // - Pausas individuales del mecánico
+            // - Pausas globales (que afectan a todos los mecánicos)
+            const mechanicPauses = (pausesData[assignmentId.toString()] || []);
+            const globalPauses = (pausesData['global'] || []);
+            
+            // Combinar todas las pausas relevantes y ordenarlas
+            const allPauses = [...mechanicPauses, ...globalPauses].sort((a, b) => new Date(a.start) - new Date(b.start));
+            
+            // Verificar si hay una pausa activa (sin end)
+            const activePause = allPauses.find(p => !p.end);
+            
+            // Calcular intervalos de trabajo
+            let realTime = 0;
+            let previousEnd = new Date(mechanicStartTime);
+            
+            for (const pause of allPauses) {
+                if (pause.end) {  // Pausa completada
+                    const pauseStart = new Date(pause.start);
+                    const pauseEnd = new Date(pause.end);
+                    // Intervalo desde previousEnd hasta pauseStart
+                    if (previousEnd < pauseStart) {
+                        realTime += calculateWorkingHoursElapsed(previousEnd, pauseStart);
+                    }
+                    // Actualizar previousEnd al pauseEnd
+                    previousEnd = pauseEnd;
+                } else {  // Pausa activa
+                    const pauseStart = new Date(pause.start);
+                    // Intervalo desde previousEnd hasta pauseStart
+                    if (previousEnd < pauseStart) {
+                        realTime += calculateWorkingHoursElapsed(previousEnd, pauseStart);
+                    }
+                    // No continuar después de pausa activa
+                    break;
+                }
+            }
+            
+            // Si no hay pausa activa, agregar intervalo desde previousEnd hasta now
+            if (!activePause) {
+                realTime += calculateWorkingHoursElapsed(previousEnd, now);
+            }
+            
+            const element = document.getElementById('real-time-' + assignmentId);
+            if (element) {
+                element.textContent = realTime.toFixed(2) + ' h';
+            }
+            totalReal += realTime;
+        } else {
+            // Si no tiene tareas asignadas, mostrar 0 horas
+            const element = document.getElementById('real-time-' + assignmentId);
+            if (element) {
+                element.textContent = '0.00 h';
+            }
+        }
+    });
+
+    const totalElement = document.getElementById('total-real-time');
+    if (totalElement) {
+        totalElement.textContent = totalReal.toFixed(2) + ' h (real)';
+    }
+}
+
 // Inicializar eventos cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', function() {
   initializeEventListeners();
@@ -136,4 +295,10 @@ function initializeEventListeners() {
       }
     });
   });
+
+  // Actualizar tiempos cada segundo si las variables existen
+  if (typeof workStartedAt !== 'undefined' && typeof pausesData !== 'undefined' && typeof mechanicAssignments !== 'undefined') {
+    setInterval(updateWorkTimes, 1000);
+    updateWorkTimes(); // Ejecutar inmediatamente
+  }
 }

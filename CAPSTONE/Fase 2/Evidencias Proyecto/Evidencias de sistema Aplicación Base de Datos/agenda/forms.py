@@ -1,5 +1,6 @@
 from django import forms
 from documents.models import Ingreso, Vehicle, ServiceType, FlotaUser, Route, Site, MaintenanceSchedule, UserStatus, WorkOrder, WorkOrderStatus, WorkOrderMechanic, SparePartUsage, Repuesto, Incident
+from repuestos.models import SparePartStock
 
 class IngresoForm(forms.ModelForm):
     route = forms.ModelChoiceField(queryset=Route.objects.all(), required=False, label="Ruta")
@@ -106,10 +107,11 @@ class AgendarIngresoForm(forms.ModelForm):
 class WorkOrderForm(forms.ModelForm):
     class Meta:
         model = WorkOrder
-        fields = ['service_type', 'status', 'estimated_completion', 'observations', 'supervisor']
+        fields = ['service_type', 'status', 'estimated_completion', 'observations', 'parts_issued', 'supervisor']
         widgets = {
             'estimated_completion': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
             'observations': forms.Textarea(attrs={'rows': 3}),
+            'parts_issued': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -137,28 +139,28 @@ class WorkOrderForm(forms.ModelForm):
 class WorkOrderMechanicForm(forms.ModelForm):
     class Meta:
         model = WorkOrderMechanic
-        fields = ['mechanic', 'hours_worked']
+        fields = ['mechanic']
         widgets = {
             'hours_worked': forms.NumberInput(attrs={'step': '0.25', 'min': '0'}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Filtrar solo usuarios con roles de mecánico (no supervisores)
-        self.fields['mechanic'].queryset = FlotaUser.objects.filter(role__is_supervisor_role=False)
+        # Filtrar solo usuarios con rol de mecánico
+        self.fields['mechanic'].queryset = FlotaUser.objects.filter(role__name='Mecánico')
 
 
 class SparePartUsageForm(forms.ModelForm):
     class Meta:
         model = SparePartUsage
-        fields = ['repuesto', 'quantity_used', 'unit_cost', 'notes']
+        fields = ['repuesto', 'quantity_used', 'notes']
         widgets = {
             'quantity_used': forms.NumberInput(attrs={'min': '1'}),
-            'unit_cost': forms.NumberInput(attrs={'step': '0.01', 'min': '0'}),
             'notes': forms.Textarea(attrs={'rows': 2}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Solo mostrar repuestos disponibles (quantity > 0)
-        self.fields['repuesto'].queryset = Repuesto.objects.filter(quantity__gt=0)
+        # Mostrar todos los repuestos registrados en el módulo de repuestos (con SparePartStock activo)
+        registered_spare_parts = SparePartStock.objects.filter(is_active=True).values_list('repuesto', flat=True)
+        self.fields['repuesto'].queryset = Repuesto.objects.filter(id_repuesto__in=registered_spare_parts)

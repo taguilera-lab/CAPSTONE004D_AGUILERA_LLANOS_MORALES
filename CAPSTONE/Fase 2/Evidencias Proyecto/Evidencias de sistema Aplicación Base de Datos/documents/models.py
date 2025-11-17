@@ -4,6 +4,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.utils import timezone
 
 
 class Site(models.Model):
@@ -201,8 +202,9 @@ class Route(models.Model):
         """
         for vehicle in self.vehicles.all():
             try:
-                flota_user = FlotaUser.objects.get(patent=vehicle, status__name='Activo')
-                return flota_user
+                flota_user = FlotaUser.objects.filter(patent=vehicle, status__name='Activo').first()
+                if flota_user:
+                    return flota_user
             except FlotaUser.DoesNotExist:
                 continue
         return None
@@ -293,24 +295,91 @@ class WorkOrderStatus(models.Model):
 
 class WorkOrder(models.Model):
     id_work_order = models.AutoField(primary_key=True)
-    ingreso = models.OneToOneField(
-        Ingreso, on_delete=models.CASCADE, db_column='ingreso_id', related_name='work_order')
+    ingreso = models.ForeignKey(
+        Ingreso, on_delete=models.CASCADE, db_column='ingreso_id', null=True, blank=True, related_name='work_orders')
     service_type = models.ForeignKey(
         ServiceType, on_delete=models.CASCADE, db_column='service_type_id', null=True, blank=True)
     status = models.ForeignKey(
         WorkOrderStatus, on_delete=models.CASCADE, db_column='status_id')
     created_datetime = models.DateTimeField(auto_now_add=True)
+    work_started_at = models.DateTimeField(null=True, blank=True, help_text="Fecha y hora en que se inició el trabajo")
     estimated_completion = models.DateTimeField(null=True, blank=True)
     actual_completion = models.DateTimeField(null=True, blank=True)
     total_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     observations = models.TextField(null=True, blank=True)
+    parts_issued = models.BooleanField(default=False, help_text="Indica si se han registrado las salidas de repuestos para esta OT")
     created_by = models.ForeignKey(
         FlotaUser, on_delete=models.SET_NULL, db_column='created_by_id', null=True, blank=True, related_name='created_work_orders')
     supervisor = models.ForeignKey(
         FlotaUser, on_delete=models.SET_NULL, db_column='supervisor_id', null=True, blank=True, related_name='supervised_work_orders')
 
     def __str__(self):
-        return f"OT-{self.id_work_order} - {self.ingreso.patent}"
+        if self.ingreso:
+            return f"OT-{self.id_work_order} - {self.ingreso.patent}"
+        else:
+            return f"OT-{self.id_work_order} - Sin ingreso"
+
+    def get_search_display(self):
+        """Método para mostrar información detallada en búsquedas"""
+        if self.ingreso:
+            return f"OT-{self.id_work_order} - {self.ingreso.patent} - {self.ingreso.patent.type.name if self.ingreso.patent.type else 'Sin tipo'}"
+        else:
+            return f"OT-{self.id_work_order} - Sin ingreso"
+
+    @property
+    def total_pause_time(self):
+        """Calcula el tiempo total de pausas en minutos"""
+        from pausas.models import WorkOrderPause
+        pauses = WorkOrderPause.objects.filter(work_order=self, is_active=True)
+        total_minutes = 0
+        for pause in pauses:
+            if pause.duration_minutes:
+                total_minutes += pause.duration_minutes
+        return total_minutes
+
+    @property
+    def estimated_work_duration(self):
+        """Calcula la duración estimada del trabajo en horas basado en las tareas asignadas"""
+        from .models import Task
+        from agenda.views import calculate_working_hours_elapsed
+        tasks = Task.objects.filter(work_order=self)
+        
+        if not tasks.exists():
+            # Si no hay tareas, usar las asignaciones de mecánicos como fallback
+            return sum(assignment.hours_worked for assignment in self.mechanic_assignments.filter(is_active=True))
+        
+        total_hours = 0
+        for task in tasks:
+            if task.start_datetime and task.end_datetime:
+                # Para tareas completadas o con fecha final estimada, calcular horas laborales
+                total_hours += calculate_working_hours_elapsed(task.start_datetime, task.end_datetime)
+        
+        return total_hours if total_hours > 0 else sum(assignment.hours_worked for assignment in self.mechanic_assignments.filter(is_active=True))
+
+    @property
+    def tentative_completion_datetime(self):
+        """Calcula la fecha y hora tentativa de finalización considerando solo horas laborales"""
+        if not self.work_started_at:
+            return None
+        
+        # Calcular tiempo total estimado en horas
+        estimated_hours = self.estimated_work_duration
+        if estimated_hours == 0:
+            return None
+            
+        # Convertir a Decimal para consistencia
+        from decimal import Decimal
+        estimated_hours = Decimal(estimated_hours)
+        
+        # Sumar tiempo de pausas en horas (considerando que las pausas ya están calculadas dentro de jornada)
+        total_pause_hours = Decimal(self.total_pause_time) / 60
+        
+        # Tiempo total necesario en horas
+        total_required_hours = estimated_hours + total_pause_hours
+        
+        # Usar la función para calcular fecha considerando solo horas laborales
+        from agenda.views import calculate_completion_datetime
+        return calculate_completion_datetime(self.work_started_at, total_required_hours)
 
     class Meta:
         db_table = 'WorkOrders'
@@ -342,6 +411,7 @@ class TaskAssignment(models.Model):
         Task, on_delete=models.CASCADE, db_column='task_id')
     user = models.ForeignKey(
         FlotaUser, on_delete=models.CASCADE, db_column='user_id')
+    assigned_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return f"{self.id_assignment} - {self.task} - {self.user}"
@@ -416,14 +486,16 @@ class Notification(models.Model):
 
 class Report(models.Model):
     id_report = models.AutoField(primary_key=True)
-    type = models.CharField(max_length=50)
-    generated_datetime = models.DateTimeField()
-    data = models.JSONField()
+    type = models.ForeignKey(
+        'document_upload.ReportType', on_delete=models.SET_NULL, null=True, blank=True, related_name='reports')
+    generated_datetime = models.DateTimeField(default=timezone.now)
+    data = models.TextField(blank=True, default='')
     user = models.ForeignKey(
-        FlotaUser, on_delete=models.CASCADE, db_column='user_id')
+        FlotaUser, on_delete=models.SET_NULL, null=True, blank=True, db_column='user_id')
 
     def __str__(self):
-        return f"{self.id_report} - {self.type}"
+        type_name = self.type.name if self.type else "Sin tipo"
+        return f"Reporte #{self.id_report} - {type_name}"
 
     class Meta:
         db_table = 'Reports'
@@ -441,6 +513,9 @@ class WorkOrderMechanic(models.Model):
 
     def __str__(self):
         return f"{self.work_order} - {self.mechanic.name}"
+
+    def get_search_display(self):
+        return f"{self.work_order.get_search_display()} - {self.mechanic.name}"
 
     class Meta:
         db_table = 'WorkOrderMechanics'
@@ -686,6 +761,24 @@ class IngresoImage(models.Model):
 
     class Meta:
         db_table = 'IngresoImages'
+
+
+class WorkOrderImage(models.Model):
+    id_image = models.AutoField(primary_key=True)
+    work_order = models.ForeignKey(
+        WorkOrder, on_delete=models.CASCADE, db_column='work_order_id', related_name='images')
+    name = models.CharField(max_length=100)
+    description = models.CharField(max_length=200, null=True, blank=True, help_text='Descripción del tipo de foto (ej. "Trabajo realizado", "Estado final")')
+    image = models.ImageField(upload_to='work_order_images/')
+    uploaded_by = models.ForeignKey(
+        FlotaUser, on_delete=models.SET_NULL, db_column='uploaded_by_id', null=True, blank=True, related_name='uploaded_work_order_images')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"OT-{self.work_order.id_work_order} - {self.name}"
+
+    class Meta:
+        db_table = 'WorkOrderImages'
 
 
 @receiver(post_save, sender=Incident)

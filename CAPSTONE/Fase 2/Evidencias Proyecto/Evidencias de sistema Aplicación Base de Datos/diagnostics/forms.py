@@ -83,6 +83,24 @@ class DiagnosticsForm(forms.ModelForm):
         # Filtrar solo usuarios con rol de mecánico
         self.fields['assigned_to'].queryset = FlotaUser.objects.filter(role__name='Mecánico')
         
+        # Limitar opciones de status para edición: solo Reportada y Diagnostico_In_Situ
+        if self.instance and self.instance.pk:
+            # Es una edición de diagnóstico existente
+            self.fields['status'].choices = [
+                ('Reportada', 'Reportada'),
+                ('Diagnostico_In_Situ', 'Diagnóstico In Situ'),
+            ]
+            # Establecer Reportada como valor por defecto solo si no hay valor establecido ni en instance ni en initial
+            if not self.instance.status and 'status' not in self.initial:
+                self.initial['status'] = 'Reportada'
+        else:
+            # Para nuevos diagnósticos, establecer Reportada como valor por defecto
+            if 'status' not in self.initial:
+                self.initial['status'] = 'Reportada'
+        
+        # Determinar el vehículo para filtrar rutas
+        vehicle_for_route = None
+        
         # Determinar el vehículo para filtrar rutas
         vehicle_for_route = None
         

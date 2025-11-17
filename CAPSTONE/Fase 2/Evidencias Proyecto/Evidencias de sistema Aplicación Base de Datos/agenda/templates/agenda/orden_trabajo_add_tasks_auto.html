@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Agregar Tareas Automáticas - OT-{{ work_order.id_work_order }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title mb-0">
+            <i class="fas fa-tasks"></i>
+            Agregar Tareas Automáticas a Orden de Trabajo OT-{{ work_order.id_work_order }}
+          </h4>
+        </div>
+        <div class="card-body">
+          <!-- Información de la OT -->
+          <div class="row mb-4">
+            <div class="col-md-6">
+              <div class="info-box">
+                {% if work_order.ingreso %}
+                <h6><strong>Vehículo:</strong> {{ work_order.ingreso.patent }}</h6>
+                {% endif %}
+                <h6><strong>Servicio:</strong> {{ work_order.service_type }}</h6>
+                <h6><strong>Estado:</strong>
+                  <span class="badge" style="background-color: {{ work_order.status.color }};">
+                    {{ work_order.status.name }}
+                  </span>
+                </h6>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="info-box">
+                <h6><strong>Mecánicos Asignados:</strong>
+                  {% if mechanic_assignments %}
+                    {% for assignment in mechanic_assignments %}
+                      {{ assignment.mechanic.name }}{% if not forloop.last %}, {% endif %}
+                    {% endfor %}
+                  {% else %}
+                    <em>Sin mecánicos asignados</em>
+                  {% endif %}
+                </h6>
+                <h6><strong>Fecha de Creación:</strong> {{ work_order.created_datetime|date:"d/m/Y H:i" }}</h6>
+              </div>
+            </div>
+          </div>
+
+          <p class="text-info">
+            <i class="fas fa-info-circle"></i>
+            Se crearán tareas automáticamente según experiencia y especialización para cada mecánico asignado.
+          </p>
+
+          <form method="post">
+            {% csrf_token %}
+            <div class="row">
+              {% for task in generated_tasks %}
+              <div class="col-md-6 mb-3">
+                <div class="card">
+                  <div class="card-header">
+                    <h6 class="mb-0">{{ task.assignment.mechanic.name }}</h6>
+                  </div>
+                  <div class="card-body">
+                    <div class="mb-3">
+                      <strong>Tarea asignada:</strong>
+                      <p class="mb-2">{{ task.description }}</p>
+                      <div class="row">
+                        <div class="col-6">
+                          <small class="text-muted">
+                            <strong>Urgencia:</strong> {{ task.urgency }}
+                          </small>
+                        </div>
+                        <div class="col-6">
+                          <small class="text-muted">
+                            <strong>Tipo:</strong> {{ task.service_type }}
+                          </small>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+
+            <div class="row mt-4">
+              <div class="col-12 text-center">
+                <button type="submit" class="btn btn-success btn-lg">
+                  <i class="fas fa-plus"></i> Crear Tareas Automáticamente
+                </button>
+                <a href="{% url 'orden_trabajo_detail' work_order.id_work_order %}" class="btn btn-secondary btn-lg ms-2">
+                  <i class="fas fa-times"></i> Cancelar
+                </a>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

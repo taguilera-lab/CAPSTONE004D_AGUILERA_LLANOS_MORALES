@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Terminar Pausa Personal - OT-{{ work_order.id_work_order }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-6">
+      <div class="card">
+        <div class="card-header bg-success text-white">
+          <h4 class="mb-0">
+            <i class="fas fa-play"></i> Terminar Pausa Personal
+          </h4>
+        </div>
+        <div class="card-body">
+          <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i>
+            <strong>OT-{{ work_order.id_work_order }}</strong> - ¿Deseas terminar tu pausa personal activa?
+          </div>
+
+          <div class="card mb-3">
+            <div class="card-body">
+              <h6 class="card-title">Detalles de la Pausa</h6>
+              <div class="row">
+                <div class="col-sm-6">
+                  <strong>Inicio:</strong><br>
+                  {{ pause.start_datetime|date:"d/m/Y H:i" }}
+                </div>
+                <div class="col-sm-6">
+                  <strong>Motivo:</strong><br>
+                  {{ pause.reason }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <form method="post">
+            {% csrf_token %}
+
+            <div class="alert alert-warning">
+              <i class="fas fa-exclamation-triangle"></i>
+              <strong>Confirmación:</strong> Al terminar la pausa, registrarás que has reanudado el trabajo en esta orden de trabajo.
+            </div>
+
+            <div class="d-flex justify-content-between">
+              <a href="{% url 'orden_trabajo_detail' work_order.id_work_order %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Cancelar
+              </a>
+              <button type="submit" class="btn btn-success">
+                <i class="fas fa-play"></i> Terminar Pausa
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

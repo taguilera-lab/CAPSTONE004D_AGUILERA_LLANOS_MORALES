@@ -1,0 +1,263 @@
+[
+{
+  "model": "documents.role",
+  "pk": 1,
+  "fields": {
+    "name": "Jefe de Flota",
+    "description": "Pesar francia decía corte méxico. Sobre sistema esos principal cara autoridades.\nMis medida fuerzas. Grandes poder derecho cuenta. Medidas vez noche hechos ocho ambos construcción.",
+    "is_supervisor_role": true
+  }
+},
+{
+  "model": "documents.role",
+  "pk": 2,
+  "fields": {
+    "name": "Mecánico",
+    "description": "Problemas duda llegado diversos otras. Especial difícil nacional viejo.\nQuedó c todo. País paso siempre ésta.",
+    "is_supervisor_role": false
+  }
+},
+{
+  "model": "documents.role",
+  "pk": 3,
+  "fields": {
+    "name": "Vendedor",
+    "description": null,
+    "is_supervisor_role": false
+  }
+},
+{
+  "model": "documents.role",
+  "pk": 4,
+  "fields": {
+    "name": "Guardia",
+    "description": "Crisis boca miembros mayo.\nSiendo primera madrid abril sabía. Muy sociales ahí estaba fernando clase premio producción.",
+    "is_supervisor_role": false
+  }
+},
+{
+  "model": "documents.role",
+  "pk": 5,
+  "fields": {
+    "name": "Bodeguero",
+    "description": "Valores adelante últimos estoy centros a llegado. Podía hacerlo encima violencia pequeño reunión menor.\nTan hasta dólares exterior pensar jorge salud. Podría o español propio temas economía.",
+    "is_supervisor_role": false
+  }
+},
+{
+  "model": "documents.role",
+  "pk": 6,
+  "fields": {
+    "name": "Supervisor",
+    "description": null,
+    "is_supervisor_role": true
+  }
+},
+{
+  "model": "documents.role",
+  "pk": 7,
+  "fields": {
+    "name": "Jefe de taller",
+    "description": null,
+    "is_supervisor_role": true
+  }
+},
+{
+  "model": "documents.role",
+  "pk": 8,
+  "fields": {
+    "name": "Recepcionista de Vehículos",
+    "description": null,
+    "is_supervisor_role": false
+  }
+},
+{
+  "model": "documents.role",
+  "pk": 9,
+  "fields": {
+    "name": "Administrador",
+    "description": null,
+    "is_supervisor_role": true
+  }
+},
+{
+  "model": "documents.userstatus",
+  "pk": 1,
+  "fields": {
+    "name": "Activo",
+    "description": "Aunque hablar con fondo hizo trata.\nLocal social ex este imagen. Cualquier que ocho. Armas fuerte era acción gonzález poder especie."
+  }
+},
+{
+  "model": "documents.userstatus",
+  "pk": 2,
+  "fields": {
+    "name": "Inactivo",
+    "description": null
+  }
+},
+{
+  "model": "documents.userstatus",
+  "pk": 3,
+  "fields": {
+    "name": "En capacitación",
+    "description": "Cuales hablar principios suerte. Esto mano durante libro otras dinero. Cinco objeto mar campo rodríguez."
+  }
+},
+{
+  "model": "documents.flotauser",
+  "pk": 1,
+  "fields": {
+    "user": 1,
+    "name": "Jefe de Flota",
+    "role": 1,
+    "patent": "1493 DPK",
+    "status": 1,
+    "observations": "San diario aún quizá estoy. Esa director ha aquella actividad aún. Otros nuevas sueño será.\nHizo especialmente qué debe posición realidad color cierta. Semana presencia sociales.",
+    "gpid": "GP7654"
+  }
+},
+{
+  "model": "documents.flotauser",
+  "pk": 2,
+  "fields": {
+    "user": 2,
+    "name": "Mecánico",
+    "role": 2,
+    "patent": "1879 SGD",
+    "status": 1,
+    "observations": "Ciudad nivel hacia fue. Violencia vivir obras francisco familia. Marzo realidad agua mayoría hacer.\nPensar actual alta banco por más. Su general juicio seguro último. Diez sectores nada mismo miedo.",
+    "gpid": "GP2400"
+  }
+},
+{
+  "model": "documents.flotauser",
+  "pk": 3,
+  "fields": {
+    "user": 3,
+    "name": "Vendedor",
+    "role": 3,
+    "patent": "SS 2367 GO",
+    "status": 1,
+    "observations": "Sí peor hombres siendo económica tan servicio. Peso características tribunal éxito. Las todavía armas existe norte ellos fuerza año.",
+    "gpid": "GP2585"
+  }
+},
+{
+  "model": "documents.flotauser",
+  "pk": 4,
+  "fields": {
+    "user": 4,
+    "name": "Guardia",
+    "role": 4,
+    "patent": "4007 CKC",
+    "status": 1,
+    "observations": "Civil artículo menor. Nuevo material cuadro propia podrá diversas nuestro.\nMartín estudio más asociación control investigación. Modo pues especial sigue.",
+    "gpid": "GP2163"
+  }
+},
+{
+  "model": "documents.flotauser",
+  "pk": 5,
+  "fields": {
+    "user": 5,
+    "name": "Bodeguero",
+    "role": 5,
+    "patent": "7038 SZH",
+    "status": 1,
+    "observations": "Familia allí largo tengo corte estaban. Un autor enfermedad ello hemos carne mismos. Seguir final estuvo visto es esfuerzo. Luz vio diciembre.",
+    "gpid": "GP2014"
+  }
+},
+{
+  "model": "documents.flotauser",
+  "pk": 6,
+  "fields": {
+    "user": 6,
+    "name": "Supervisor",
+    "role": 6,
+    "patent": "5455 MYP",
+    "status": 1,
+    "observations": "Creo posición parece rey. Obra sala familia región cuales de. Dice domingo título las r juego.",
+    "gpid": "GP1233"
+  }
+},
+{
+  "model": "documents.flotauser",
+  "pk": 7,
+  "fields": {
+    "user": 7,
+    "name": "Jefe de Taller",
+    "role": 7,
+    "patent": "0910 LDT",
+    "status": 1,
+    "observations": "Camino amor pasar toma. Capaz supuesto región pública juego problemas son. Esta construcción llega pocos atrás.\nTan tengo te niño. Forma nos seguir ocho.",
+    "gpid": "GP4950"
+  }
+},
+{
+  "model": "documents.flotauser",
+  "pk": 8,
+  "fields": {
+    "user": 8,
+    "name": "Recepcionista de Vehículos",
+    "role": 8,
+    "patent": "4746 YGV",
+    "status": 1,
+    "observations": "General población casi lucha. Silencio resto ayuda socialista deseo imágenes.\nN flores tipos momentos. Queda mayo pueden sentido.",
+    "gpid": "GP1728"
+  }
+},
+{
+  "model": "documents.flotauser",
+  "pk": 16,
+  "fields": {
+    "user": 18,
+    "name": "Tomi",
+    "role": 2,
+    "patent": "0541 MGN",
+    "status": 1,
+    "observations": "Usuario creado automáticamente",
+    "gpid": "GPTOMI"
+  }
+},
+{
+  "model": "documents.flotauser",
+  "pk": 17,
+  "fields": {
+    "user": 19,
+    "name": "Yomi",
+    "role": 2,
+    "patent": "0541 MGN",
+    "status": 1,
+    "observations": "Usuario creado automáticamente",
+    "gpid": "GPYOMI"
+  }
+},
+{
+  "model": "documents.flotauser",
+  "pk": 18,
+  "fields": {
+    "user": 20,
+    "name": "vendedor2",
+    "role": 3,
+    "patent": "OU 3679 NS",
+    "status": 1,
+    "observations": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    "gpid": "Lorem123"
+  }
+},
+{
+  "model": "documents.flotauser",
+  "pk": 19,
+  "fields": {
+    "user": 21,
+    "name": "vendedor3",
+    "role": 3,
+    "patent": "GC 5176 MS",
+    "status": 1,
+    "observations": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    "gpid": "Lorem321"
+  }
+}
+]

@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - {{ role }}{% endblock %}
+
+{% block static %}
+<link rel="stylesheet" href="{% static 'login/css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="contenedor">
+    <div class="formulario">
+        <h2>Bienvenido, {{ role }}</h2>
+
+        <div class="dashboard-section">
+            <h3><i class="fas fa-car"></i> Control de Ingresos</h3>
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-value">{{ features.ingresos_today }}</div>
+                    <div class="kpi-label">Vehículos Ingresados Hoy</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">{{ features.vehicles_in_workshop }}</div>
+                    <div class="kpi-label">Vehículos en Taller</div>
+                </div>
+            </div>
+            <div class="dashboard-actions">
+                <a href="{% url 'ingresos_list' %}" class="btn btn-primary">
+                    <i class="fas fa-list"></i> Ver Ingresos
+                </a>
+                <a href="{% url 'ingreso_create_select' %}" class="btn btn-secondary">
+                    <i class="fas fa-plus"></i> Nuevo Ingreso
+                </a>
+            </div>
+        </div>
+
+        <div class="dashboard-section">
+            <h3><i class="fas fa-exclamation-triangle"></i> Reporte de Incidentes</h3>
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-value">{{ features.incidents_today }}</div>
+                    <div class="kpi-label">Incidentes Reportados Hoy</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">{{ features.critical_incidents }}</div>
+                    <div class="kpi-label">Incidentes Críticos</div>
+                </div>
+            </div>
+            <div class="dashboard-actions">
+                <a href="{% url 'incidents:guardia_report_incident' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Reportar Incidente
+                </a>
+                <a href="{% url 'incidents:incident_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-list"></i> Ver Incidentes
+                </a>
+            </div>
+        </div>
+
+        <div class="dashboard-actions">
+            <a href="{% url 'logout' %}" class="btn btn-secondary">Cerrar Sesión</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if form.instance.pk %}Editar Información Básica de Orden de Compra{% else %}Nueva Orden de Compra{% endif %}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="mb-0">
+            <i class="fas fa-shopping-cart"></i>
+            {% if form.instance.pk %}Editar Información Básica de Orden de Compra{% else %}Nueva Orden de Compra{% endif %}
+          </h4>
+        </div>
+        <div class="card-body">
+          <form method="post" id="purchaseOrderForm">
+            {% csrf_token %}
+
+            <div class="row">
+                <!-- Información General -->
+              <div class="col-lg-6">
+                <h5 class="mb-3">Información General</h5>
+
+                <!-- Proveedor -->
+                <div class="mb-3">
+                  <label for="{{ form.supplier.id_for_label }}" class="form-label">
+                    Proveedor <span class="text-danger">*</span>
+                  </label>
+                  {{ form.supplier }}
+                  {% if form.supplier.errors %}
+                  <div class="text-danger small">
+                    {% for error in form.supplier.errors %}{{ error }}{% endfor %}
+                  </div>
+                  {% endif %}
+                </div>                
+                {% if not form.instance.pk %}
+                <!-- Estado (solo para nuevas órdenes) -->
+                <div class="mb-3">
+                  <label for="{{ form.status.id_for_label }}" class="form-label">
+                    Estado <span class="text-danger">*</span>
+                  </label>
+                  {{ form.status }}
+                  {% if form.status.errors %}
+                  <div class="text-danger small">
+                    {% for error in form.status.errors %}{{ error }}{% endfor %}
+                  </div>
+                  {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- Notas -->
+                <div class="mb-3">
+                  <label for="{{ form.notes.id_for_label }}" class="form-label">Notas</label>
+                  {{ form.notes }}
+                  {% if form.notes.errors %}
+                  <div class="text-danger small">
+                    {% for error in form.notes.errors %}{{ error }}{% endfor %}
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+
+              <!-- Resumen -->
+              <div class="col-lg-6">
+                <h5 class="mb-3">Resumen</h5>
+                <div class="card bg-light">
+                  <div class="card-body">
+                    <div class="row">
+                      <div class="col-6">
+                        <strong>Items:</strong> <span id="totalItems">0</span>
+                      </div>
+                      <div class="col-6">
+                        <strong>Total:</strong> $<span id="totalAmount">0.00</span>
+                      </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                      <div class="col-6">
+                        <strong>Fecha:</strong>
+                      </div>
+                      <div class="col-6">
+                        {% now "d/m/Y" %}
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="col-6">
+                        <strong>Creado por:</strong>
+                      </div>
+                      <div class="col-6">
+                        {{ user.name }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Items de la Orden -->
+            <div class="row mt-4">
+              <div class="col-12">
+                <h5 class="mb-3">Items de la Orden</h5>
+                
+                                {% if form.instance.pk %}
+                <div class="alert alert-warning">
+                  <i class="fas fa-exclamation-triangle"></i> <strong>Edición limitada:</strong> 
+                  Solo puedes modificar el proveedor, fecha de entrega y notas. 
+                  Los items de la orden no se pueden cambiar una vez creada la orden.
+                  <br><small>Si necesitas modificar los items, crea una nueva orden de compra.</small>
+                </div>
+                
+                <!-- Mostrar items existentes (solo lectura) -->
+                <div class="table-responsive">
+                  <table class="table table-striped">
+                    <thead>
+                      <tr>
+                        <th>Repuesto</th>
+                        <th>Número Parte</th>
+                        <th>Cantidad</th>
+                        <th>Precio Unit.</th>
+                        <th>Subtotal</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for item in form.instance.items.all %}
+                      <tr>
+                        <td>{{ item.repuesto.name }}</td>
+                        <td>{{ item.repuesto.stock_info.part_number|default:"-" }}</td>
+                        <td>{{ item.quantity_ordered }}</td>
+                        <td>${{ item.unit_price|floatformat:2 }}</td>
+                        <td>${{ item.total_price|floatformat:2 }}</td>
+                      </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+                {% else %}
+                <div id="orderItems" data-initial-item-count="0">
+                  <!-- Los items se cargarán aquí dinámicamente -->
+                </div>
+                {% endif %}
+
+                <button type="button" class="btn btn-outline-primary" id="addItemBtn">
+                  <i class="fas fa-plus"></i> Agregar Item
+                </button>
+              </div>
+            </div>
+
+            <!-- Botones -->
+            <div class="d-flex justify-content-between mt-4">
+              <a href="{% url 'repuestos:purchase_order_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Cancelar
+              </a>
+              <div>
+                {% if not form.instance.pk %}
+                <button type="button" class="btn btn-outline-warning me-2" onclick="saveAsDraft()">
+                  <i class="fas fa-save"></i> Guardar Borrador
+                </button>
+                {% endif %}
+                <button type="submit" class="btn btn-primary">
+                  <i class="fas fa-save"></i>
+                  {% if form.instance.pk %}Guardar Cambios{% else %}Crear{% endif %} Orden
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Datos de repuestos para JavaScript -->
+<script id="sparePartsData" type="application/json">
+[
+  {% for stock in spare_parts %}
+  {
+    "repuesto_pk": "{{ stock.repuesto.pk }}",
+    "repuesto_name": "{{ stock.repuesto.name|escapejs }}",
+    "part_number": "{{ stock.part_number|default:''|escapejs }}",
+    "unit_cost": "{{ stock.unit_cost }}"
+  }{% if not forloop.last %},{% endif %}
+  {% endfor %}
+]
+</script>
+
+<!-- JavaScript para formulario de orden de compra -->
+<script src="{% static 'js/purchase_order_form.js' %}"></script>
+{% endblock %}

@@ -340,6 +340,14 @@
   font-size: 16px;
 }
 
+.action-buttons {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+
+
 /* Responsive */
 @media (max-width: 768px) {
   .header-actions {
@@ -352,8 +360,63 @@
     margin-bottom: 15px;
   }
 
+  .action-buttons {
+    flex-direction: column;
+    gap: 10px;
+  }
+
   .btn-diagnostico {
     width: 100%;
     justify-content: center;
   }
+}
+
+.warning-message {
+  margin-top: 15px;
+}
+
+.warning-message .alert {
+  border-radius: 8px;
+  border: 2px solid #ffc107;
+  background-color: #fff3cd;
+  color: #856404;
+  font-weight: 500;
+}
+
+.warning-message .alert i {
+  margin-right: 8px;
+  color: #856404;
+}
+
+/* Responsive para warning message */
+@media (max-width: 768px) {
+  .warning-message {
+    margin-top: 20px;
+  }
+
+  .warning-message .alert {
+    font-size: 14px;
+    padding: 12px 15px;
+  }
+}
+
+/* Estilos para badges de estado */
+.status-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 5px;
+}
+
+.status-badges .badge {
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.status-badges .badge i {
+  font-size: 10px;
 }

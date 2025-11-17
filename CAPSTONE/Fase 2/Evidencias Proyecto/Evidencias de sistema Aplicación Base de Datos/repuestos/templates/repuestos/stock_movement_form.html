@@ -1,0 +1,193 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if form.instance.pk %}Editar Movimiento{% else %}Nuevo Movimiento{% endif %}{% endblock %}
+
+{% block static %}
+<script src="{% static 'js/stock_movement_form.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="mb-0">
+            <i class="fas fa-exchange-alt"></i>
+            {% if form.instance.pk %}Editar Movimiento de Stock{% else %}Nuevo Movimiento de Stock{% endif %}
+          </h4>
+        </div>
+        <div class="card-body">
+          <form method="post">
+            {% csrf_token %}
+
+            <!-- Tipo de Movimiento -->
+            <div class="mb-3">
+              <label for="{{ form.movement_type.id_for_label }}" class="form-label">
+                Tipo de Movimiento <span class="text-danger">*</span>
+              </label>
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="movement_type" id="id_movement_type_0" value="IN"
+                           {% if form.initial.movement_type == 'IN' or not form.initial.movement_type %}checked{% endif %}>
+                    <label class="form-check-label text-success" for="id_movement_type_0">
+                      <i class="fas fa-arrow-up"></i> Entrada de Stock
+                    </label>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="movement_type" id="id_movement_type_1" value="OUT"
+                           {% if form.initial.movement_type == 'OUT' %}checked{% endif %}>
+                    <label class="form-check-label text-danger" for="id_movement_type_1">
+                      <i class="fas fa-arrow-down"></i> Salida de Stock
+                    </label>
+                  </div>
+                </div>
+              </div>
+              {% if form.movement_type.errors %}
+              <div class="text-danger small mt-1">
+                {% for error in form.movement_type.errors %}{{ error }}{% endfor %}
+              </div>
+              {% endif %}
+            </div>
+
+            <!-- Repuesto -->
+            <div class="mb-3">
+              <label for="{{ form.repuesto.id_for_label }}" class="form-label">
+                Repuesto <span class="text-danger">*</span>
+              </label>
+              {{ form.repuesto }}
+              {% if form.repuesto.errors %}
+              <div class="text-danger small">
+                {% for error in form.repuesto.errors %}{{ error }}{% endfor %}
+              </div>
+              {% endif %}
+              <div class="form-text">
+                Seleccione el repuesto para el movimiento de stock.
+              </div>
+            </div>
+
+            <!-- Cantidad -->
+            <div class="mb-3">
+              <label for="{{ form.quantity.id_for_label }}" class="form-label">
+                Cantidad <span class="text-danger">*</span>
+              </label>
+              <div class="input-group">
+                {{ form.quantity }}
+                <span class="input-group-text">unidades</span>
+              </div>
+              {% if form.quantity.errors %}
+              <div class="text-danger small">
+                {% for error in form.quantity.errors %}{{ error }}{% endfor %}
+              </div>
+              {% endif %}
+            </div>
+
+            <!-- Orden de Compra (solo para entradas) -->
+            <div class="mb-3" id="purchaseOrderField" style="display: {% if form.initial.movement_type == 'IN' or not form.initial.movement_type %}block{% else %}none{% endif %};">
+              <label for="{{ form.purchase_order.id_for_label }}" class="form-label">
+                Orden de Compra
+              </label>
+              {{ form.purchase_order }}
+              {% if form.purchase_order.errors %}
+              <div class="text-danger small">
+                {% for error in form.purchase_order.errors %}{{ error }}{% endfor %}
+              </div>
+              {% endif %}
+              <div class="form-text">
+                Seleccione la orden de compra asociada a esta entrada de stock (opcional).
+              </div>
+            </div>
+
+            <!-- Motivo -->
+            <div class="mb-3">
+              <label for="{{ form.reason.id_for_label }}" class="form-label">
+                Motivo <span class="text-danger">*</span>
+              </label>
+              {{ form.reason }}
+              {% if form.reason.errors %}
+              <div class="text-danger small">
+                {% for error in form.reason.errors %}{{ error }}{% endfor %}
+              </div>
+              {% endif %}
+              <div class="form-text">
+                Explique el motivo del movimiento (compra, uso en mantenimiento, devolución, etc.)
+              </div>
+            </div>
+
+            <!-- Orden de Trabajo (opcional) -->
+            <div class="mb-3">
+              <label for="{{ form.work_order.id_for_label }}" class="form-label">
+                Orden de Trabajo
+              </label>
+              {{ form.work_order }}
+              {% if form.work_order.errors %}
+              <div class="text-danger small">
+                {% for error in form.work_order.errors %}{{ error }}{% endfor %}
+              </div>
+              {% endif %}
+              <div class="form-text">
+                Opcional: asocie este movimiento a una orden de trabajo específica.
+              </div>
+            </div>
+
+            <!-- Información del Stock Actual (solo lectura) -->
+            <div class="mb-3" id="currentStockInfo" style="display: none;">
+              <div class="alert alert-info">
+                <h6><i class="fas fa-info-circle"></i> Información del Stock Actual</h6>
+                <div class="row">
+                  <div class="col-md-4">
+                    <strong>Stock Actual:</strong> <span id="currentStock">-</span>
+                  </div>
+                  <div class="col-md-4">
+                    <strong>Stock Mínimo:</strong> <span id="minStock">-</span>
+                  </div>
+                  <div class="col-md-4">
+                    <strong>Stock Disponible:</strong> <span id="availableStock">-</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Preview del movimiento -->
+            <div class="mb-3" id="movementPreview" style="display: none;">
+              <div class="alert alert-warning">
+                <h6><i class="fas fa-eye"></i> Preview del Movimiento</h6>
+                <div class="row">
+                  <div class="col-md-6">
+                    <strong>Stock Después del Movimiento:</strong> <span id="newStock">-</span>
+                  </div>
+                  <div class="col-md-6">
+                    <strong>Estado:</strong> <span id="stockStatus">-</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Mensaje sobre descuento manual de stock -->
+            <div class="alert alert-info">
+              <i class="fas fa-info-circle"></i>
+              <strong>Nota:</strong> Descontar manualmente el stock una vez que la OT asociada haya sido resuelta.
+            </div>
+
+            <!-- Botones -->
+            <div class="d-flex justify-content-between">
+              <a href="{% url 'repuestos:stock_movement_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Cancelar
+              </a>
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i>
+                {% if form.instance.pk %}Actualizar{% else %}Crear{% endif %} Movimiento
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

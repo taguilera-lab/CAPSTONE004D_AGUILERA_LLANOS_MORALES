@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Asignar Supervisor - OT-{{ work_order.id_work_order }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title mb-0">
+            <i class="fas fa-user-tie"></i>
+            {% if current_supervisor %}Cambiar{% else %}Asignar{% endif %} Jefe de Taller - Orden de Trabajo OT-{{ work_order.id_work_order }}
+          </h4>
+        </div>
+        <div class="card-body">
+          <!-- Información de la OT -->
+          <div class="row mb-4">
+            <div class="col-md-6">
+              <div class="info-box">
+                {% if work_order.ingreso %}
+                <h6><strong>Vehículo:</strong> {{ work_order.ingreso.patent }}</h6>
+                {% endif %}
+                <h6><strong>Estado:</strong>
+                  <span class="badge" style="background-color: {{ work_order.status.color }};">
+                    {{ work_order.status.name }}
+                  </span>
+                </h6>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="info-box">
+                {% if current_supervisor %}
+                <h6><strong>Jefe de Taller Actual:</strong> {{ current_supervisor.name }}</h6>
+                {% else %}
+                <h6><strong>Jefe de Taller Actual:</strong> <em>No asignado</em></h6>
+                {% endif %}
+                <h6><strong>Fecha de Creación:</strong> {{ work_order.created_datetime|date:"d/m/Y H:i" }}</h6>
+              </div>
+            </div>
+          </div>
+
+          <p class="text-info">
+            <i class="fas fa-info-circle"></i>
+            Selecciona un jefe de taller para esta orden de trabajo.
+          </p>
+
+          <form method="post">
+            {% csrf_token %}
+
+            <div class="row">
+              <div class="col-md-8">
+                <div class="mb-3">
+                  <label for="supervisor_id" class="form-label">Seleccionar Jefe de Taller</label>
+                  <select class="form-select" id="supervisor_id" name="supervisor_id" required>
+                    <option value="">-- Seleccionar Jefe de Taller --</option>
+                    {% for jefe_taller in available_jefes_taller %}
+                    <option value="{{ jefe_taller.id_user }}" {% if current_supervisor and current_supervisor.id_user == jefe_taller.id_user %}selected{% endif %}>
+                      {{ jefe_taller.name }} - {{ jefe_taller.role.name }} ({{ jefe_taller.status.name }})
+                    </option>
+                    {% endfor %}
+                  </select>
+                  <div class="form-text">Solo se muestran usuarios con rol de jefe de taller.</div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                {% if available_jefes_taller %}
+                <div class="alert alert-info">
+                  <i class="fas fa-users"></i> {{ available_jefes_taller|length }} jefes de taller disponibles
+                </div>
+                {% else %}
+                <div class="alert alert-warning">
+                  <i class="fas fa-exclamation-triangle"></i> No hay jefes de taller disponibles
+                </div>
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="row mt-4">
+              <div class="col-12 text-center">
+                <button type="submit" class="btn btn-success btn-lg">
+                  <i class="fas fa-save"></i> {% if current_supervisor %}Cambiar{% else %}Asignar{% endif %} Jefe de Taller
+                </button>
+                <a href="{% url 'orden_trabajo_detail' work_order.id_work_order %}" class="btn btn-secondary btn-lg ms-2">
+                  <i class="fas fa-times"></i> Cancelar
+                </a>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

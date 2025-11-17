@@ -86,6 +86,13 @@
                         </div>
                     </div>
                 </div>
+                {% if form.priority %}
+                <div class="form-group">
+                    {{ form.priority.label_tag }}
+                    {{ form.priority }}
+                    {% if form.priority.errors %}<div class="error">{{ form.priority.errors }}</div>{% endif %}
+                </div>
+                {% endif %}
             </div>
 
             <!-- Sección de imágenes -->

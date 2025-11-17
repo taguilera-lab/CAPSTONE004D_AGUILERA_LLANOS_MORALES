@@ -17,6 +17,16 @@
         </div>
     {% endif %}
     <div>
+      <!-- Navigation Links -->
+      <div style="margin-bottom: 20px; padding: 10px; background-color: #f8f9fa; border-radius: 5px;">
+        <a href="{% url 'busqueda_patente' %}" class="btn btn-primary" style="margin-right: 10px;">
+          🔍 Búsqueda por Patente
+        </a>
+        <a href="{% url 'create_form' %}" class="btn btn-success">
+          ➕ Crear Nuevo Registro
+        </a>
+      </div>
+
       <!-- Selector de tablas -->
       <label for="tablaSelector"><strong>Selecciona una tabla:</strong></label>
       <select id="tablaSelector" onchange="mostrarTabla()">
@@ -30,13 +40,22 @@
         <option value="tabla-userstatus">Estados de Usuarios</option>
         <option value="tabla-flotausers">Usuarios de Flota</option>
         <option value="tabla-routes">Rutas</option>
-        <option value="tabla-ingresos">Ingresos</option>
         <option value="tabla-servicetypes">Tipos de Servicio</option>
+        <option value="tabla-ingresos">Ingresos</option>
+        <option value="tabla-workorders">Órdenes de Trabajo</option>
+        <option value="tabla-workorderstatuses">Estados de Órdenes de Trabajo</option>
+        <option value="tabla-workordermechanics">Mecánicos de Órdenes de Trabajo</option>
         <option value="tabla-tasks">Tareas</option>
         <option value="tabla-taskassignments">Asignaciones de Tareas</option>
+        <option value="tabla-sparepartusages">Uso de Repuestos</option>
         <option value="tabla-pauses">Pausas</option>
         <option value="tabla-documents">Documentos</option>
+        <option value="tabla-workorderimages">Imágenes de Órdenes de Trabajo</option>
+        <option value="tabla-ingresoimages">Imágenes de Ingresos</option>
         <option value="tabla-repuestos">Repuestos</option>
+        <option value="tabla-incidents">Incidentes</option>
+        <option value="tabla-incidentimages">Imágenes de Incidentes</option>
+        <option value="tabla-diagnostics">Diagnósticos</option>
         <option value="tabla-notifications">Notificaciones</option>
         <option value="tabla-reports">Reportes</option>
         <option value="tabla-maintenanceschedules">Programaciones de Mantenimiento</option>
@@ -762,4 +781,313 @@
         </tbody>
       </table>
     </div>
+      <!-- WorkOrders -->
+      <div id="tabla-workorders" class="tabla-contenedor">
+        <h2>Órdenes de Trabajo</h2>
+        <table>
+        <thead>
+          <tr>
+            <th class="edit-column">Editar</th>
+            <th>ID</th>
+            <th>Ingreso</th>
+            <th>Estado</th>
+            <th>Fecha de Inicio</th>
+            <th>Fecha de Fin</th>
+            <th>Supervisor</th>
+            <th>Observaciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for workorder in workorders %}
+          <tr>
+            <td class="edit-column"><button onclick="editarRegistro('workorders', '{{ workorder.pk }}')">Editar</button></td>
+            <td>{{ workorder.id_work_order }}</td>
+            <td>{{ workorder.ingreso.id_ingreso }}</td>
+            <td>{{ workorder.status.name }}</td>
+            <td>{{ workorder.work_started_at|default:"No iniciado" }}</td>
+            <td>{{ workorder.actual_completion|default:"No completado" }}</td>
+            <td>{{ workorder.supervisor.name|default:"Sin supervisor" }}</td>
+            <td>{{ workorder.observations|default:"Sin observaciones" }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="8">No hay datos disponibles</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      </div>
+      <!-- WorkOrderStatuses -->
+      <div id="tabla-workorderstatuses" class="tabla-contenedor">
+        <h2>Estados de Órdenes de Trabajo</h2>
+        <table>
+        <thead>
+          <tr>
+            <th class="edit-column">Editar</th>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Descripción</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for status in workorderstatuses %}
+          <tr>
+            <td class="edit-column"><button onclick="editarRegistro('workorderstatuses', '{{ status.pk }}')">Editar</button></td>
+            <td>{{ status.id_status }}</td>
+            <td>{{ status.name }}</td>
+            <td>{{ status.description|default:"Sin descripción" }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="4">No hay datos disponibles</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      </div>
+      <!-- WorkOrderMechanics -->
+      <div id="tabla-workordermechanics" class="tabla-contenedor">
+        <h2>Mecánicos de Órdenes de Trabajo</h2>
+        <table>
+        <thead>
+          <tr>
+            <th class="edit-column">Editar</th>
+            <th>ID</th>
+            <th>Orden de Trabajo</th>
+            <th>Mecánico</th>
+            <th>Fecha de Asignación</th>
+            <th>Horas Trabajadas</th>
+            <th>Activo</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for mechanic in workordermechanics %}
+          <tr>
+            <td class="edit-column"><button onclick="editarRegistro('workordermechanics', '{{ mechanic.pk }}')">Editar</button></td>
+            <td>{{ mechanic.id_mechanic_assignment }}</td>
+            <td>{{ mechanic.work_order.id_work_order }}</td>
+            <td>{{ mechanic.mechanic.name }}</td>
+            <td>{{ mechanic.assigned_datetime }}</td>
+            <td>{{ mechanic.hours_worked }} horas</td>
+            <td>{{ mechanic.is_active|yesno:"Sí,No" }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7">No hay datos disponibles</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      </div>
+      <!-- SparePartUsages -->
+      <div id="tabla-sparepartusages" class="tabla-contenedor">
+        <h2>Uso de Repuestos</h2>
+        <table>
+        <thead>
+          <tr>
+            <th class="edit-column">Editar</th>
+            <th>ID</th>
+            <th>Orden de Trabajo</th>
+            <th>Repuesto</th>
+            <th>Cantidad Usada</th>
+            <th>Fecha de Uso</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for usage in sparepartusages %}
+          <tr>
+            <td class="edit-column"><button onclick="editarRegistro('sparepartusages', '{{ usage.pk }}')">Editar</button></td>
+            <td>{{ usage.id_usage }}</td>
+            <td>{{ usage.work_order.id_work_order }}</td>
+            <td>{{ usage.repuesto.name }}</td>
+            <td>{{ usage.quantity_used }}</td>
+            <td>{{ usage.used_datetime }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="6">No hay datos disponibles</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      </div>
+      <!-- WorkOrderImages -->
+      <div id="tabla-workorderimages" class="tabla-contenedor">
+        <h2>Imágenes de Órdenes de Trabajo</h2>
+        <table>
+        <thead>
+          <tr>
+            <th class="edit-column">Editar</th>
+            <th>ID</th>
+            <th>Orden de Trabajo</th>
+            <th>Imagen</th>
+            <th>Descripción</th>
+            <th>Fecha de Subida</th>
+            <th>Usuario</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for image in workorderimages %}
+          <tr>
+            <td class="edit-column"><button onclick="editarRegistro('workorderimages', '{{ image.pk }}')">Editar</button></td>
+            <td>{{ image.id_image }}</td>
+            <td>{{ image.work_order.id_work_order }}</td>
+            <td><img src="{{ image.image.url }}" alt="Imagen" style="max-width: 100px; max-height: 100px;"></td>
+            <td>{{ image.description|default:"Sin descripción" }}</td>
+            <td>{{ image.uploaded_at }}</td>
+            <td>{{ image.uploaded_by.name|default:"Sin usuario" }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7">No hay datos disponibles</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      </div>
+      <!-- IngresoImages -->
+      <div id="tabla-ingresoimages" class="tabla-contenedor">
+        <h2>Imágenes de Ingresos</h2>
+        <table>
+        <thead>
+          <tr>
+            <th class="edit-column">Editar</th>
+            <th>ID</th>
+            <th>Ingreso</th>
+            <th>Imagen</th>
+            <th>Descripción</th>
+            <th>Fecha de Subida</th>
+            <th>Usuario</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for image in ingresoimages %}
+          <tr>
+            <td class="edit-column"><button onclick="editarRegistro('ingresoimages', '{{ image.pk }}')">Editar</button></td>
+            <td>{{ image.id_image }}</td>
+            <td>{{ image.ingreso.id_ingreso }}</td>
+            <td><img src="{{ image.image.url }}" alt="Imagen" style="max-width: 100px; max-height: 100px;"></td>
+            <td>{{ image.description|default:"Sin descripción" }}</td>
+            <td>{{ image.uploaded_at }}</td>
+            <td>{{ image.uploaded_by.name|default:"Sin usuario" }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7">No hay datos disponibles</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      </div>
+      <!-- Incidents -->
+      <div id="tabla-incidents" class="tabla-contenedor">
+        <h2>Incidentes</h2>
+        <table>
+        <thead>
+          <tr>
+            <th class="edit-column">Editar</th>
+            <th>ID</th>
+            <th>Categoría</th>
+            <th>Prioridad</th>
+            <th>Estado</th>
+            <th>Descripción</th>
+            <th>Fecha de Reporte</th>
+            <th>Reportado Por</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for incident in incidents %}
+          <tr>
+            <td class="edit-column"><button onclick="editarRegistro('incidents', '{{ incident.pk }}')">Editar</button></td>
+            <td>{{ incident.id_incident }}</td>
+            <td>{{ incident.category }}</td>
+            <td>{{ incident.priority }}</td>
+            <td>{{ incident.status }}</td>
+            <td>{{ incident.description|default:"Sin descripción" }}</td>
+            <td>{{ incident.reported_datetime }}</td>
+            <td>{{ incident.reported_by.name|default:"Sin usuario" }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="8">No hay datos disponibles</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      </div>
+      <!-- IncidentImages -->
+      <div id="tabla-incidentimages" class="tabla-contenedor">
+        <h2>Imágenes de Incidentes</h2>
+        <table>
+        <thead>
+          <tr>
+            <th class="edit-column">Editar</th>
+            <th>ID</th>
+            <th>Incidente</th>
+            <th>Imagen</th>
+            <th>Nombre</th>
+            <th>Fecha de Subida</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for image in incidentimages %}
+          <tr>
+            <td class="edit-column"><button onclick="editarRegistro('incidentimages', '{{ image.pk }}')">Editar</button></td>
+            <td>{{ image.id_image }}</td>
+            <td>{{ image.incident.id_incident }}</td>
+            <td><img src="{{ image.image.url }}" alt="Imagen" style="max-width: 100px; max-height: 100px;"></td>
+            <td>{{ image.name }}</td>
+            <td>{{ image.uploaded_at }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="6">No hay datos disponibles</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      </div>
+      <!-- Diagnostics -->
+      <div id="tabla-diagnostics" class="tabla-contenedor">
+        <h2>Diagnósticos</h2>
+        <table>
+        <thead>
+          <tr>
+            <th class="edit-column">Editar</th>
+            <th>ID</th>
+            <th>Incidente</th>
+            <th>Estado</th>
+            <th>Diagnóstico</th>
+            <th>Fecha de Creación</th>
+            <th>Creado Por</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for diagnostic in diagnostics %}
+          <tr>
+            <td class="edit-column"><button onclick="editarRegistro('diagnostics', '{{ diagnostic.pk }}')">Editar</button></td>
+            <td>{{ diagnostic.id_diagnostic }}</td>
+            <td>{{ diagnostic.incident.id_incident }}</td>
+            <td>{{ diagnostic.status }}</td>
+            <td>{{ diagnostic.symptoms|default:"Sin síntomas" }}</td>
+            <td>{{ diagnostic.diagnostics_created_at }}</td>
+            <td>{{ diagnostic.diagnostics_created_by.name|default:"Sin usuario" }}</td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7">No hay datos disponibles</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      </div>
 {% endblock %}

@@ -8,6 +8,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'pepsico_app.settings')
 django.setup()
 
 from documents.models import Site, SAPEquipment, CECO, VehicleType, VehicleStatus, Vehicle, Role, UserStatus, FlotaUser, Route, ServiceType, Ingreso, Task, TaskAssignment, Pause, Document, Repuesto, Notification, Report, MaintenanceSchedule, WorkOrder, WorkOrderStatus, Incident, WorkOrderMechanic, SparePartUsage, Diagnostics, IncidentImage, IngresoImage
+from document_upload.models import ReportType
 from django.contrib.auth.models import User
 
 fake = Faker('es_ES')
@@ -163,12 +164,14 @@ def populate_db():
             password=user_data['password']
         )
         role = next(r for r in roles if r.name == user_data['role_name'])
+        # Asegurar que los usuarios principales estén activos
+        active_status = next(s for s in user_statuses if s.name == 'Activo')
         user = FlotaUser.objects.create(
             user=user_django,
             name=user_data['name'],
             role=role,
             patent=random.choice(vehicles),
-            status=random.choice(user_statuses),
+            status=active_status,  # Usuarios principales siempre activos
             observations=fake.text(max_nb_chars=200),
             gpid=f"GP{fake.unique.random_int(min=1000, max=9999)}"
         )
@@ -198,10 +201,11 @@ def populate_db():
         route = Route.objects.create(
             route_code=f"R{fake.unique.random_int(min=100, max=999)}",
             gtm=fake.word(),
-            driver=random.choice(flota_users) if random.choice([True, False]) else None,
-            truck=random.choice(vehicles),
             comment=fake.text(max_nb_chars=200)
         )
+        # Asignar algunos vehículos aleatorios a la ruta
+        vehicles_for_route = random.sample(vehicles, random.randint(1, 5))
+        route.vehicles.set(vehicles_for_route)
         routes.append(route)
 
     # Poblar ServiceTypes
@@ -288,10 +292,16 @@ def populate_db():
             type=random.choice(['Alerta', 'Recordatorio', 'Informe'])
         )
 
+    # Poblar ReportTypes
+    report_types = []
+    for type_name in ['Diario', 'Semanal', 'Mensual', 'Vehículos', 'Mantenimiento', 'Incidentes', 'Órdenes de Trabajo', 'Repuestos']:
+        report_type, created = ReportType.objects.get_or_create(name=type_name)
+        report_types.append(report_type)
+
     # Poblar Reports
     for _ in range(10):
         Report.objects.create(
-            type=random.choice(['Diario', 'Semanal', 'Mensual']),
+            type=random.choice(report_types),
             generated_datetime=fake.date_time_this_year(),
             data={'data': fake.text(max_nb_chars=200)},
             user=random.choice(flota_users)
@@ -301,12 +311,9 @@ def populate_db():
     for _ in range(15):
         MaintenanceSchedule.objects.create(
             patent=random.choice(vehicles),
-            service_type=random.choice(service_types),
             start_datetime=fake.date_time_this_year(),
-            recurrence_rule=f"RRULE:FREQ={random.choice(['DAILY', 'WEEKLY', 'MONTHLY'])};COUNT={random.randint(1, 10)}" if random.choice([True, False]) else None,
-            reminder_minutes=random.randint(10, 60) if random.choice([True, False]) else None,
             assigned_user=random.choice(flota_users) if random.choice([True, False]) else None,
-            supervisor=random.choice([user for user in flota_users if user.role.is_supervisor_role]) if random.choice([True, False]) else None,
+            expected_chofer=random.choice([user for user in flota_users if user.role.is_supervisor_role]) if random.choice([True, False]) else None,
             status=random.choice(user_statuses),
             observations=fake.text(max_nb_chars=200) if random.choice([True, False]) else None
         )
@@ -365,7 +372,7 @@ def populate_db():
     reports = []
     for _ in range(10):
         report = Report.objects.create(
-            type=random.choice(['Vehículos', 'Mantenimiento', 'Incidentes', 'Órdenes de Trabajo', 'Repuestos']),
+            type=random.choice(report_types),
             generated_datetime=fake.date_time_this_year(),
             data={
                 'total_records': random.randint(10, 100),

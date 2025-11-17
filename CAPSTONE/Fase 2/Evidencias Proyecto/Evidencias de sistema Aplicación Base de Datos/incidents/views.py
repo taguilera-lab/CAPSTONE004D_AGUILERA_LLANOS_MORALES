@@ -8,7 +8,7 @@ from .forms import ChoferIncidentForm, GuardiaIncidentForm, RecepcionistaInciden
 @login_required
 def chofer_report_incident(request):
     if request.method == 'POST':
-        form = ChoferIncidentForm(request.POST)
+        form = ChoferIncidentForm(request.POST, user=request.user)
         image_form = IncidentImageForm(request.POST, request.FILES)
         if form.is_valid():
             incident = form.save(commit=False)
@@ -36,7 +36,7 @@ def chofer_report_incident(request):
             messages.success(request, 'Incidente reportado exitosamente.')
             return redirect('incidents:incident_list')
     else:
-        form = ChoferIncidentForm()
+        form = ChoferIncidentForm(user=request.user)
         image_form = IncidentImageForm()
     return render(request, 'incidents/chofer_report.html', {
         'form': form,
@@ -187,7 +187,7 @@ def mechanic_diagnose_incident(request, incident_id):
         diagnostic, created = Diagnostics.objects.get_or_create(
             incident=incident,
             defaults={
-                'status': 'Diagnostico_Mecanica_In_Situ',
+                'status': 'Diagnostico_In_Situ',
                 'diagnostic_by': request.user.flotauser,
                 'diagnostic_started_at': request.POST.get('diagnostic_started_at'),
                 'diagnostic_method': request.POST.get('diagnostic_method'),
@@ -201,7 +201,7 @@ def mechanic_diagnose_incident(request, incident_id):
         
         if not created:
             # Actualizar diagnóstico existente
-            diagnostic.status = 'Diagnostico_Mecanica_In_Situ'
+            diagnostic.status = 'Diagnostico_In_Situ'
             diagnostic.diagnostic_by = request.user.flotauser
             diagnostic.diagnostic_started_at = request.POST.get('diagnostic_started_at')
             diagnostic.diagnostic_method = request.POST.get('diagnostic_method')
@@ -256,9 +256,9 @@ def recepcionista_escalar_mecanica(request, incident_id):
 @login_required
 def create_multiple_diagnostic(request):
     """Vista para crear un diagnóstico que abarque múltiples incidentes seleccionados"""
-    # Verificar que el usuario sea recepcionista
-    if not (hasattr(request.user, 'flotauser') and request.user.flotauser.role.name == 'Recepcionista de Vehículos'):
-        messages.error(request, 'Solo los recepcionistas pueden crear diagnósticos múltiples.')
+    # Verificar que el usuario sea supervisor
+    if not (hasattr(request.user, 'flotauser') and request.user.flotauser.role.name == 'Supervisor'):
+        messages.error(request, 'Solo los supervisores pueden crear diagnósticos múltiples.')
         return redirect('incidents:incident_list')
 
     if request.method != 'POST':
@@ -296,7 +296,7 @@ def create_multiple_diagnostic(request):
 
     try:
         diagnostic = Diagnostics.objects.create(
-            status='Reportada',  # Estado inicial - pendiente de completar
+            status='Diagnostico_In_Situ',  # Estado para diagnósticos creados desde incidentes por supervisor
             diagnostics_created_by=request.user.flotauser,
         )
 

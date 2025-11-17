@@ -45,15 +45,6 @@
       </div>
 
       <div class="campo">
-        <label for="{{ form.unit_cost.id_for_label }}">Costo Unitario</label>
-        {{ form.unit_cost }}
-        {% if form.unit_cost.errors %}
-          <div class="text-danger">{{ form.unit_cost.errors }}</div>
-        {% endif %}
-        <small class="form-text text-muted">Costo por unidad del repuesto</small>
-      </div>
-
-      <div class="campo">
         <label for="{{ form.notes.id_for_label }}">Notas</label>
         {{ form.notes }}
         {% if form.notes.errors %}

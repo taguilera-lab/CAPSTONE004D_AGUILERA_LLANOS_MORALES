@@ -1,0 +1,291 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Sistema de Gestión de Flota - PepsiCo{% endblock %}
+
+{% block static %}
+    <link rel="stylesheet" href="{% static "documents/Css/pag-inicio.css" %}">
+{% endblock %}
+
+{% block content %}
+<div class="home-container">
+    <!-- Header Section -->
+    <header class="home-header">
+        <div class="logo-section">
+            <img src="{% static "documents/Images/PepsiCoLogo.png" %}" alt="PepsiCo Logo" class="logo">
+            <h1>Sistema de Gestión de Flota</h1>
+            <p class="subtitle">Plataforma integral para la administración y mantenimiento de vehículos</p>
+        </div>
+    </header>
+
+    <!-- Help Section -->
+    <div class="help-section">
+        <div class="help-content">
+            <i class="icon-menu"></i>
+            <p><strong>💡 Tip:</strong> Para acceder a todas las funcionalidades del sistema, abre el menú lateral izquierdo haciendo clic en el botón de menú (☰) en la parte superior.</p>
+        </div>
+    </div>
+
+    <!-- Navigation Cards -->
+    <div class="navigation-grid">
+        <!-- Login Principal -->
+        <div class="nav-card login-card">
+            <div class="card-icon">
+                <i class="icon-user"></i>
+            </div>
+            <h3>Acceso al Sistema</h3>
+            <p>Inicia sesión para acceder a todas las funciones del sistema</p>
+            <a href="{% url 'login' %}" class="btn btn-success btn-lg">Iniciar Sesión</a>
+        </div>
+
+        <!-- Agenda y Calendario -->
+        <div class="nav-card">
+            <div class="card-icon">
+                <i class="icon-calendar"></i>
+            </div>
+            <h3>Agenda y Calendario</h3>
+            <p>Gestiona programaciones de mantenimiento y ingresos de vehículos</p>
+            <a href="{% url 'calendario' %}" class="btn btn-primary">Acceder</a>
+        </div>
+
+        <!-- Ingresos -->
+        <div class="nav-card">
+            <div class="card-icon">
+                <i class="icon-truck"></i>
+            </div>
+            <h3>Control de Ingresos</h3>
+            <p>Registra entradas y salidas de vehículos al taller</p>
+            <a href="{% url 'ingresos_list' %}" class="btn btn-primary">Ver Ingresos</a>
+        </div>
+
+        <!-- Órdenes de Trabajo -->
+        <div class="nav-card">
+            <div class="card-icon">
+                <i class="icon-tools"></i>
+            </div>
+            <h3>Órdenes de Trabajo</h3>
+            <p>Crea y administra órdenes de trabajo para reparaciones</p>
+            <a href="{% url 'orden_trabajo_list' %}" class="btn btn-primary">Ver Órdenes</a>
+        </div>
+
+        <!-- Base de Datos -->
+        <div class="nav-card">
+            <div class="card-icon">
+                <i class="icon-database"></i>
+            </div>
+            <h3>Base de Datos</h3>
+            <p>Administra toda la información del sistema</p>
+            <a href="{% url 'datos' %}" class="btn btn-primary">Acceder</a>
+        </div>
+
+        <!-- Búsqueda por Patente -->
+        <div class="nav-card">
+            <div class="card-icon">
+                <i class="icon-search"></i>
+            </div>
+            <h3>Búsqueda por Patente</h3>
+            <p>Busca información específica de vehículos</p>
+            <a href="{% url 'busqueda_patente' %}" class="btn btn-primary">Buscar</a>
+        </div>
+
+        <!-- Crear Registros -->
+        <div class="nav-card">
+            <div class="card-icon">
+                <i class="icon-plus"></i>
+            </div>
+            <h3>Crear Registros</h3>
+            <p>Agrega nuevos registros al sistema</p>
+            <a href="{% url 'create_form' %}" class="btn btn-success">Crear</a>
+        </div>
+    </div>
+
+    <!-- Quick Stats Section -->
+    <div class="stats-section">
+        <h2>Resumen del Sistema</h2>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number">{{ vehicles_count|default:"0" }}</div>
+                <div class="stat-label">Vehículos Registrados</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ ingresos_count|default:"0" }}</div>
+                <div class="stat-label">Ingresos Activos</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ workorders_count|default:"0" }}</div>
+                <div class="stat-label">Órdenes de Trabajo</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ incidents_count|default:"0" }}</div>
+                <div class="stat-label">Incidentes Reportados</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="home-footer">
+        <p>&copy; 2025 PepsiCo - Sistema de Gestión de Flota. Todos los derechos reservados.</p>
+    </footer>
+</div>
+
+<style>
+.home-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.home-header {
+    text-align: center;
+    margin-bottom: 40px;
+    padding: 40px 20px;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
+    border-radius: 10px;
+}
+
+.logo {
+    max-width: 150px;
+    height: auto;
+    margin-bottom: 20px;
+}
+
+.home-header h1 {
+    font-size: 2.5em;
+    margin-bottom: 10px;
+    font-weight: 300;
+}
+
+.subtitle {
+    font-size: 1.2em;
+    opacity: 0.9;
+}
+
+.navigation-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.nav-card {
+    background: white;
+    border-radius: 10px;
+    padding: 25px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.nav-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+.card-icon {
+    font-size: 3em;
+    color: #007bff;
+    margin-bottom: 15px;
+}
+
+.nav-card h3 {
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.nav-card p {
+    color: #666;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+.stats-section {
+    background: #f8f9fa;
+    padding: 40px 20px;
+    border-radius: 10px;
+    margin-bottom: 40px;
+}
+
+.stats-section h2 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #333;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.stat-card {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.stat-number {
+    font-size: 2.5em;
+    font-weight: bold;
+    color: #007bff;
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    color: #666;
+    font-size: 0.9em;
+}
+
+.home-footer {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+    border-top: 1px solid #eee;
+}
+
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: #007bff;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #0056b3;
+    color: white;
+}
+
+.btn-success {
+    background: #28a745;
+    color: white;
+}
+
+.btn-success:hover {
+    background: #218838;
+    color: white;
+}
+
+@media (max-width: 768px) {
+    .home-header h1 {
+        font-size: 2em;
+    }
+
+    .navigation-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+</style>
+{% endblock %}

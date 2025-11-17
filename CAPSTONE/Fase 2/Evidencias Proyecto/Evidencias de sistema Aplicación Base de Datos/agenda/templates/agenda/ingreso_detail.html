@@ -6,16 +6,37 @@
 {% block static %}
 <link rel="stylesheet" href="{% static 'agenda/css/formulario.css' %}">
 <link rel="stylesheet" href="{% static 'agenda/css/ingreso_detail.css' %}">
+<script src="{% static 'agenda/js/ingreso_detail.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar el botón de diagnóstico con los datos del ingreso
+    initDiagnosticoButton({{ ingreso.id_ingreso }}, '{{ ingreso.patent }}');
+});
+</script>
 {% endblock %}
 
 {% block content %}
 <div class="contenedor">
   <div class="formulario">
+    <!-- Token CSRF para AJAX -->
+    {% csrf_token %}
+    
     <div class="header-actions">
       <h2>Detalle de Ingreso</h2>
-      <button class="btn-diagnostico">
-        <i class="fas fa-stethoscope"></i> Realizar Diagnóstico
-      </button>
+      {% if ingreso.es_ingreso_tecnico %}
+      <div class="action-buttons">
+        <button class="btn-diagnostico">
+          <i class="fas fa-stethoscope"></i> Realizar Diagnóstico
+        </button>
+      </div>
+      {% else %}
+      <div class="warning-message">
+        <div class="alert alert-warning" role="alert">
+          <i class="fas fa-exclamation-triangle"></i>
+          <strong>Atención:</strong> Primero realizar ingreso técnico antes de hacer diagnóstico
+        </div>
+      </div>
+      {% endif %}
     </div>
 
     <div class="detail-container">
@@ -41,7 +62,7 @@
         <strong>Sucursal de Origen:</strong> {{ ingreso.patent.site.name }}
       </div>
       <div class="detail-field">
-        <strong>Ruta:</strong> {% for route in ingreso.patent.route_set.all %}{{ route.route_code }}{% if not forloop.last %}, {% endif %}{% endfor %}
+        <strong>Ruta:</strong> {% for route in ingreso.patent.routes.all %}{{ route.route_code }}{% if not forloop.last %}, {% endif %}{% endfor %}
       </div>
       <div class="detail-field">
         <strong>Autorización para salir:</strong>
@@ -59,6 +80,20 @@
           <span class="authorization-no">Pendiente</span>
         {% endif %}
       </div>
+      
+      <!-- Badges de estado -->
+      <div class="detail-field">
+        <strong>Estado:</strong>
+        <div class="status-badges">
+          {% if ingreso.diagnostics.exists %}
+            <span class="badge bg-info"><i class="fas fa-stethoscope"></i> Diagnóstico Ordenado</span>
+          {% endif %}
+          {% if ingreso.work_orders.exists %}
+            <span class="badge bg-primary"><i class="fas fa-tools"></i> OT Ordenada</span>
+          {% endif %}
+        </div>
+      </div>
+      
       <div class="detail-field">
         <strong>Salida Registrada Por:</strong> {{ ingreso.exit_registered_by|default:"-" }}
       </div>
@@ -81,7 +116,9 @@
       <div class="images-gallery" id="images-gallery">
         {% for image in images %}
         <div class="image-item">
-          <img src="{{ image.image.url }}" alt="{{ image.name }}" class="image-preview">
+          <img src="{{ image.image.url }}" alt="{{ image.name }}" class="image-preview"
+               onclick="openImageModal('{{ image.image.url }}', '{{ image.name }}', '{{ image.description }}', '{{ image.uploaded_at|date:'d/m/Y H:i' }}', '{{ image.uploaded_by.name }}')"
+               style="cursor: pointer;">
           <div class="image-info">
             <strong>{{ image.name }}</strong>
             <br>
@@ -158,4 +195,46 @@
     </div>
   </div>
 </div>
+
+<script>
+// Función para abrir el modal de imagen
+function openImageModal(imageUrl, name, description, date, user) {
+    document.getElementById('modalImage').src = imageUrl;
+    document.getElementById('modalImageName').textContent = name;
+    document.getElementById('modalImageDescription').textContent = description || 'Sin descripción';
+    document.getElementById('modalImageDate').textContent = date;
+    document.getElementById('modalImageUser').textContent = user;
+
+    const imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
+    imageModal.show();
+}
+</script>
+
+<!-- Modal para ampliar imágenes -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="imageModalLabel">Vista de Imagen</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body text-center">
+        <img id="modalImage" src="" class="img-fluid rounded" alt="Imagen" style="max-height: 70vh;">
+        <div class="mt-3">
+          <h6 id="modalImageName"></h6>
+          <p class="text-muted mb-1" id="modalImageDescription"></p>
+          <small class="text-muted">
+            Subida el <span id="modalImageDate"></span> por <span id="modalImageUser"></span>
+          </small>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          <i class="fas fa-times"></i> Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 {% endblock %}

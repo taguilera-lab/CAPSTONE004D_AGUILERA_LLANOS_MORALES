@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="{% static 'agenda/css/formulario.css' %}">
 <link rel="stylesheet" href="{% static 'agenda/css/agendar_ingreso.css' %}">
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="{% static 'agenda/js/agendar_ingreso.js' %}"></script>
 {% endblock %}
 
 {% block content %}
@@ -16,8 +17,23 @@
     <form method="post" id="ingreso-form">
       {% csrf_token %}
       <div class="campo">
-        <label for="{{ form.patent.id_for_label }}">Patente</label>
-        {{ form.patent }}
+        <label for="id_patent_search">Buscar Vehículo</label>
+        <input type="text" id="id_patent_search" class="form-control" placeholder="Escriba patente, marca o modelo..." autocomplete="off">
+        <input type="hidden" name="patent" id="id_patent">
+        <div id="vehicle-results" class="vehicle-results" style="display: none;">
+          <div id="vehicle-list" class="vehicle-list"></div>
+        </div>
+        <div id="selected-vehicle" class="selected-vehicle" style="display: none;">
+          <div class="selected-vehicle-info">
+            <strong id="selected-patent"></strong> -
+            <span id="selected-brand"></span> <span id="selected-model"></span>
+            (<span id="selected-year"></span>)
+            {% if form.patent.errors %}
+              <div class="error-message">{{ form.patent.errors.0 }}</div>
+            {% endif %}
+          </div>
+          <button type="button" id="change-vehicle" class="btn-change">Cambiar</button>
+        </div>
       </div>
       <div class="campo">
         <label for="{{ form.start_datetime.id_for_label }}">Fecha y Hora de Inicio</label>
@@ -62,111 +78,9 @@
 
 <script>
 $(document).ready(function() {
-    // Función para crear tarjeta de incidente
-    function createIncidentCard(incident) {
-        var emergencyClass = incident.is_emergency ? 'emergency' : '';
-        var priorityClass = incident.priority && incident.priority.toLowerCase() === 'alta' ? 'high' : '';
-        var priorityText = incident.priority ? incident.priority : 'Normal';
-        
-        var cardHtml = `
-            <div class="incident-card ${emergencyClass}" data-incident-id="${incident.id}">
-                <div class="incident-header">
-                    <input type="checkbox" class="incident-checkbox" value="${incident.id}">
-                    <span class="incident-title">${incident.name}</span>
-                </div>
-                <div class="incident-badges">
-                    <span class="incident-type">${incident.incident_type}</span>
-                    <span class="incident-priority ${priorityClass}">${priorityText}</span>
-                </div>
-                <div class="incident-description">${incident.description}</div>
-                <div class="incident-meta">
-                    <span class="incident-date">Reportado: ${incident.reported_at}</span>
-                </div>
-            </div>
-        `;
-        return cardHtml;
-    }
-    
-    // Función para actualizar el campo oculto con los incidentes seleccionados
-    function updateSelectedIncidents() {
-        var selectedIds = [];
-        $('.incident-checkbox:checked').each(function() {
-            selectedIds.push($(this).val());
-        });
-        
-        // Actualizar el campo oculto del formulario
-        var $hiddenField = $('#id_related_incidents');
-        $hiddenField.val(selectedIds);
-        
-        // Marcar tarjetas como seleccionadas
-        $('.incident-card').removeClass('selected');
-        $('.incident-checkbox:checked').closest('.incident-card').addClass('selected');
-    }
-    
-    // Función para cargar incidentes cuando se selecciona un vehículo
-    $('#id_patent').change(function() {
-        var patent = $(this).val();
-        var $container = $('#incidents-container');
-        
-        if (patent) {
-            // Mostrar loading
-            $container.html('<div class="loading-incidents">Cargando incidentes...</div>');
-            
-            // Hacer petición AJAX
-            $.ajax({
-                url: '{% url "get_incidents_by_vehicle" %}',
-                data: { patent: patent },
-                success: function(data) {
-                    if (data.incidents && data.incidents.length > 0) {
-                        var cardsHtml = '';
-                        data.incidents.forEach(function(incident) {
-                            cardsHtml += createIncidentCard(incident);
-                        });
-                        $container.html(cardsHtml);
-                        
-                        // Agregar event listeners a los checkboxes
-                        $('.incident-checkbox').change(updateSelectedIncidents);
-                        
-                        // Hacer las tarjetas clickables
-                        $('.incident-card').click(function(e) {
-                            // No hacer toggle si se hizo click en el checkbox
-                            if ($(e.target).is('input[type="checkbox"]')) {
-                                return;
-                            }
-                            
-                            var $checkbox = $(this).find('.incident-checkbox');
-                            $checkbox.prop('checked', !$checkbox.prop('checked'));
-                            updateSelectedIncidents();
-                        });
-                        
-                    } else {
-                        $container.html('<div class="no-incidents-message"><p>No hay incidentes reportados para este vehículo</p></div>');
-                    }
-                },
-                error: function() {
-                    $container.html('<div class="no-incidents-message"><p>Error al cargar incidentes. Inténtalo de nuevo.</p></div>');
-                }
-            });
-        } else {
-            // Si no hay vehículo seleccionado
-            $container.html('<div class="no-incidents-message"><p>Selecciona un vehículo para ver los incidentes disponibles</p></div>');
-        }
-    });
-    
-    // Trigger inicial si ya hay un vehículo seleccionado (para edición)
-    if ($('#id_patent').val()) {
-        $('#id_patent').trigger('change');
-    }
-    
     // Para edición: marcar incidentes ya seleccionados
     {% if form.related_incidents.value %}
-        setTimeout(function() {
-            var selectedIds = {{ form.related_incidents.value|safe }};
-            selectedIds.forEach(function(id) {
-                $('.incident-checkbox[value="' + id + '"]').prop('checked', true);
-            });
-            updateSelectedIncidents();
-        }, 1000); // Esperar a que se carguen los incidentes
+        initializeSelectedIncidents({{ form.related_incidents.value|safe }});
     {% endif %}
 });
 </script>

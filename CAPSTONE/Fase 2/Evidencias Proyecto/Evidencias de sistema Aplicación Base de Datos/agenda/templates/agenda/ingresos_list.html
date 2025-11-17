@@ -43,10 +43,6 @@
           <input type="text" class="form-control filter-input" id="filter-patent" data-column="1">
         </div>
         <div class="col-md-2">
-          <label for="filter-service" class="form-label">Servicio</label>
-          <input type="text" class="form-control filter-input" id="filter-service" data-column="2">
-        </div>
-        <div class="col-md-2">
           <label for="filter-entry" class="form-label">Entrada</label>
           <input type="date" class="form-control" id="filter-entry">
         </div>
@@ -59,7 +55,7 @@
           <input type="date" class="form-control" id="filter-exit">
         </div>
         <div class="col-md-2">
-          <label for="filter-chofer" class="form-label">Chofer</label>
+          <label for="filter-chofer" class="form-label">Vendedor</label>
           <input type="text" class="form-control filter-input" id="filter-chofer" data-column="5">
         </div>
         <div class="col-md-2">
@@ -103,12 +99,12 @@
       <div class="ingreso-card" data-ingreso-id="{{ ingreso.id_ingreso }}">
         <div class="card-header">
           <div class="card-title">
-            <h5 class="mb-1">Ingreso #{{ ingreso.id_ingreso }}</h5>
+            <h5 class="mb-1">Ingreso #{{ ingreso.id_ingreso }} - {{ ingreso.patent }}</h5>
             <span class="patent-badge">{{ ingreso.patent }}</span>
           </div>
           <div class="card-indicators">
             <div class="ot-indicator">
-              {% if ingreso.work_order %}
+              {% if ingreso.work_orders.exists %}
                 <span class="ot-light ot-green"></span>
                 <span class="ot-text">Con OT</span>
               {% else %}
@@ -125,6 +121,9 @@
               {% if ingreso.exit_datetime %}
                 <span class="badge bg-success">Completado</span>
               {% endif %}
+              {% if ingreso.diagnostics.exists %}
+                <span class="badge bg-warning">Diagnóstico Realizado</span>
+              {% endif %}
             </div>
           </div>
         </div>
@@ -140,7 +139,7 @@
               <span class="info-value">{{ ingreso.exit_datetime|date:"d/m/Y H:i"|default:"Pendiente" }}</span>
             </div>
             <div class="info-row">
-              <span class="info-label">Chofer:</span>
+              <span class="info-label">Vendedor:</span>
               <span class="info-value">{{ ingreso.chofer|default:"-" }}</span>
             </div>
             <div class="info-row">
@@ -171,6 +170,10 @@
               <span class="info-label">Registrado por:</span>
               <span class="info-value">{{ ingreso.entry_registered_by|default:"-" }}</span>
             </div>
+            <div class="info-row">
+              <span class="info-label">Salida Registrada Por:</span>
+              <span class="info-value">{{ ingreso.exit_registered_by|default:"-" }}</span>
+            </div>
           </div>
         </div>
 
@@ -197,13 +200,9 @@
           </a>
           {% endif %}
           {% endif %}
-          {% if ingreso.work_order %}
-            <a href="{% url 'orden_trabajo_detail' ingreso.work_order.id_work_order %}" class="btn btn-sm btn-success">
+          {% if ingreso.work_orders.exists %}
+            <a href="{% url 'orden_trabajo_detail' ingreso.work_orders.first.id_work_order %}" class="btn btn-sm btn-success">
               <i class="fas fa-eye"></i> Ver OT
-            </a>
-          {% else %}
-            <a href="{% url 'orden_trabajo_create' ingreso.id_ingreso %}" class="btn btn-sm btn-primary">
-              <i class="fas fa-plus"></i> Crear OT
             </a>
           {% endif %}
         </div>

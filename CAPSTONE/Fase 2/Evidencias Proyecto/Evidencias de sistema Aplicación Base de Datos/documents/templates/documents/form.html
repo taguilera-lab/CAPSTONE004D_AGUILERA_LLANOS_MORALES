@@ -34,11 +34,20 @@
     <option value="route">Rutas</option>
     <option value="service_type">Tipos de Servicio</option>
     <option value="ingreso">Ingresos</option>
+    <option value="work_order">Órdenes de Trabajo</option>
+    <option value="work_order_status">Estados de Órdenes de Trabajo</option>
+    <option value="work_order_mechanic">Mecánicos de Órdenes de Trabajo</option>
     <option value="task">Tareas</option>
     <option value="task_assignment">Asignaciones de Tareas</option>
+    <option value="spare_part_usage">Uso de Repuestos</option>
     <option value="pause">Pausas</option>
     <option value="document">Documentos</option>
+    <option value="work_order_image">Imágenes de Órdenes de Trabajo</option>
+    <option value="ingreso_image">Imágenes de Ingresos</option>
     <option value="repuesto">Repuestos</option>
+    <option value="incident">Incidentes</option>
+    <option value="incident_image">Imágenes de Incidentes</option>
+    <option value="diagnostics">Diagnósticos</option>
     <option value="notification">Notificaciones</option>
     <option value="report">Reportes</option>
     <option value="maintenance_schedule">Programaciones de Mantenimiento</option>
@@ -241,6 +250,96 @@
       {% csrf_token %}
       <input type="hidden" name="form_type" value="maintenance_schedule">
       {{ forms.maintenance_schedule.as_p }}
+      <button type="submit">Enviar</button>
+    </form>
+  </div>
+
+  <div id="form-work_order" class="form-container" style="display:none">
+    <h2>Órdenes de Trabajo</h2>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="form_type" value="work_order">
+      {{ forms.work_order.as_p }}
+      <button type="submit">Enviar</button>
+    </form>
+  </div>
+
+  <div id="form-work_order_status" class="form-container" style="display:none">
+    <h2>Estados de Órdenes de Trabajo</h2>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="form_type" value="work_order_status">
+      {{ forms.work_order_status.as_p }}
+      <button type="submit">Enviar</button>
+    </form>
+  </div>
+
+  <div id="form-work_order_mechanic" class="form-container" style="display:none">
+    <h2>Mecánicos de Órdenes de Trabajo</h2>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="form_type" value="work_order_mechanic">
+      {{ forms.work_order_mechanic.as_p }}
+      <button type="submit">Enviar</button>
+    </form>
+  </div>
+
+  <div id="form-spare_part_usage" class="form-container" style="display:none">
+    <h2>Uso de Repuestos</h2>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="form_type" value="spare_part_usage">
+      {{ forms.spare_part_usage.as_p }}
+      <button type="submit">Enviar</button>
+    </form>
+  </div>
+
+  <div id="form-work_order_image" class="form-container" style="display:none">
+    <h2>Imágenes de Órdenes de Trabajo</h2>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="form_type" value="work_order_image">
+      {{ forms.work_order_image.as_p }}
+      <button type="submit">Enviar</button>
+    </form>
+  </div>
+
+  <div id="form-ingreso_image" class="form-container" style="display:none">
+    <h2>Imágenes de Ingresos</h2>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="form_type" value="ingreso_image">
+      {{ forms.ingreso_image.as_p }}
+      <button type="submit">Enviar</button>
+    </form>
+  </div>
+
+  <div id="form-incident" class="form-container" style="display:none">
+    <h2>Incidentes</h2>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="form_type" value="incident">
+      {{ forms.incident.as_p }}
+      <button type="submit">Enviar</button>
+    </form>
+  </div>
+
+  <div id="form-incident_image" class="form-container" style="display:none">
+    <h2>Imágenes de Incidentes</h2>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="form_type" value="incident_image">
+      {{ forms.incident_image.as_p }}
+      <button type="submit">Enviar</button>
+    </form>
+  </div>
+
+  <div id="form-diagnostics" class="form-container" style="display:none">
+    <h2>Diagnósticos</h2>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="form_type" value="diagnostics">
+      {{ forms.diagnostics.as_p }}
       <button type="submit">Enviar</button>
     </form>
   </div>
