@@ -41,6 +41,7 @@ El sistema optimiza procesos de taller, mejora la trazabilidad de vehículos y p
    ```bash
    git clone https://github.com/taguilera-lab/CAPSTONE004D_AGUILERA_LLANOS_MORALES.git
    cd CAPSTONE004D_AGUILERA_LLANOS_MORALES/CAPSTONE/Fase\ 2/Evidencias\ Proyecto/Evidencias\ de\ sistema\ Aplicación\ Base\ de\ Datos
+   # En Windows: cd "CAPSTONE004D_AGUILERA_LLANOS_MORALES\CAPSTONE\Fase 2\Evidencias Proyecto\Evidencias de sistema Aplicación Base de Datos"
    ```
 
 2. **Crea y activa un entorno virtual** (recomendado):
