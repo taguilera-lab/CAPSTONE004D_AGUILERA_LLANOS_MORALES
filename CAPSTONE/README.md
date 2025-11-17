@@ -41,6 +41,7 @@ El sistema optimiza procesos de taller, mejora la trazabilidad de vehículos y p
    ```bash
    git clone https://github.com/taguilera-lab/CAPSTONE004D_AGUILERA_LLANOS_MORALES.git
    cd CAPSTONE004D_AGUILERA_LLANOS_MORALES/CAPSTONE/Fase\ 2/Evidencias\ Proyecto/Evidencias\ de\ sistema\ Aplicación\ Base\ de\ Datos
+   # En Windows: cd "CAPSTONE004D_AGUILERA_LLANOS_MORALES\CAPSTONE\Fase 2\Evidencias Proyecto\Evidencias de sistema Aplicación Base de Datos"
    ```
 
 2. **Crea y activa un entorno virtual** (recomendado):
@@ -182,6 +183,9 @@ Este proyecto es de uso académico y no tiene licencia comercial. Para uso en pr
 - GitHub: taguilera-lab (https://github.com/taguilera-lab)
 
 Proyecto desarrollado como parte del Capstone en [DuocUC], 2025.
+
+**Contribuciones**
+- **Diseño**: Nicolás Llanos y Michelle Morales, DuocUC Ingeniería Informática
 
 ## Notas Adicionales
 
