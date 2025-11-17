@@ -202,8 +202,9 @@ class Route(models.Model):
         """
         for vehicle in self.vehicles.all():
             try:
-                flota_user = FlotaUser.objects.get(patent=vehicle, status__name='Activo')
-                return flota_user
+                flota_user = FlotaUser.objects.filter(patent=vehicle, status__name='Activo').first()
+                if flota_user:
+                    return flota_user
             except FlotaUser.DoesNotExist:
                 continue
         return None

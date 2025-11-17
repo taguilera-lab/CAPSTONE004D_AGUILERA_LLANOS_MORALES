@@ -20,6 +20,10 @@ document.addEventListener('DOMContentLoaded', function() {
 // Función para generar reporte de productividad
 function generarProductividad() {
     const periodoSelect = document.getElementById('periodo-productividad');
+    if (!periodoSelect) {
+        alert('Error: No se encontró el selector de período para productividad');
+        return;
+    }
     const periodo = periodoSelect.value;
     const button = document.querySelector('button[onclick="generarProductividad()"]');
 
@@ -49,6 +53,16 @@ function generarProductividad() {
 function generarTiemposHorasHombre() {
     const periodoSelect = document.getElementById('periodo-tiempos');
     const filtroSelect = document.getElementById('filtro-tiempos');
+    
+    if (!periodoSelect) {
+        alert('Error: No se encontró el selector de período para tiempos');
+        return;
+    }
+    if (!filtroSelect) {
+        alert('Error: No se encontró el selector de filtro para tiempos');
+        return;
+    }
+    
     const periodo = periodoSelect.value;
     const filtro = filtroSelect.value;
     const button = document.querySelector('button[onclick="generarTiemposHorasHombre()"]');

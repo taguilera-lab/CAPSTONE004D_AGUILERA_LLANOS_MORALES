@@ -844,11 +844,6 @@
             <button type="button" class="btn btn-sm btn-outline-danger" onclick="showDeleteConfirm('mechanics-table')" id="delete-mechanics-btn" style="display: none;">
               <i class="fas fa-trash"></i> Eliminar Seleccionados
             </button>
-            {% if work_order.status.name != 'Completada' %}
-            <a href="{% url 'orden_trabajo_add_tasks_auto' work_order.id_work_order %}" class="btn btn-sm btn-outline-primary">
-              <i class="fas fa-tasks"></i> Agregar Tareas Auto
-            </a>
-            {% endif %}
             <a href="{% url 'orden_trabajo_add_mechanic' work_order.id_work_order %}" class="btn btn-sm btn-outline-success">
               <i class="fas fa-plus"></i> Agregar
             </a>

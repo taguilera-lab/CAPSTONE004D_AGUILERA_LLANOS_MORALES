@@ -28,7 +28,7 @@
     <div class="cont-menu" role="navigation" aria-label="Menú lateral">
       <label for="btn-menu" class="close icon-equis" aria-label="Cerrar menú"></label>
       <nav>
-        <a href="{% url 'busqueda_patente' %}" class="icon-home">Inicio</a>
+        <a href="{% url 'calendario' %}" class="icon-doc">Calendario</a>
         <a href="{% url 'calendario' %}" class="icon-doc">Calendario</a>
         <a href="{% url 'ingresos_list' %}" class="icon-truck">Ingresos</a>
         <a href="{% url 'incidents:incident_list' %}" class="icon-pause">Incidentes</a>
@@ -36,8 +36,8 @@
         <a href="{% url 'orden_trabajo_list' %}" class="icon-doc-text-inv">Órdenes de Trabajo</a>
         <a href="{% url 'repuestos:dashboard' %}" class="icon-doc">Repuestos</a>
         <a href="{% url 'pausas:dashboard' %}" class="icon-doc">Pausas</a>
-        <a href="{% url 'datos' %}" class="icon-doc">Datos</a>
-  <a href="{% url 'document_upload:dashboard' %}" class="icon-doc">Reportes</a>
+        <a href="{% url 'busqueda_patente' %}" class="icon-doc">Búsqueda por patente</a>
+        <a href="{% url 'document_upload:dashboard' %}" class="icon-doc">Reportes</a>
         {% if user.is_authenticated %}
           <a href="{% url 'user_dashboard' %}" class="icon-user">Mi Perfil</a>
           <a href="{% url 'logout' %}" class="icon-logout">Salir</a>

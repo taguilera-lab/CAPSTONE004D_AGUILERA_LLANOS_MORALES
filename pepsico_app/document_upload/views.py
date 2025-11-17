@@ -713,7 +713,7 @@ def generate_excel_report(request, report_type):
 			if 'periodo' in request.GET:
 				periodo = request.GET.get('periodo', 'diario')
 			else:
-				periodo = 'diario'  # Por defecto diario
+				periodo = 'mensual'  # Por defecto mensual
 			
 			if periodo == 'diario':
 				start_date = now.date()
@@ -821,7 +821,7 @@ def generate_excel_report(request, report_type):
 				
 				# Horas hombre totales de mecánicos asignados
 				total_mechanic_hours = sum(
-					assignment.hours_worked for assignment in wo.mechanic_assignments.all()
+					float(assignment.hours_worked) for assignment in wo.mechanic_assignments.all()
 				)
 				
 				horas_efectivas = max(0, total_mechanic_hours - total_pauses_hours)
@@ -896,7 +896,7 @@ def generate_excel_report(request, report_type):
 			
 			# Productividad total (horas efectivas / horas programadas)
 			total_effective_hours = sum(
-				sum(assignment.hours_worked for assignment in wo.mechanic_assignments.all()) - 
+				sum(float(assignment.hours_worked) for assignment in wo.mechanic_assignments.all()) - 
 				sum(pause.duration_minutes / 60 for pause in wo.pauses.all() if pause.duration_minutes)
 				for wo in work_orders
 			)
@@ -1101,7 +1101,7 @@ def generate_excel_report(request, report_type):
 			
 			# Determinar filtros
 			now = timezone.now()
-			periodo = request.GET.get('periodo', 'semanal')
+			periodo = request.GET.get('periodo', 'mensual')
 			filtro = request.GET.get('filtro', 'todos')
 			
 			# Determinar rango de fechas
@@ -1176,7 +1176,7 @@ def generate_excel_report(request, report_type):
 					if pause.duration_minutes
 				)
 				total_mechanic_hours = sum(
-					assignment.hours_worked for assignment in wo.mechanic_assignments.all()
+					float(assignment.hours_worked) for assignment in wo.mechanic_assignments.all()
 				)
 				horas_efectivas = max(0, total_mechanic_hours - total_pauses_hours)
 				
@@ -1299,7 +1299,7 @@ def generate_excel_report(request, report_type):
 			
 			# Calcular KPIs
 			total_effective_hours = sum(
-				sum(assignment.hours_worked for assignment in wo.mechanic_assignments.all()) - 
+				sum(float(assignment.hours_worked) for assignment in wo.mechanic_assignments.all()) - 
 				sum(pause.duration_minutes / 60 for pause in wo.pauses.all() if pause.duration_minutes)
 				for wo in work_orders
 			)
