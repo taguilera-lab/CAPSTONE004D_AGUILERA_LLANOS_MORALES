@@ -183,6 +183,9 @@ Este proyecto es de uso académico y no tiene licencia comercial. Para uso en pr
 
 Proyecto desarrollado como parte del Capstone en [DuocUC], 2025.
 
+**Contribuciones**
+- **Diseño**: Nicolás Llanos y Michelle Morales, DuocUC Ingeniería Informática
+
 ## Notas Adicionales
 
 - **Artefactos Scrum**: Revisa `velocity_chart_tablas.txt`, `burndown_chart_tablas.txt`, `etapas_proyecto_apt.txt` y `reflexion_proyecciones_apt.txt` para documentación completa.
