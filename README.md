@@ -41,7 +41,6 @@ El sistema optimiza procesos de taller, mejora la trazabilidad de vehículos y p
    ```bash
    git clone https://github.com/taguilera-lab/CAPSTONE004D_AGUILERA_LLANOS_MORALES.git
    cd CAPSTONE004D_AGUILERA_LLANOS_MORALES/CAPSTONE/Fase\ 2/Evidencias\ Proyecto/Evidencias\ de\ sistema\ Aplicación\ Base\ de\ Datos
-   # En Windows: cd "CAPSTONE004D_AGUILERA_LLANOS_MORALES\CAPSTONE\Fase 2\Evidencias Proyecto\Evidencias de sistema Aplicación Base de Datos"
    ```
 
 2. **Crea y activa un entorno virtual** (recomendado):
@@ -61,9 +60,17 @@ El sistema optimiza procesos de taller, mejora la trazabilidad de vehículos y p
    ```
 
 5. **Carga datos iniciales** (opcional, si hay fixtures):
-   ```bash
-   python manage.py loaddata initial_data.json  # Si existe
-   ```
+  ```bash
+  # Los fixtures se encuentran en la carpeta `fixtures/` en la raíz del proyecto.
+  # Ejemplo: cargar un fixture concreto desde la carpeta `fixtures/`:
+  python manage.py loaddata fixtures/01_documents_basic.json
+
+  # O para cargar varios fixtures a la vez:
+  python manage.py loaddata fixtures/01_documents_basic.json fixtures/02_users.json fixtures/03_vehicles.json
+
+  # También hay un script de conveniencia que carga los fixtures definidos:
+  ./fixtures/load_fixtures.sh
+  ```
 
 6. **Ejecuta el servidor de desarrollo**:
    ```bash
@@ -183,9 +190,6 @@ Este proyecto es de uso académico y no tiene licencia comercial. Para uso en pr
 - GitHub: taguilera-lab (https://github.com/taguilera-lab)
 
 Proyecto desarrollado como parte del Capstone en [DuocUC], 2025.
-
-**Contribuciones**
-- **Diseño**: Nicolás Llanos y Michelle Morales, DuocUC Ingeniería Informática
 
 ## Notas Adicionales
 
