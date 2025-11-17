@@ -41,6 +41,7 @@ El sistema optimiza procesos de taller, mejora la trazabilidad de vehículos y p
    ```bash
    git clone https://github.com/taguilera-lab/CAPSTONE004D_AGUILERA_LLANOS_MORALES.git
    cd CAPSTONE004D_AGUILERA_LLANOS_MORALES/CAPSTONE/Fase\ 2/Evidencias\ Proyecto/Evidencias\ de\ sistema\ Aplicación\ Base\ de\ Datos
+   # En Windows: cd "CAPSTONE004D_AGUILERA_LLANOS_MORALES\CAPSTONE\Fase 2\Evidencias Proyecto\Evidencias de sistema Aplicación Base de Datos"
    ```
 
 2. **Crea y activa un entorno virtual** (recomendado):
@@ -70,6 +71,8 @@ El sistema optimiza procesos de taller, mejora la trazabilidad de vehículos y p
 
   # También hay un script de conveniencia que carga los fixtures definidos:
   ./fixtures/load_fixtures.sh
+
+  # Para Windows cambiar a / por \
   ```
 
 6. **Ejecuta el servidor de desarrollo**:
@@ -188,6 +191,9 @@ Este proyecto es de uso académico y no tiene licencia comercial. Para uso en pr
 - Email: t.aguilera@duoc.cl  
 - LinkedIn: https://www.linkedin.com/in/tom%C3%A1s-aguilera-cerda-ab19391ba/  
 - GitHub: taguilera-lab (https://github.com/taguilera-lab)
+
+**Contribuciones**
+- **Diseño**: Nicolás Llanos y Michelle Morales, Ingeniería Informática, DuocUC.
 
 Proyecto desarrollado como parte del Capstone en [DuocUC], 2025.
 
