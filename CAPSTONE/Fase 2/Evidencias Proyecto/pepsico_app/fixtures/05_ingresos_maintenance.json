@@ -1,0 +1,614 @@
+[
+{
+  "model": "documents.ingreso",
+  "pk": 16,
+  "fields": {
+    "patent": "SS 2367 GO",
+    "entry_datetime": "2025-11-17T04:35:55Z",
+    "exit_datetime": "2025-11-18T15:30:00Z",
+    "chofer": 3,
+    "observations": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\r\n[Ingreso técnico registrado por Recepcionista de Vehículos]",
+    "authorization": true,
+    "entry_registered_by": 4,
+    "exit_registered_by": 4,
+    "schedule": 16,
+    "es_ingreso_tecnico": true
+  }
+},
+{
+  "model": "documents.ingreso",
+  "pk": 17,
+  "fields": {
+    "patent": "SS 2367 GO",
+    "entry_datetime": "2025-11-17T04:36:28.363Z",
+    "exit_datetime": null,
+    "chofer": 3,
+    "observations": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.\n[Ingreso técnico registrado por Recepcionista de Vehículos]",
+    "authorization": false,
+    "entry_registered_by": 4,
+    "exit_registered_by": null,
+    "schedule": 17,
+    "es_ingreso_tecnico": true
+  }
+},
+{
+  "model": "documents.ingreso",
+  "pk": 18,
+  "fields": {
+    "patent": "SS 2367 GO",
+    "entry_datetime": "2025-11-17T04:36:54.510Z",
+    "exit_datetime": null,
+    "chofer": 3,
+    "observations": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    "authorization": false,
+    "entry_registered_by": 4,
+    "exit_registered_by": null,
+    "schedule": 18,
+    "es_ingreso_tecnico": false
+  }
+},
+{
+  "model": "documents.ingreso",
+  "pk": 19,
+  "fields": {
+    "patent": "SS 2367 GO",
+    "entry_datetime": "2025-11-17T04:37:25.048Z",
+    "exit_datetime": null,
+    "chofer": 3,
+    "observations": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    "authorization": false,
+    "entry_registered_by": 4,
+    "exit_registered_by": null,
+    "schedule": 20,
+    "es_ingreso_tecnico": false
+  }
+},
+{
+  "model": "documents.ingreso",
+  "pk": 20,
+  "fields": {
+    "patent": "SS 2367 GO",
+    "entry_datetime": "2025-11-17T06:46:54.635Z",
+    "exit_datetime": "2025-11-18T13:02:00Z",
+    "chofer": 3,
+    "observations": "fdsafdsafdsaf\n[Ingreso técnico registrado por Recepcionista de Vehículos]",
+    "authorization": true,
+    "entry_registered_by": 4,
+    "exit_registered_by": 4,
+    "schedule": 40,
+    "es_ingreso_tecnico": true
+  }
+},
+{
+  "model": "documents.maintenanceschedule",
+  "pk": 1,
+  "fields": {
+    "patent": "C 2584 BN",
+    "start_datetime": "2025-04-09T02:28:07.556Z",
+    "assigned_user": 3,
+    "expected_chofer": 7,
+    "status": 3,
+    "observations": "Hizo considera pública dar bien aún. Solo acuerdo formación ellas favor.\nEuropa muestra quienes norte derecho actual comenzó. Crecimiento espacio intereses carlos socialista.",
+    "related_incidents": []
+  }
+},
+{
+  "model": "documents.maintenanceschedule",
+  "pk": 2,
+  "fields": {
+    "patent": "7895 WCP",
+    "start_datetime": "2025-06-22T23:14:10.813Z",
+    "assigned_user": null,
+    "expected_chofer": null,
+    "status": 2,
+    "observations": null,
+    "related_incidents": []
+  }
+},
+{
+  "model": "documents.maintenanceschedule",
+  "pk": 3,
+  "fields": {
+    "patent": "4007 CKC",
+    "start_datetime": "2025-01-01T10:20:18.343Z",
+    "assigned_user": null,
+    "expected_chofer": null,
+    "status": 2,
+    "observations": null,
+    "related_incidents": []
+  }
+},
+{
+  "model": "documents.maintenanceschedule",
+  "pk": 4,
+  "fields": {
+    "patent": "4007 CKC",
+    "start_datetime": "2025-10-12T09:47:10.386Z",
+    "assigned_user": 6,
+    "expected_chofer": null,
+    "status": 3,
+    "observations": null,
+    "related_incidents": []
+  }
+},
+{
+  "model": "documents.maintenanceschedule",
+  "pk": 5,
+  "fields": {
+    "patent": "5455 MYP",
+    "start_datetime": "2025-10-21T16:14:27.260Z",
+    "assigned_user": null,
+    "expected_chofer": null,
+    "status": 2,
+    "observations": null,
+    "related_incidents": []
+  }
+},
+{
+  "model": "documents.maintenanceschedule",
+  "pk": 6,
+  "fields": {
+    "patent": "0910 LDT",
+    "start_datetime": "2025-04-29T21:24:34.631Z",
+    "assigned_user": null,
+    "expected_chofer": 6,
+    "status": 2,
+    "observations": "Política calle gente hijo posición medio popular. Habría juego única ningún origen. Hospital pensar pp sigue edad ellos.\nMinutos r fuego gran. Habían recursos primeras también estaban corazón pasa.",
+    "related_incidents": []
+  }
+},
+{
+  "model": "documents.maintenanceschedule",
+  "pk": 7,
+  "fields": {
+    "patent": "7297 TVN",
+    "start_datetime": "2025-09-10T04:23:32.582Z",
+    "assigned_user": null,
+    "expected_chofer": null,
+    "status": 1,
+    "observations": "Mayo saber casi esto dejó uso dolor. Humano enfermedad muerte autor. Fuentes debido libro derecha.",
+    "related_incidents": []
+  }
+},
+{
+  "model": "documents.maintenanceschedule",
+  "pk": 8,
+  "fields": {
+    "patent": "7038 SZH",
+    "start_datetime": "2025-04-18T20:59:13.349Z",
+    "assigned_user": null,
+    "expected_chofer": null,
+    "status": 3,
+    "observations": "Sol flores julio vino derechos quiere u pueblo.\nEsas costa cuales chile. Amor santa presencia varios. Mesa cantidad tenido baja.",
+    "related_incidents": []
+  }
+},
+{
+  "model": "documents.maintenanceschedule",
+  "pk": 9,
+  "fields": {
+    "patent": "C 2584 BN",
+    "start_datetime": "2025-07-03T15:34:30.915Z",
+    "assigned_user": null,
+    "expected_chofer": null,
+    "status": 3,
+    "observations": null,
+    "related_incidents": []
+  }
+},
+{
+  "model": "documents.maintenanceschedule",
+  "pk": 10,
+  "fields": {
+    "patent": "7297 TVN",
+    "start_datetime": "2025-01-12T09:05:54.589Z",
+    "assigned_user": null,
+    "expected_chofer": null,
+    "status": 2,
+    "observations": "S carlos deben partes llegar político. Sin precio fuera yo económica sino baja mundo. Mundial hechos libros noviembre entonces.\nU esos son has tenían.",
+    "related_incidents": []
+  }
+},
+{
+  "model": "documents.maintenanceschedule",
+  "pk": 11,
+  "fields": {
+    "patent": "4007 CKC",
+    "start_datetime": "2025-02-26T21:34:43.310Z",
+    "assigned_user": null,
+    "expected_chofer": null,
+    "status": 1,
+    "observations": null,
+    "related_incidents": []
+  }
+},
+{
+  "model": "documents.maintenanceschedule",
+  "pk": 12,
+  "fields": {
+    "patent": "3414 XTK",
+    "start_datetime": "2025-11-03T04:19:30.948Z",
+    "assigned_user": null,
+    "expected_chofer": null,
+    "status": 1,
+    "observations": "Vida hacía santiago jorge. Será escuela todas. Imposible mal propia esto.\nAgua septiembre mayor objetivo sí. Objetivo debe carlos capacidad distintas perdido podrá problema.",
+    "related_incidents": []
+  }
+},
+{
+  "model": "documents.maintenanceschedule",
+  "pk": 13,
+  "fields": {
+    "patent": "5455 MYP",
+    "start_datetime": "2025-04-01T15:05:56.169Z",
+    "assigned_user": null,
+    "expected_chofer": null,
+    "status": 2,
+    "observations": null,
+    "related_incidents": []
+  }
+},
+{
+  "model": "documents.maintenanceschedule",
+  "pk": 14,
+  "fields": {
+    "patent": "OU 3679 NS",
+    "start_datetime": "2025-01-31T05:20:21.024Z",
+    "assigned_user": 6,
+    "expected_chofer": null,
+    "status": 1,
+    "observations": "Etc medida pie. Ciudad centro cultura van.\nMás estados mano. Interés aquí mismo recuerdo méxico. Primer paciente son finalmente deja.\nUsted principio medida destino teatro cerca cerca.",
+    "related_incidents": []
+  }
+},
+{
+  "model": "documents.maintenanceschedule",
+  "pk": 15,
+  "fields": {
+    "patent": "3185 GDV",
+    "start_datetime": "2025-03-31T12:08:36.526Z",
+    "assigned_user": null,
+    "expected_chofer": null,
+    "status": 1,
+    "observations": null,
+    "related_incidents": []
+  }
+},
+{
+  "model": "documents.maintenanceschedule",
+  "pk": 16,
+  "fields": {
+    "patent": "SS 2367 GO",
+    "start_datetime": "2025-11-01T16:21:00Z",
+    "assigned_user": 3,
+    "expected_chofer": 3,
+    "status": 1,
+    "observations": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    "related_incidents": []
+  }
+},
+{
+  "model": "documents.maintenanceschedule",
+  "pk": 17,
+  "fields": {
+    "patent": "SS 2367 GO",
+    "start_datetime": "2025-11-02T16:21:00Z",
+    "assigned_user": 3,
+    "expected_chofer": 3,
+    "status": 1,
+    "observations": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    "related_incidents": []
+  }
+},
+{
+  "model": "documents.maintenanceschedule",
+  "pk": 18,
+  "fields": {
+    "patent": "SS 2367 GO",
+    "start_datetime": "2025-11-04T16:22:00Z",
+    "assigned_user": 3,
+    "expected_chofer": 3,
+    "status": 1,
+    "observations": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    "related_incidents": []
+  }
+},
+{
+  "model": "documents.maintenanceschedule",
+  "pk": 19,
+  "fields": {
+    "patent": "SS 2367 GO",
+    "start_datetime": "2025-11-05T16:22:00Z",
+    "assigned_user": 3,
+    "expected_chofer": 3,
+    "status": 1,
+    "observations": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    "related_incidents": []
+  }
+},
+{
+  "model": "documents.maintenanceschedule",
+  "pk": 20,
+  "fields": {
+    "patent": "SS 2367 GO",
+    "start_datetime": "2025-11-06T04:23:00Z",
+    "assigned_user": 3,
+    "expected_chofer": 3,
+    "status": 1,
+    "observations": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    "related_incidents": []
+  }
+},
+{
+  "model": "documents.maintenanceschedule",
+  "pk": 21,
+  "fields": {
+    "patent": "SS 2367 GO",
+    "start_datetime": "2025-11-07T16:23:00Z",
+    "assigned_user": 3,
+    "expected_chofer": 3,
+    "status": 1,
+    "observations": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    "related_incidents": []
+  }
+},
+{
+  "model": "documents.maintenanceschedule",
+  "pk": 22,
+  "fields": {
+    "patent": "SS 2367 GO",
+    "start_datetime": "2025-11-08T16:23:00Z",
+    "assigned_user": 3,
+    "expected_chofer": 3,
+    "status": 1,
+    "observations": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    "related_incidents": []
+  }
+},
+{
+  "model": "documents.maintenanceschedule",
+  "pk": 23,
+  "fields": {
+    "patent": "OU 3679 NS",
+    "start_datetime": "2025-11-09T16:24:00Z",
+    "assigned_user": 18,
+    "expected_chofer": 18,
+    "status": 1,
+    "observations": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    "related_incidents": []
+  }
+},
+{
+  "model": "documents.maintenanceschedule",
+  "pk": 24,
+  "fields": {
+    "patent": "OU 3679 NS",
+    "start_datetime": "2025-11-10T16:25:00Z",
+    "assigned_user": 18,
+    "expected_chofer": 18,
+    "status": 1,
+    "observations": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    "related_incidents": []
+  }
+},
+{
+  "model": "documents.maintenanceschedule",
+  "pk": 25,
+  "fields": {
+    "patent": "OU 3679 NS",
+    "start_datetime": "2025-11-11T04:25:00Z",
+    "assigned_user": 18,
+    "expected_chofer": 18,
+    "status": 1,
+    "observations": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    "related_incidents": []
+  }
+},
+{
+  "model": "documents.maintenanceschedule",
+  "pk": 26,
+  "fields": {
+    "patent": "OU 3679 NS",
+    "start_datetime": "2025-11-12T16:25:00Z",
+    "assigned_user": 18,
+    "expected_chofer": 18,
+    "status": 1,
+    "observations": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    "related_incidents": []
+  }
+},
+{
+  "model": "documents.maintenanceschedule",
+  "pk": 27,
+  "fields": {
+    "patent": "OU 3679 NS",
+    "start_datetime": "2025-11-13T04:26:00Z",
+    "assigned_user": 18,
+    "expected_chofer": 18,
+    "status": 1,
+    "observations": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    "related_incidents": []
+  }
+},
+{
+  "model": "documents.maintenanceschedule",
+  "pk": 28,
+  "fields": {
+    "patent": "OU 3679 NS",
+    "start_datetime": "2025-11-14T04:26:00Z",
+    "assigned_user": 18,
+    "expected_chofer": 18,
+    "status": 1,
+    "observations": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    "related_incidents": []
+  }
+},
+{
+  "model": "documents.maintenanceschedule",
+  "pk": 29,
+  "fields": {
+    "patent": "OU 3679 NS",
+    "start_datetime": "2025-11-15T16:26:00Z",
+    "assigned_user": 18,
+    "expected_chofer": 18,
+    "status": 1,
+    "observations": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    "related_incidents": []
+  }
+},
+{
+  "model": "documents.maintenanceschedule",
+  "pk": 30,
+  "fields": {
+    "patent": "OU 3679 NS",
+    "start_datetime": "2025-11-16T16:26:00Z",
+    "assigned_user": 18,
+    "expected_chofer": 18,
+    "status": 1,
+    "observations": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    "related_incidents": []
+  }
+},
+{
+  "model": "documents.maintenanceschedule",
+  "pk": 31,
+  "fields": {
+    "patent": "OU 3679 NS",
+    "start_datetime": "2025-11-17T16:28:00Z",
+    "assigned_user": 18,
+    "expected_chofer": 18,
+    "status": 1,
+    "observations": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    "related_incidents": [
+      22
+    ]
+  }
+},
+{
+  "model": "documents.maintenanceschedule",
+  "pk": 32,
+  "fields": {
+    "patent": "OU 3679 NS",
+    "start_datetime": "2025-11-18T04:29:00Z",
+    "assigned_user": 18,
+    "expected_chofer": 18,
+    "status": 1,
+    "observations": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    "related_incidents": [
+      21
+    ]
+  }
+},
+{
+  "model": "documents.maintenanceschedule",
+  "pk": 33,
+  "fields": {
+    "patent": "OU 3679 NS",
+    "start_datetime": "2025-11-19T04:29:00Z",
+    "assigned_user": 18,
+    "expected_chofer": 18,
+    "status": 1,
+    "observations": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    "related_incidents": [
+      21,
+      22
+    ]
+  }
+},
+{
+  "model": "documents.maintenanceschedule",
+  "pk": 34,
+  "fields": {
+    "patent": "GC 5176 MS",
+    "start_datetime": "2025-11-20T04:30:00Z",
+    "assigned_user": 19,
+    "expected_chofer": 19,
+    "status": 1,
+    "observations": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    "related_incidents": []
+  }
+},
+{
+  "model": "documents.maintenanceschedule",
+  "pk": 35,
+  "fields": {
+    "patent": "GC 5176 MS",
+    "start_datetime": "2025-11-19T04:30:00Z",
+    "assigned_user": 19,
+    "expected_chofer": 19,
+    "status": 1,
+    "observations": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    "related_incidents": []
+  }
+},
+{
+  "model": "documents.maintenanceschedule",
+  "pk": 36,
+  "fields": {
+    "patent": "GC 5176 MS",
+    "start_datetime": "2025-11-21T16:30:00Z",
+    "assigned_user": 19,
+    "expected_chofer": 19,
+    "status": 1,
+    "observations": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    "related_incidents": []
+  }
+},
+{
+  "model": "documents.maintenanceschedule",
+  "pk": 37,
+  "fields": {
+    "patent": "GC 5176 MS",
+    "start_datetime": "2025-11-23T04:31:00Z",
+    "assigned_user": 19,
+    "expected_chofer": 19,
+    "status": 1,
+    "observations": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    "related_incidents": []
+  }
+},
+{
+  "model": "documents.maintenanceschedule",
+  "pk": 38,
+  "fields": {
+    "patent": "GC 5176 MS",
+    "start_datetime": "2025-11-22T04:31:00Z",
+    "assigned_user": 19,
+    "expected_chofer": 19,
+    "status": 1,
+    "observations": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    "related_incidents": []
+  }
+},
+{
+  "model": "documents.maintenanceschedule",
+  "pk": 39,
+  "fields": {
+    "patent": "GC 5176 MS",
+    "start_datetime": "2025-11-20T04:32:00Z",
+    "assigned_user": 19,
+    "expected_chofer": 19,
+    "status": 1,
+    "observations": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    "related_incidents": [
+      23,
+      24
+    ]
+  }
+},
+{
+  "model": "documents.maintenanceschedule",
+  "pk": 40,
+  "fields": {
+    "patent": "SS 2367 GO",
+    "start_datetime": "2025-11-21T18:45:00Z",
+    "assigned_user": 3,
+    "expected_chofer": 3,
+    "status": 1,
+    "observations": "fdsafdsafdsaf",
+    "related_incidents": [
+      27
+    ]
+  }
+}
+]

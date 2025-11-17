@@ -1,0 +1,208 @@
+#calendar {
+  max-width: 68.75rem;
+  margin: 2.5rem auto;
+  padding: 0 0.625rem;
+}
+
+/* Responsivo para tablets */
+@media (max-width: 768px) {
+  #calendar {
+    max-width: 100%;
+    padding: 0 0.3125rem;
+    margin: 1.25rem auto;
+  }
+}
+
+/* Responsivo para móviles */
+@media (max-width: 480px) {
+  #calendar {
+    max-width: 100%;
+    padding: 0 0.125rem;
+    margin: 0.625rem auto;
+  }
+  
+  /* Hacer que el header del calendario se apile verticalmente en móviles */
+  .fc-header-toolbar {
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+  }
+  
+  .fc-toolbar-chunk {
+    display: flex !important;
+    justify-content: center !important;
+    margin-bottom: 0.25rem !important;
+  }
+  
+  /* Centrar el título en móviles */
+  .fc-toolbar-chunk:nth-child(2) {
+    order: -1; /* Mover el título arriba */
+  }
+}
+
+/* Estilos para incidentes en el modal */
+#modal-incidents-section {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #dee2e6;
+}
+
+#modal-incidents-section h6 {
+  margin-bottom: 0.75rem;
+  color: #495057;
+}
+
+.incidents-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.incident-item {
+  background-color: #f8f9fa;
+  transition: background-color 0.2s ease;
+}
+
+.incident-item:hover {
+  background-color: #e9ecef;
+}
+
+.incident-item.text-danger {
+  border-left: 3px solid #dc3545 !important;
+  background-color: #fff5f5 !important;
+}
+
+.incident-item.text-danger:hover {
+  background-color: #ffeaea !important;
+}
+
+.incident-item .badge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+}
+
+/* Responsive para móviles */
+@media (max-width: 768px) {
+  .incidents-list {
+    max-height: 200px;
+  }
+  
+  .incident-item {
+    padding: 0.75rem !important;
+  }
+  
+  .incident-item .badge {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.4rem;
+  }
+}
+
+/* Estilos para resolución pequeña (375px) - Vista semanal */
+@media (max-width: 375px) {
+  /* Reducir tamaño de fuente de los números de día en vista semanal */
+  .fc-daygrid-day-number {
+    font-size: 0.7rem !important;
+    font-weight: 600 !important;
+    padding: 0.125rem !important;
+  }
+  
+  /* Reducir tamaño de fuente de los headers de día de la semana */
+  .fc-col-header-cell {
+    font-size: 0.65rem !important;
+    padding: 0.25rem !important;
+  }
+  
+  /* Ajustar el tamaño del calendario para caber mejor */
+  #calendar {
+    max-width: 100%;
+    padding: 0 0.0625rem;
+    margin: 0.3125rem auto;
+  }
+  
+  /* Reducir padding de las celdas del calendario */
+  .fc-daygrid-day {
+    padding: 0.125rem !important;
+  }
+  
+  /* Ajustar el tamaño del contenido de las celdas */
+  .fc-daygrid-day-top {
+    padding: 0.0625rem !important;
+  }
+  
+  /* Hacer que los eventos sean más pequeños */
+  .fc-event {
+    font-size: 0.6rem !important;
+    padding: 0.0625rem 0.125rem !important;
+  }
+  
+  /* Ajustar el título del evento si es muy largo */
+  .fc-event-title {
+    font-size: 0.6rem !important;
+    line-height: 1.1 !important;
+  }
+  
+  /* Mejorar la legibilidad del texto en celdas pequeñas */
+  .fc-daygrid-day-number {
+    font-weight: 700 !important;
+    color: #333 !important;
+  }
+  
+  /* Asegurar que los números de día sean claramente visibles */
+  .fc-daygrid-day-number::after {
+    content: none !important;
+  }
+}
+
+/* Estilos para resolución muy pequeña (350px) - Vista semanal */
+@media (max-width: 350px) {
+  /* Reducir tamaño de fuente de los números de día en vista semanal */
+  .fc-daygrid-day-number {
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    padding: 0.125rem !important;
+  }
+  
+  /* Reducir tamaño de fuente de los headers de día de la semana */
+  .fc-col-header-cell {
+    font-size: 0.7rem !important;
+    padding: 0.25rem !important;
+  }
+  
+  /* Ajustar el tamaño del calendario para caber mejor */
+  #calendar {
+    max-width: 100%;
+    padding: 0 0.0625rem;
+    margin: 0.3125rem auto;
+  }
+  
+  /* Reducir padding de las celdas del calendario */
+  .fc-daygrid-day {
+    padding: 0.125rem !important;
+  }
+  
+  /* Ajustar el tamaño del contenido de las celdas */
+  .fc-daygrid-day-top {
+    padding: 0.0625rem !important;
+  }
+  
+  /* Hacer que los eventos sean más pequeños */
+  .fc-event {
+    font-size: 0.65rem !important;
+    padding: 0.0625rem 0.125rem !important;
+  }
+  
+  /* Ajustar el título del evento si es muy largo */
+  .fc-event-title {
+    font-size: 0.65rem !important;
+    line-height: 1.1 !important;
+  }
+  
+  /* Mejorar la legibilidad del texto en celdas pequeñas */
+  .fc-daygrid-day-number {
+    font-weight: 700 !important;
+    color: #333 !important;
+  }
+  
+  /* Asegurar que los números de día sean claramente visibles */
+  .fc-daygrid-day-number::after {
+    content: none !important;
+  }
+}

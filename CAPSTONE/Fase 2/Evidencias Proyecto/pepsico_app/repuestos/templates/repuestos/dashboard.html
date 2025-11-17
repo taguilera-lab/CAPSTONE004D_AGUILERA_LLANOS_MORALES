@@ -1,0 +1,206 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard de Repuestos{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-12">
+      <h1 class="mb-4">
+        <i class="fas fa-cogs"></i> Gestión de Repuestos
+      </h1>
+    </div>
+  </div>
+
+  <!-- Estadísticas principales -->
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="card bg-primary text-white">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <h5 class="card-title">Total Repuestos</h5>
+              <h2>{{ total_repuestos }}</h2>
+            </div>
+            <div class="align-self-center">
+              <i class="fas fa-cogs fa-2x"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card bg-warning text-white">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <h5 class="card-title">Stock Bajo</h5>
+              <h2>{{ low_stock_count }}</h2>
+            </div>
+            <div class="align-self-center">
+              <i class="fas fa-exclamation-triangle fa-2x"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card bg-danger text-white">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <h5 class="card-title">Sin Stock</h5>
+              <h2>{{ out_of_stock_count }}</h2>
+            </div>
+            <div class="align-self-center">
+              <i class="fas fa-times-circle fa-2x"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card bg-success text-white">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <h5 class="card-title">Órdenes de Compra</h5>
+              <h2>{{ pending_purchase_orders }}</h2>
+            </div>
+            <div class="align-self-center">
+              <i class="fas fa-shopping-cart fa-2x"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Accesos rápidos -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">Accesos Rápidos</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-3 mb-3">
+              <a href="{% url 'repuestos:spare_part_list' %}" class="btn btn-outline-primary btn-block w-100">
+                <i class="fas fa-cogs"></i><br>Ver Repuestos
+              </a>
+            </div>
+            <div class="col-md-3 mb-3">
+              <a href="{% url 'repuestos:supplier_list' %}" class="btn btn-outline-info btn-block w-100">
+                <i class="fas fa-truck"></i><br>Proveedores
+              </a>
+            </div>
+            <div class="col-md-3 mb-3">
+              <a href="{% url 'repuestos:stock_movement_list' %}" class="btn btn-outline-warning btn-block w-100">
+                <i class="fas fa-exchange-alt"></i><br>Movimientos
+              </a>
+            </div>
+            <div class="col-md-3 mb-3">
+              <a href="{% url 'repuestos:purchase_order_list' %}" class="btn btn-outline-success btn-block w-100">
+                <i class="fas fa-shopping-cart"></i><br>Órdenes de Compra
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alertas de stock bajo -->
+  {% if low_stock_alerts %}
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card border-warning">
+        <div class="card-header bg-warning">
+          <h5 class="mb-0 text-white">
+            <i class="fas fa-exclamation-triangle"></i> Alertas de Stock Bajo
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-sm">
+              <thead>
+                <tr>
+                  <th>Repuesto</th>
+                  <th>Stock Actual</th>
+                  <th>Stock Mínimo</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for alert in low_stock_alerts %}
+                <tr>
+                  <td>{{ alert.repuesto.name }}</td>
+                  <td><span class="badge bg-danger">{{ alert.current_stock }}</span></td>
+                  <td>{{ alert.minimum_stock }}</td>
+                  <td>
+                    <a href="{% url 'repuestos:spare_part_detail' alert.pk %}" class="btn btn-sm btn-outline-primary">
+                      Ver Detalle
+                    </a>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Movimientos recientes -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">Movimientos Recientes</h5>
+        </div>
+        <div class="card-body">
+          {% if recent_movements %}
+          <div class="table-responsive">
+            <table class="table table-sm">
+              <thead>
+                <tr>
+                  <th>Repuesto</th>
+                  <th>Tipo</th>
+                  <th>Cantidad</th>
+                  <th>Usuario</th>
+                  <th>Fecha</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for movement in recent_movements %}
+                <tr>
+                  <td>{{ movement.repuesto.name }}</td>
+                  <td>
+                    <span class="badge bg-{% if movement.movement_type == 'IN' %}success{% elif movement.movement_type == 'OUT' %}danger{% else %}warning{% endif %}">
+                      {{ movement.get_movement_type_display }}
+                    </span>
+                  </td>
+                  <td>{{ movement.quantity }}</td>
+                  <td>{{ movement.performed_by.name|default:"Sistema" }}</td>
+                  <td>{{ movement.performed_at|date:"d/m/Y H:i" }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <p class="text-muted mb-0">No hay movimientos recientes.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

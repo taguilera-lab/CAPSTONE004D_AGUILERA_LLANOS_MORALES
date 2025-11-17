@@ -1,0 +1,302 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Movimientos de Stock{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">
+          <i class="fas fa-exchange-alt"></i> Movimientos de Stock
+        </h1>
+        <div>
+          <a href="{% url 'repuestos:dashboard' %}" class="btn btn-secondary me-2">
+            <i class="fas fa-arrow-left"></i> Volver a Repuestos
+          </a>
+          <a href="{% url 'repuestos:purchase_order_list' %}" class="btn btn-info me-2">
+            <i class="fas fa-shopping-cart"></i> Órdenes de Compra
+          </a>
+          <a href="{% url 'repuestos:stock_movement_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Nuevo Movimiento
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">
+            <i class="fas fa-filter"></i> Filtros
+          </h5>
+        </div>
+        <div class="card-body">
+          <form method="get" class="row g-3">
+            <div class="col-md-3">
+              <label for="id_spare_part" class="form-label">Repuesto</label>
+              <input type="text" name="spare_part" id="id_spare_part" class="form-control"
+                     value="{{ request.GET.spare_part }}" placeholder="Buscar por nombre de repuesto">
+            </div>
+
+            <div class="col-md-2">
+              <label for="id_movement_type" class="form-label">Tipo</label>
+              <select name="type" id="id_movement_type" class="form-select">
+                <option value="">Todos</option>
+                <option value="IN" {% if request.GET.type == 'IN' %}selected{% endif %}>Entrada</option>
+                <option value="OUT" {% if request.GET.type == 'OUT' %}selected{% endif %}>Salida</option>
+              </select>
+            </div>
+
+            <div class="col-md-2">
+              <label for="id_date_from" class="form-label">Desde</label>
+              <input type="date" name="date_from" id="id_date_from" class="form-control" value="{{ request.GET.date_from }}">
+            </div>
+
+            <div class="col-md-2">
+              <label for="id_date_to" class="form-label">Hasta</label>
+              <input type="date" name="date_to" id="id_date_to" class="form-control" value="{{ request.GET.date_to }}">
+            </div>
+
+            <div class="col-md-3">
+              <label for="id_created_by" class="form-label">Usuario</label>
+              <select name="created_by" id="id_created_by" class="form-select">
+                <option value="">Todos los usuarios</option>
+                {% for user in users %}
+                <option value="{{ user.pk }}" {% if request.GET.created_by == user.pk|stringformat:"s" %}selected{% endif %}>
+                  {{ user.name }}
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="col-12">
+              <button type="submit" class="btn btn-primary me-2">
+                <i class="fas fa-search"></i> Filtrar
+              </button>
+              <a href="{% url 'repuestos:stock_movement_list' %}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Limpiar
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lista de Movimientos -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          {% if page_obj %}
+          <div class="table-responsive">
+            <table class="table table-striped table-hover">
+              <thead class="table-dark">
+                <tr>
+                  <th>Fecha</th>
+                  <th>Repuesto</th>
+                  <th>Tipo</th>
+                  <th>Cantidad</th>
+                  <th>Stock Anterior</th>
+                  <th>Stock Nuevo</th>
+                  <th>Motivo</th>
+                  <th>Usuario</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for movement in page_obj %}
+                <tr>
+                  <td>{{ movement.performed_at|date:"d/m/Y H:i" }}</td>
+                  <td>
+                    <strong>{{ movement.repuesto.name }}</strong>
+                    {% if movement.repuesto.part_number %}
+                    <br><small class="text-muted">{{ movement.repuesto.part_number }}</small>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if movement.movement_type == 'IN' %}
+                      <span class="badge bg-success">
+                        <i class="fas fa-arrow-up"></i> Entrada
+                      </span>
+                    {% elif movement.movement_type == 'OUT' %}
+                      <span class="badge bg-danger">
+                        <i class="fas fa-arrow-down"></i> Salida
+                      </span>
+                    {% elif movement.movement_type == 'ADJ' %}
+                      <span class="badge bg-warning">
+                        <i class="fas fa-adjust"></i> Ajuste
+                      </span>
+                    {% elif movement.movement_type == 'RET' %}
+                      <span class="badge bg-info">
+                        <i class="fas fa-undo"></i> Devolución
+                      </span>
+                    {% else %}
+                      <span class="badge bg-secondary">{{ movement.get_movement_type_display }}</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <span class="{% if movement.movement_type == 'IN' %}text-success{% else %}text-danger{% endif %}">
+                      {% if movement.movement_type == 'IN' %}+{% else %}-{% endif %}{{ movement.quantity }}
+                    </span>
+                  </td>
+                  <td>{{ movement.previous_stock }}</td>
+                  <td>{{ movement.new_stock }}</td>
+                  <td>
+                    {{ movement.reason|truncatechars:30 }}
+                    {% if movement.work_order %}
+                    <br><small class="text-muted">OT: {{ movement.work_order.id_work_order }}</small>
+                    {% endif %}
+                    {% if movement.purchase_order %}
+                    <br><small class="text-muted">OC: {{ movement.purchase_order.order_number }}</small>
+                    {% endif %}
+                  </td>
+                  <td>{{ movement.performed_by.name|default:"Sistema" }}</td>
+                  <td>
+                    <a href="{% url 'repuestos:stock_movement_detail' movement.pk %}" class="btn btn-sm btn-outline-info" title="Ver detalle">
+                      <i class="fas fa-eye"></i> Ver
+                    </a>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Paginación -->
+          {% if page_obj.has_other_pages %}
+          <div class="d-flex justify-content-center mt-3">
+            <nav aria-label="Paginación de movimientos">
+              <ul class="pagination">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                    Anterior
+                  </a>
+                </li>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <li class="page-item active">
+                  <span class="page-link">{{ num }}</span>
+                </li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ num }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a>
+                </li>
+                {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                    Siguiente
+                  </a>
+                </li>
+                {% endif %}
+              </ul>
+            </nav>
+          </div>
+          {% endif %}
+
+          {% else %}
+          <div class="text-center py-5">
+            <i class="fas fa-exchange-alt fa-3x text-muted mb-3"></i>
+            <h4 class="text-muted">No hay movimientos registrados</h4>
+            <p class="text-muted">No se encontraron movimientos que coincidan con los filtros aplicados.</p>
+            <a href="{% url 'repuestos:stock_movement_create' %}" class="btn btn-primary">
+              <i class="fas fa-plus"></i> Registrar Primer Movimiento
+            </a>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Estadísticas -->
+  {% if page_obj %}
+  <div class="row mt-4">
+    <div class="col-md-3">
+      <div class="card bg-success text-white">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <h5 class="card-title">Entradas</h5>
+              <h2>{{ total_entries }}</h2>
+            </div>
+            <div class="align-self-center">
+              <i class="fas fa-arrow-up fa-2x"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card bg-danger text-white">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <h5 class="card-title">Salidas</h5>
+              <h2>{{ total_exits }}</h2>
+            </div>
+            <div class="align-self-center">
+              <i class="fas fa-arrow-down fa-2x"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card bg-info text-white">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <h5 class="card-title">Total Movimientos</h5>
+              <h2>{{ total_movements }}</h2>
+            </div>
+            <div class="align-self-center">
+              <i class="fas fa-chart-line fa-2x"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card bg-warning text-white">
+        <div class="card-body">
+          <div class="d-flex justify-content-between">
+            <div>
+              <h5 class="card-title">Esta Semana</h5>
+              <h2>{{ this_week_movements }}</h2>
+            </div>
+            <div class="align-self-center">
+              <i class="fas fa-calendar-week fa-2x"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Botón de navegación -->
+  <div class="row mt-4">
+    <div class="col-12 text-center">
+      <a href="{% url 'repuestos:dashboard' %}" class="btn btn-secondary btn-lg">
+        <i class="fas fa-arrow-left"></i> Volver a Repuestos
+      </a>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
