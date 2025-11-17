@@ -1,0 +1,291 @@
+[
+{
+  "model": "repuestos.sparepartcategory",
+  "pk": 1,
+  "fields": {
+    "name": "Motor",
+    "description": "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+    "parent_category": null,
+    "created_at": "2025-11-17T05:21:16.398Z",
+    "updated_at": "2025-11-17T05:21:16.398Z"
+  }
+},
+{
+  "model": "repuestos.sparepartcategory",
+  "pk": 2,
+  "fields": {
+    "name": "Carrocería",
+    "description": "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+    "parent_category": null,
+    "created_at": "2025-11-17T05:21:28.432Z",
+    "updated_at": "2025-11-17T05:21:28.432Z"
+  }
+},
+{
+  "model": "repuestos.sparepartcategory",
+  "pk": 3,
+  "fields": {
+    "name": "Electrónica",
+    "description": "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+    "parent_category": null,
+    "created_at": "2025-11-17T05:21:38.728Z",
+    "updated_at": "2025-11-17T05:21:38.728Z"
+  }
+},
+{
+  "model": "repuestos.supplier",
+  "pk": 1,
+  "fields": {
+    "name": "Proveedor",
+    "contact_person": "Proveedor",
+    "phone": "+56988887777",
+    "email": "proveedor@gmail.com",
+    "address": "Maipú",
+    "is_active": true,
+    "created_at": "2025-11-12T06:37:24.310Z",
+    "updated_at": "2025-11-12T06:37:24.310Z"
+  }
+},
+{
+  "model": "repuestos.sparepartstock",
+  "pk": 3,
+  "fields": {
+    "repuesto": 21,
+    "category": 1,
+    "supplier": 1,
+    "part_number": "LOR123",
+    "description": "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+    "unit_cost": "500.00",
+    "selling_price": "2000.00",
+    "current_stock": 485,
+    "minimum_stock": 10,
+    "maximum_stock": 100,
+    "location": "Santa Marta",
+    "is_active": true,
+    "requires_approval": false,
+    "created_by": 5,
+    "created_at": "2025-11-17T05:23:00.269Z",
+    "updated_at": "2025-11-17T06:54:23.946Z"
+  }
+},
+{
+  "model": "repuestos.sparepartstock",
+  "pk": 4,
+  "fields": {
+    "repuesto": 22,
+    "category": 2,
+    "supplier": 1,
+    "part_number": "IPS456",
+    "description": "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+    "unit_cost": "666.00",
+    "selling_price": "9999.00",
+    "current_stock": 0,
+    "minimum_stock": 1,
+    "maximum_stock": 500,
+    "location": "Santa Marta",
+    "is_active": true,
+    "requires_approval": false,
+    "created_by": 5,
+    "created_at": "2025-11-17T05:23:41.658Z",
+    "updated_at": "2025-11-17T06:59:40.410Z"
+  }
+},
+{
+  "model": "repuestos.stockmovement",
+  "pk": 4,
+  "fields": {
+    "repuesto": 21,
+    "movement_type": "IN",
+    "quantity": 0,
+    "previous_stock": 0,
+    "new_stock": 0,
+    "work_order": null,
+    "purchase_order": null,
+    "supplier": null,
+    "reason": "Creación inicial de stock",
+    "reference_number": null,
+    "performed_by": 5,
+    "performed_at": "2025-11-17T05:23:00.272Z"
+  }
+},
+{
+  "model": "repuestos.stockmovement",
+  "pk": 5,
+  "fields": {
+    "repuesto": 22,
+    "movement_type": "IN",
+    "quantity": 0,
+    "previous_stock": 0,
+    "new_stock": 0,
+    "work_order": null,
+    "purchase_order": null,
+    "supplier": null,
+    "reason": "Creación inicial de stock",
+    "reference_number": null,
+    "performed_by": 5,
+    "performed_at": "2025-11-17T05:23:41.660Z"
+  }
+},
+{
+  "model": "repuestos.stockmovement",
+  "pk": 6,
+  "fields": {
+    "repuesto": 21,
+    "movement_type": "IN",
+    "quantity": 500,
+    "previous_stock": 0,
+    "new_stock": 500,
+    "work_order": null,
+    "purchase_order": 2,
+    "supplier": null,
+    "reason": "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+    "reference_number": null,
+    "performed_by": 5,
+    "performed_at": "2025-11-17T05:25:11.965Z"
+  }
+},
+{
+  "model": "repuestos.stockmovement",
+  "pk": 7,
+  "fields": {
+    "repuesto": 21,
+    "movement_type": "OUT",
+    "quantity": 10,
+    "previous_stock": 500,
+    "new_stock": 490,
+    "work_order": 14,
+    "purchase_order": null,
+    "supplier": null,
+    "reason": "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+    "reference_number": null,
+    "performed_by": 5,
+    "performed_at": "2025-11-17T05:27:18.264Z"
+  }
+},
+{
+  "model": "repuestos.stockmovement",
+  "pk": 8,
+  "fields": {
+    "repuesto": 21,
+    "movement_type": "OUT",
+    "quantity": 5,
+    "previous_stock": 490,
+    "new_stock": 485,
+    "work_order": 16,
+    "purchase_order": null,
+    "supplier": null,
+    "reason": "fdsafdas",
+    "reference_number": null,
+    "performed_by": 5,
+    "performed_at": "2025-11-17T06:54:23.940Z"
+  }
+},
+{
+  "model": "repuestos.stockmovement",
+  "pk": 9,
+  "fields": {
+    "repuesto": 22,
+    "movement_type": "IN",
+    "quantity": 5,
+    "previous_stock": 0,
+    "new_stock": 5,
+    "work_order": null,
+    "purchase_order": 3,
+    "supplier": null,
+    "reason": "fdsafds",
+    "reference_number": null,
+    "performed_by": 5,
+    "performed_at": "2025-11-17T06:59:16.504Z"
+  }
+},
+{
+  "model": "repuestos.stockmovement",
+  "pk": 10,
+  "fields": {
+    "repuesto": 22,
+    "movement_type": "OUT",
+    "quantity": 5,
+    "previous_stock": 5,
+    "new_stock": 0,
+    "work_order": 16,
+    "purchase_order": null,
+    "supplier": null,
+    "reason": "fdsafsda",
+    "reference_number": null,
+    "performed_by": 5,
+    "performed_at": "2025-11-17T06:59:40.404Z"
+  }
+},
+{
+  "model": "repuestos.purchaseorder",
+  "pk": 2,
+  "fields": {
+    "order_number": "202511001",
+    "supplier": 1,
+    "status": "RECEIVED",
+    "order_date": "2025-11-17",
+    "expected_delivery_date": null,
+    "actual_delivery_date": "2025-11-17",
+    "subtotal": "250000.00",
+    "tax_amount": "47500.00",
+    "total_amount": "297500.00",
+    "notes": "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+    "stock_updated_manually": false,
+    "stock_updated_by": null,
+    "stock_updated_at": null,
+    "created_by": 5,
+    "approved_by": null,
+    "created_at": "2025-11-17T05:24:08.868Z",
+    "updated_at": "2025-11-17T05:24:27.939Z"
+  }
+},
+{
+  "model": "repuestos.purchaseorder",
+  "pk": 3,
+  "fields": {
+    "order_number": "202511002",
+    "supplier": 1,
+    "status": "RECEIVED",
+    "order_date": "2025-11-17",
+    "expected_delivery_date": null,
+    "actual_delivery_date": "2025-11-17",
+    "subtotal": "3330.00",
+    "tax_amount": "632.70",
+    "total_amount": "3962.70",
+    "notes": "fdsafds",
+    "stock_updated_manually": false,
+    "stock_updated_by": null,
+    "stock_updated_at": null,
+    "created_by": 5,
+    "approved_by": null,
+    "created_at": "2025-11-17T06:58:28.318Z",
+    "updated_at": "2025-11-17T06:58:42.863Z"
+  }
+},
+{
+  "model": "repuestos.purchaseorderitem",
+  "pk": 2,
+  "fields": {
+    "purchase_order": 2,
+    "repuesto": 21,
+    "quantity_ordered": 500,
+    "quantity_received": 0,
+    "unit_price": "500.00",
+    "total_price": "250000.00",
+    "notes": null
+  }
+},
+{
+  "model": "repuestos.purchaseorderitem",
+  "pk": 3,
+  "fields": {
+    "purchase_order": 3,
+    "repuesto": 22,
+    "quantity_ordered": 5,
+    "quantity_received": 0,
+    "unit_price": "666.00",
+    "total_price": "3330.00",
+    "notes": null
+  }
+}
+]

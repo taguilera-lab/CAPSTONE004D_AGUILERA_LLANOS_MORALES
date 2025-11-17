@@ -1,0 +1,692 @@
+[
+{
+  "model": "documents.incident",
+  "pk": 21,
+  "fields": {
+    "vehicle": "OU 3679 NS",
+    "reported_by": 18,
+    "name": "Lorem",
+    "incident_type": "Mecanica",
+    "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    "location": "Lorem",
+    "latitude": "-33.56697490",
+    "longitude": "-70.80009120",
+    "is_emergency": true,
+    "requires_tow": false,
+    "priority": null,
+    "reported_at": "2025-11-17T04:27:48.574Z",
+    "created_at": "2025-11-17T04:27:48.574Z",
+    "updated_at": "2025-11-17T04:27:48.574Z",
+    "created_by": null,
+    "updated_by": null,
+    "related_ingreso": null
+  }
+},
+{
+  "model": "documents.incident",
+  "pk": 22,
+  "fields": {
+    "vehicle": "OU 3679 NS",
+    "reported_by": 18,
+    "name": "Ipsum",
+    "incident_type": "Neumaticos",
+    "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    "location": "Ipsum",
+    "latitude": "-33.56697490",
+    "longitude": "-70.80009120",
+    "is_emergency": false,
+    "requires_tow": true,
+    "priority": null,
+    "reported_at": "2025-11-17T04:28:14.033Z",
+    "created_at": "2025-11-17T04:28:14.033Z",
+    "updated_at": "2025-11-17T04:28:14.033Z",
+    "created_by": null,
+    "updated_by": null,
+    "related_ingreso": null
+  }
+},
+{
+  "model": "documents.incident",
+  "pk": 23,
+  "fields": {
+    "vehicle": "GC 5176 MS",
+    "reported_by": 19,
+    "name": "dolor",
+    "incident_type": "Carroceria",
+    "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    "location": "dolor",
+    "latitude": "-33.56697490",
+    "longitude": "-70.80009120",
+    "is_emergency": true,
+    "requires_tow": true,
+    "priority": null,
+    "reported_at": "2025-11-17T04:31:58.105Z",
+    "created_at": "2025-11-17T04:31:58.105Z",
+    "updated_at": "2025-11-17T04:31:58.105Z",
+    "created_by": null,
+    "updated_by": null,
+    "related_ingreso": null
+  }
+},
+{
+  "model": "documents.incident",
+  "pk": 24,
+  "fields": {
+    "vehicle": "GC 5176 MS",
+    "reported_by": 19,
+    "name": "sit",
+    "incident_type": "Electrica",
+    "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    "location": "sit",
+    "latitude": "-33.56697490",
+    "longitude": "-70.80009120",
+    "is_emergency": false,
+    "requires_tow": false,
+    "priority": null,
+    "reported_at": "2025-11-17T04:32:27.549Z",
+    "created_at": "2025-11-17T04:32:27.549Z",
+    "updated_at": "2025-11-17T04:32:27.549Z",
+    "created_by": null,
+    "updated_by": null,
+    "related_ingreso": null
+  }
+},
+{
+  "model": "documents.incident",
+  "pk": 25,
+  "fields": {
+    "vehicle": "SS 2367 GO",
+    "reported_by": 3,
+    "name": "amet",
+    "incident_type": "Mecanica",
+    "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    "location": "amet",
+    "latitude": "-33.56697490",
+    "longitude": "-70.80009120",
+    "is_emergency": false,
+    "requires_tow": false,
+    "priority": null,
+    "reported_at": "2025-11-17T04:34:02.676Z",
+    "created_at": "2025-11-17T04:34:02.676Z",
+    "updated_at": "2025-11-17T04:34:02.676Z",
+    "created_by": null,
+    "updated_by": null,
+    "related_ingreso": null
+  }
+},
+{
+  "model": "documents.incident",
+  "pk": 26,
+  "fields": {
+    "vehicle": "SS 2367 GO",
+    "reported_by": 3,
+    "name": "consectetur",
+    "incident_type": "Carroceria",
+    "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+    "location": "consectetur",
+    "latitude": "-33.56697490",
+    "longitude": "-70.80009120",
+    "is_emergency": true,
+    "requires_tow": true,
+    "priority": null,
+    "reported_at": "2025-11-17T04:34:31.746Z",
+    "created_at": "2025-11-17T04:34:31.746Z",
+    "updated_at": "2025-11-17T04:34:31.746Z",
+    "created_by": null,
+    "updated_by": null,
+    "related_ingreso": null
+  }
+},
+{
+  "model": "documents.incident",
+  "pk": 27,
+  "fields": {
+    "vehicle": "SS 2367 GO",
+    "reported_by": 4,
+    "name": "enim",
+    "incident_type": "Mecanica",
+    "description": "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+    "location": "enim",
+    "latitude": "-33.56697490",
+    "longitude": "-70.80009120",
+    "is_emergency": true,
+    "requires_tow": false,
+    "priority": "Urgente",
+    "reported_at": "2025-11-17T04:59:38.173Z",
+    "created_at": "2025-11-17T04:59:38.173Z",
+    "updated_at": "2025-11-17T04:59:38.173Z",
+    "created_by": null,
+    "updated_by": null,
+    "related_ingreso": 16
+  }
+},
+{
+  "model": "documents.diagnostics",
+  "pk": 16,
+  "fields": {
+    "incident": null,
+    "severity": "Alta",
+    "category": "Seguridad",
+    "symptoms": "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+    "possible_cause": "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+    "route": 9,
+    "status": "OT_Generada",
+    "assigned_to": 2,
+    "resolved_at": null,
+    "resolution_notes": "",
+    "estimated_resolution_time": null,
+    "resolution_type": null,
+    "auto_resolved": false,
+    "resolution_source": null,
+    "affects_operation": true,
+    "follow_up_required": false,
+    "related_schedule": null,
+    "related_ingreso": 16,
+    "related_work_order": 14,
+    "diagnostic_started_at": null,
+    "diagnostic_completed_at": null,
+    "diagnostic_by": 2,
+    "diagnostic_method": null,
+    "parts_needed": null,
+    "estimated_cost": null,
+    "photos_taken": false,
+    "requires_specialist": false,
+    "environmental_conditions": null,
+    "location": "Santa Marta",
+    "diagnostics_created_at": "2025-11-17T05:04:13.167Z",
+    "diagnostics_updated_at": "2025-11-17T05:06:35.988Z",
+    "diagnostics_created_by": 8,
+    "diagnostics_updated_by": 2,
+    "incidents": []
+  }
+},
+{
+  "model": "documents.diagnostics",
+  "pk": 17,
+  "fields": {
+    "incident": null,
+    "severity": "Alta",
+    "category": "Operativo",
+    "symptoms": "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+    "possible_cause": "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+    "route": null,
+    "status": "OT_Generada",
+    "assigned_to": 2,
+    "resolved_at": null,
+    "resolution_notes": "",
+    "estimated_resolution_time": null,
+    "resolution_type": null,
+    "auto_resolved": false,
+    "resolution_source": null,
+    "affects_operation": true,
+    "follow_up_required": true,
+    "related_schedule": null,
+    "related_ingreso": null,
+    "related_work_order": 15,
+    "diagnostic_started_at": null,
+    "diagnostic_completed_at": null,
+    "diagnostic_by": null,
+    "diagnostic_method": "Visual",
+    "parts_needed": null,
+    "estimated_cost": null,
+    "photos_taken": false,
+    "requires_specialist": false,
+    "environmental_conditions": null,
+    "location": "Ruta 5 km 45",
+    "diagnostics_created_at": "2025-11-17T05:36:27.042Z",
+    "diagnostics_updated_at": "2025-11-17T05:37:31.735Z",
+    "diagnostics_created_by": 6,
+    "diagnostics_updated_by": 6,
+    "incidents": [
+      25,
+      26
+    ]
+  }
+},
+{
+  "model": "documents.diagnostics",
+  "pk": 18,
+  "fields": {
+    "incident": null,
+    "severity": "Baja",
+    "category": "Seguridad",
+    "symptoms": "fdsafdsa",
+    "possible_cause": "fdsafdsa",
+    "route": null,
+    "status": "OT_Generada",
+    "assigned_to": 2,
+    "resolved_at": null,
+    "resolution_notes": "",
+    "estimated_resolution_time": null,
+    "resolution_type": null,
+    "auto_resolved": false,
+    "resolution_source": null,
+    "affects_operation": true,
+    "follow_up_required": false,
+    "related_schedule": null,
+    "related_ingreso": 20,
+    "related_work_order": 16,
+    "diagnostic_started_at": null,
+    "diagnostic_completed_at": null,
+    "diagnostic_by": 2,
+    "diagnostic_method": "Visual",
+    "parts_needed": null,
+    "estimated_cost": null,
+    "photos_taken": false,
+    "requires_specialist": false,
+    "environmental_conditions": null,
+    "location": "Santa Marta",
+    "diagnostics_created_at": "2025-11-17T06:48:26.394Z",
+    "diagnostics_updated_at": "2025-11-17T06:50:08.909Z",
+    "diagnostics_created_by": 8,
+    "diagnostics_updated_by": 2,
+    "incidents": []
+  }
+},
+{
+  "model": "documents.incidentimage",
+  "pk": 22,
+  "fields": {
+    "incident": 21,
+    "name": "Foto 1",
+    "image": "incident_images/foto_2025-11-17T04-27-47-054Z.jpg",
+    "uploaded_at": "2025-11-17T04:27:48.583Z"
+  }
+},
+{
+  "model": "documents.incidentimage",
+  "pk": 23,
+  "fields": {
+    "incident": 22,
+    "name": "Foto 1",
+    "image": "incident_images/foto_2025-11-17T04-28-12-106Z.jpg",
+    "uploaded_at": "2025-11-17T04:28:14.050Z"
+  }
+},
+{
+  "model": "documents.incidentimage",
+  "pk": 24,
+  "fields": {
+    "incident": 23,
+    "name": "Foto 1",
+    "image": "incident_images/foto_2025-11-17T04-31-56-184Z.jpg",
+    "uploaded_at": "2025-11-17T04:31:58.116Z"
+  }
+},
+{
+  "model": "documents.incidentimage",
+  "pk": 25,
+  "fields": {
+    "incident": 24,
+    "name": "Foto 1",
+    "image": "incident_images/foto_2025-11-17T04-32-16-948Z.jpg",
+    "uploaded_at": "2025-11-17T04:32:27.557Z"
+  }
+},
+{
+  "model": "documents.incidentimage",
+  "pk": 26,
+  "fields": {
+    "incident": 25,
+    "name": "Foto 1",
+    "image": "incident_images/foto_2025-11-17T04-33-56-369Z.jpg",
+    "uploaded_at": "2025-11-17T04:34:02.684Z"
+  }
+},
+{
+  "model": "documents.incidentimage",
+  "pk": 27,
+  "fields": {
+    "incident": 26,
+    "name": "Foto 1",
+    "image": "incident_images/foto_2025-11-17T04-34-30-524Z.jpg",
+    "uploaded_at": "2025-11-17T04:34:31.752Z"
+  }
+},
+{
+  "model": "documents.incidentimage",
+  "pk": 28,
+  "fields": {
+    "incident": 27,
+    "name": "Foto 1",
+    "image": "incident_images/foto_2025-11-17T04-59-36-810Z.jpg",
+    "uploaded_at": "2025-11-17T04:59:38.183Z"
+  }
+},
+{
+  "model": "documents.ingresoimage",
+  "pk": 19,
+  "fields": {
+    "ingreso": 16,
+    "name": "Ingreso_16_20251117_013555_1",
+    "description": null,
+    "image": "ingreso_images/photo_1_17_11_2025_1_35_50.jpg",
+    "uploaded_by": 4,
+    "uploaded_at": "2025-11-17T04:35:55.779Z"
+  }
+},
+{
+  "model": "documents.ingresoimage",
+  "pk": 20,
+  "fields": {
+    "ingreso": 17,
+    "name": "Ingreso_17_20251117_013628_1",
+    "description": null,
+    "image": "ingreso_images/photo_1_17_11_2025_1_36_27.jpg",
+    "uploaded_by": 4,
+    "uploaded_at": "2025-11-17T04:36:28.373Z"
+  }
+},
+{
+  "model": "documents.ingresoimage",
+  "pk": 21,
+  "fields": {
+    "ingreso": 18,
+    "name": "Ingreso_18_20251117_013654_1",
+    "description": null,
+    "image": "ingreso_images/photo_1_17_11_2025_1_36_53.jpg",
+    "uploaded_by": 4,
+    "uploaded_at": "2025-11-17T04:36:54.518Z"
+  }
+},
+{
+  "model": "documents.ingresoimage",
+  "pk": 22,
+  "fields": {
+    "ingreso": 19,
+    "name": "Ingreso_19_20251117_013725_1",
+    "description": null,
+    "image": "ingreso_images/photo_1_17_11_2025_1_37_19.jpg",
+    "uploaded_by": 4,
+    "uploaded_at": "2025-11-17T04:37:25.056Z"
+  }
+},
+{
+  "model": "documents.ingresoimage",
+  "pk": 23,
+  "fields": {
+    "ingreso": 16,
+    "name": "Foto 1 - Estado frontal del vehículo",
+    "description": "Estado frontal del vehículo",
+    "image": "ingreso_images/photo_0_CoTgZc2.jpg",
+    "uploaded_by": 8,
+    "uploaded_at": "2025-11-17T04:56:51.916Z"
+  }
+},
+{
+  "model": "documents.ingresoimage",
+  "pk": 24,
+  "fields": {
+    "ingreso": 16,
+    "name": "Foto 2 - Estado lateral izquierdo",
+    "description": "Estado lateral izquierdo",
+    "image": "ingreso_images/photo_1_oqbt9Sj.jpg",
+    "uploaded_by": 8,
+    "uploaded_at": "2025-11-17T04:56:51.921Z"
+  }
+},
+{
+  "model": "documents.ingresoimage",
+  "pk": 25,
+  "fields": {
+    "ingreso": 16,
+    "name": "Foto 3 - Estado lateral derecho",
+    "description": "Estado lateral derecho",
+    "image": "ingreso_images/photo_2_i1vli1V.jpg",
+    "uploaded_by": 8,
+    "uploaded_at": "2025-11-17T04:56:51.922Z"
+  }
+},
+{
+  "model": "documents.ingresoimage",
+  "pk": 26,
+  "fields": {
+    "ingreso": 16,
+    "name": "Foto 4 - Estado trasero",
+    "description": "Estado trasero",
+    "image": "ingreso_images/photo_3_hMQQVQj.jpg",
+    "uploaded_by": 8,
+    "uploaded_at": "2025-11-17T04:56:51.925Z"
+  }
+},
+{
+  "model": "documents.ingresoimage",
+  "pk": 27,
+  "fields": {
+    "ingreso": 16,
+    "name": "Foto 5 - Estado del motor",
+    "description": "Estado del motor",
+    "image": "ingreso_images/photo_4_3gMIU0X.jpg",
+    "uploaded_by": 8,
+    "uploaded_at": "2025-11-17T04:56:51.927Z"
+  }
+},
+{
+  "model": "documents.ingresoimage",
+  "pk": 28,
+  "fields": {
+    "ingreso": 16,
+    "name": "Foto 6 - Estado de neumáticos",
+    "description": "Estado de neumáticos",
+    "image": "ingreso_images/photo_5_vaxARiY.jpg",
+    "uploaded_by": 8,
+    "uploaded_at": "2025-11-17T04:56:51.929Z"
+  }
+},
+{
+  "model": "documents.ingresoimage",
+  "pk": 29,
+  "fields": {
+    "ingreso": 16,
+    "name": "Foto 7 - Daños externos visibles",
+    "description": "Daños externos visibles",
+    "image": "ingreso_images/photo_6_RW8Na3e.jpg",
+    "uploaded_by": 8,
+    "uploaded_at": "2025-11-17T04:56:51.930Z"
+  }
+},
+{
+  "model": "documents.ingresoimage",
+  "pk": 30,
+  "fields": {
+    "ingreso": 17,
+    "name": "Foto 1 - Estado frontal del vehículo",
+    "description": "Estado frontal del vehículo",
+    "image": "ingreso_images/photo_0_VX2CT5n.jpg",
+    "uploaded_by": 8,
+    "uploaded_at": "2025-11-17T04:57:31.466Z"
+  }
+},
+{
+  "model": "documents.ingresoimage",
+  "pk": 31,
+  "fields": {
+    "ingreso": 17,
+    "name": "Foto 2 - Estado lateral izquierdo",
+    "description": "Estado lateral izquierdo",
+    "image": "ingreso_images/photo_1_aypGDYq.jpg",
+    "uploaded_by": 8,
+    "uploaded_at": "2025-11-17T04:57:31.469Z"
+  }
+},
+{
+  "model": "documents.ingresoimage",
+  "pk": 32,
+  "fields": {
+    "ingreso": 17,
+    "name": "Foto 3 - Estado lateral derecho",
+    "description": "Estado lateral derecho",
+    "image": "ingreso_images/photo_2_ZmUteMK.jpg",
+    "uploaded_by": 8,
+    "uploaded_at": "2025-11-17T04:57:31.471Z"
+  }
+},
+{
+  "model": "documents.ingresoimage",
+  "pk": 33,
+  "fields": {
+    "ingreso": 17,
+    "name": "Foto 4 - Estado trasero",
+    "description": "Estado trasero",
+    "image": "ingreso_images/photo_3_Bcwtq7i.jpg",
+    "uploaded_by": 8,
+    "uploaded_at": "2025-11-17T04:57:31.473Z"
+  }
+},
+{
+  "model": "documents.ingresoimage",
+  "pk": 34,
+  "fields": {
+    "ingreso": 17,
+    "name": "Foto 5 - Estado del motor",
+    "description": "Estado del motor",
+    "image": "ingreso_images/photo_4_eZeL3Gd.jpg",
+    "uploaded_by": 8,
+    "uploaded_at": "2025-11-17T04:57:31.475Z"
+  }
+},
+{
+  "model": "documents.ingresoimage",
+  "pk": 35,
+  "fields": {
+    "ingreso": 17,
+    "name": "Foto 6 - Estado de neumáticos",
+    "description": "Estado de neumáticos",
+    "image": "ingreso_images/photo_5_cSixifY.jpg",
+    "uploaded_by": 8,
+    "uploaded_at": "2025-11-17T04:57:31.477Z"
+  }
+},
+{
+  "model": "documents.ingresoimage",
+  "pk": 36,
+  "fields": {
+    "ingreso": 17,
+    "name": "Foto 7 - Daños externos visibles",
+    "description": "Daños externos visibles",
+    "image": "ingreso_images/photo_6_0Bee8J7.jpg",
+    "uploaded_by": 8,
+    "uploaded_at": "2025-11-17T04:57:31.479Z"
+  }
+},
+{
+  "model": "documents.ingresoimage",
+  "pk": 37,
+  "fields": {
+    "ingreso": 20,
+    "name": "Ingreso_20_20251117_034654_1",
+    "description": null,
+    "image": "ingreso_images/photo_1_17_11_2025_3_46_52.jpg",
+    "uploaded_by": 4,
+    "uploaded_at": "2025-11-17T06:46:54.644Z"
+  }
+},
+{
+  "model": "documents.ingresoimage",
+  "pk": 38,
+  "fields": {
+    "ingreso": 20,
+    "name": "Foto 1 - Estado frontal del vehículo",
+    "description": "Estado frontal del vehículo",
+    "image": "ingreso_images/photo_0_4b37UVd.jpg",
+    "uploaded_by": 8,
+    "uploaded_at": "2025-11-17T06:47:55.612Z"
+  }
+},
+{
+  "model": "documents.ingresoimage",
+  "pk": 39,
+  "fields": {
+    "ingreso": 20,
+    "name": "Foto 2 - Estado lateral izquierdo",
+    "description": "Estado lateral izquierdo",
+    "image": "ingreso_images/photo_1_6DFsdqO.jpg",
+    "uploaded_by": 8,
+    "uploaded_at": "2025-11-17T06:47:55.616Z"
+  }
+},
+{
+  "model": "documents.ingresoimage",
+  "pk": 40,
+  "fields": {
+    "ingreso": 20,
+    "name": "Foto 3 - Estado lateral derecho",
+    "description": "Estado lateral derecho",
+    "image": "ingreso_images/photo_2_G4riuDm.jpg",
+    "uploaded_by": 8,
+    "uploaded_at": "2025-11-17T06:47:55.620Z"
+  }
+},
+{
+  "model": "documents.ingresoimage",
+  "pk": 41,
+  "fields": {
+    "ingreso": 20,
+    "name": "Foto 4 - Estado trasero",
+    "description": "Estado trasero",
+    "image": "ingreso_images/photo_3_PqyjFGk.jpg",
+    "uploaded_by": 8,
+    "uploaded_at": "2025-11-17T06:47:55.623Z"
+  }
+},
+{
+  "model": "documents.ingresoimage",
+  "pk": 42,
+  "fields": {
+    "ingreso": 20,
+    "name": "Foto 5 - Estado del motor",
+    "description": "Estado del motor",
+    "image": "ingreso_images/photo_4_VYtYvnw.jpg",
+    "uploaded_by": 8,
+    "uploaded_at": "2025-11-17T06:47:55.626Z"
+  }
+},
+{
+  "model": "documents.ingresoimage",
+  "pk": 43,
+  "fields": {
+    "ingreso": 20,
+    "name": "Foto 6 - Estado de neumáticos",
+    "description": "Estado de neumáticos",
+    "image": "ingreso_images/photo_5_vTlT8oi.jpg",
+    "uploaded_by": 8,
+    "uploaded_at": "2025-11-17T06:47:55.628Z"
+  }
+},
+{
+  "model": "documents.ingresoimage",
+  "pk": 44,
+  "fields": {
+    "ingreso": 20,
+    "name": "Foto 7 - Daños externos visibles",
+    "description": "Daños externos visibles",
+    "image": "ingreso_images/photo_6_hF2bfGh.jpg",
+    "uploaded_by": 8,
+    "uploaded_at": "2025-11-17T06:47:55.630Z"
+  }
+},
+{
+  "model": "documents.workorderimage",
+  "pk": 1,
+  "fields": {
+    "work_order": 14,
+    "name": "Arreglo 1",
+    "description": "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. ",
+    "image": "work_order_images/Arreglo_1.jpg",
+    "uploaded_by": 7,
+    "uploaded_at": "2025-11-17T05:28:37.076Z"
+  }
+},
+{
+  "model": "documents.workorderimage",
+  "pk": 2,
+  "fields": {
+    "work_order": 16,
+    "name": "Arreglo 1",
+    "description": "fdsafdsa",
+    "image": "work_order_images/Arreglo_1_CNVtFys.jpg",
+    "uploaded_by": 7,
+    "uploaded_at": "2025-11-17T06:51:49.662Z"
+  }
+}
+]

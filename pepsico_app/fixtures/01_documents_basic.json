@@ -1,0 +1,346 @@
+[
+{
+  "model": "documents.site",
+  "pk": 1,
+  "fields": {
+    "name": "Valencia",
+    "patent_count": 28
+  }
+},
+{
+  "model": "documents.site",
+  "pk": 2,
+  "fields": {
+    "name": "Teruel",
+    "patent_count": 30
+  }
+},
+{
+  "model": "documents.site",
+  "pk": 3,
+  "fields": {
+    "name": "Ciudad",
+    "patent_count": 26
+  }
+},
+{
+  "model": "documents.site",
+  "pk": 4,
+  "fields": {
+    "name": "Huelva",
+    "patent_count": 20
+  }
+},
+{
+  "model": "documents.site",
+  "pk": 5,
+  "fields": {
+    "name": "Girona",
+    "patent_count": 15
+  }
+},
+{
+  "model": "documents.site",
+  "pk": 6,
+  "fields": {
+    "name": "Santa Marta",
+    "patent_count": 10
+  }
+},
+{
+  "model": "documents.sapequipment",
+  "pk": 1,
+  "fields": {
+    "code": "EQP8917",
+    "description": null
+  }
+},
+{
+  "model": "documents.sapequipment",
+  "pk": 2,
+  "fields": {
+    "code": "EQP1166",
+    "description": "Razones humano programa hija peso. Estaba sólo máximo campaña. Partir que pero puerta conciencia.\nJunio cierta vio. Hija vio grande gran argentina muchas habían."
+  }
+},
+{
+  "model": "documents.sapequipment",
+  "pk": 3,
+  "fields": {
+    "code": "EQP5657",
+    "description": "Ocho revolución justicia varias.\nSala técnica sin diferentes difícil cultura usted. Sido relaciones o haber. Horas fondo democracia."
+  }
+},
+{
+  "model": "documents.sapequipment",
+  "pk": 4,
+  "fields": {
+    "code": "EQP2065",
+    "description": null
+  }
+},
+{
+  "model": "documents.sapequipment",
+  "pk": 5,
+  "fields": {
+    "code": "EQP8859",
+    "description": "Tiene elecciones dice nada así muestra sistema sabe. Mano enfermedad grado elecciones. Medios millones llamado siete.\nJunto otras creo mis viaje fútbol nuevos."
+  }
+},
+{
+  "model": "documents.sapequipment",
+  "pk": 6,
+  "fields": {
+    "code": "EQP6689",
+    "description": null
+  }
+},
+{
+  "model": "documents.sapequipment",
+  "pk": 7,
+  "fields": {
+    "code": "EQP8376",
+    "description": null
+  }
+},
+{
+  "model": "documents.sapequipment",
+  "pk": 8,
+  "fields": {
+    "code": "EQP7629",
+    "description": "Programas habrá necesidad comisión existe también. Marcha mucha tras entrada había familia también. Abril cámara ningún."
+  }
+},
+{
+  "model": "documents.sapequipment",
+  "pk": 9,
+  "fields": {
+    "code": "EQP2471",
+    "description": "Toda última asimismo ley uso ayuda.\nDecisión fondo baja.\nSerán llega visto. Control apoyo compañía mesa lópez encima."
+  }
+},
+{
+  "model": "documents.sapequipment",
+  "pk": 10,
+  "fields": {
+    "code": "EQP9362",
+    "description": "Armas dio igual millones busca. Dijo naturaleza nuestros somos imagen nuestra. Dolor viene operación buscar otro.\nSino madrid dolor paciente sol. Oficial dejar equipo pueda."
+  }
+},
+{
+  "model": "documents.ceco",
+  "pk": 1,
+  "fields": {
+    "code": "C735",
+    "name": "Flota Argentina",
+    "type": "Logística",
+    "description": null
+  }
+},
+{
+  "model": "documents.ceco",
+  "pk": 2,
+  "fields": {
+    "code": "C593",
+    "name": "Flota Hizo",
+    "type": "Operativa",
+    "description": "Acerca alguien familia democracia europa actitud. Partido quienes tienen carlos nuestros junio proyecto. Final democracia debe plazo diversas octubre.\nJorge soy frente hace poder alguien."
+  }
+},
+{
+  "model": "documents.ceco",
+  "pk": 3,
+  "fields": {
+    "code": "C819",
+    "name": "Flota Serán",
+    "type": "Operativa",
+    "description": null
+  }
+},
+{
+  "model": "documents.ceco",
+  "pk": 4,
+  "fields": {
+    "code": "C243",
+    "name": "Flota Chile",
+    "type": "Mantenimiento",
+    "description": null
+  }
+},
+{
+  "model": "documents.ceco",
+  "pk": 5,
+  "fields": {
+    "code": "C543",
+    "name": "Flota Grupos",
+    "type": "Operativa",
+    "description": null
+  }
+},
+{
+  "model": "documents.vehicletype",
+  "pk": 1,
+  "fields": {
+    "name": "Solución",
+    "site": 3,
+    "data": "proyecto"
+  }
+},
+{
+  "model": "documents.vehicletype",
+  "pk": 2,
+  "fields": {
+    "name": "Tan",
+    "site": 1,
+    "data": "ocasiones"
+  }
+},
+{
+  "model": "documents.vehicletype",
+  "pk": 3,
+  "fields": {
+    "name": "Humano",
+    "site": 1,
+    "data": "luego"
+  }
+},
+{
+  "model": "documents.vehicletype",
+  "pk": 4,
+  "fields": {
+    "name": "Memoria",
+    "site": 5,
+    "data": "justicia"
+  }
+},
+{
+  "model": "documents.vehicletype",
+  "pk": 5,
+  "fields": {
+    "name": "Problema",
+    "site": 3,
+    "data": "somos"
+  }
+},
+{
+  "model": "documents.vehiclestatus",
+  "pk": 1,
+  "fields": {
+    "name": "Operativo",
+    "description": "Educación poco ii sociedad crisis mañana. Sueño los te fácil.\nMismos poder total poco ministerio unión director. Razón hizo administración dan santa tenemos cosa. Dinero sabía mundial julio hace."
+  }
+},
+{
+  "model": "documents.vehiclestatus",
+  "pk": 2,
+  "fields": {
+    "name": "Estacionado",
+    "description": "Aire congreso mayoría problema puerto. Clase fácil objetivo clase libros."
+  }
+},
+{
+  "model": "documents.vehiclestatus",
+  "pk": 3,
+  "fields": {
+    "name": "En reparación",
+    "description": "Importante dentro acto estamos alguna sangre pesetas. Fuerza dicen acuerdo deben fuerte otra congreso.\nDio tener junto tema a. Aparece verdad materia única."
+  }
+},
+{
+  "model": "documents.vehiclestatus",
+  "pk": 4,
+  "fields": {
+    "name": "Fuera de servicio",
+    "description": "Tenían película españa público busca. Temas modo jorge cuando buscar podría capacidad. Pesar fuentes sistemas quedó hubo."
+  }
+},
+{
+  "model": "documents.vehiclestatus",
+  "pk": 5,
+  "fields": {
+    "name": "Disponible",
+    "description": "Instituto semanas hacen espera carrera términos.\nNivel esfuerzo imágenes sea familia entrada. Domingo policía pesar mal sí.\nCuanto comercio carta. Manos flores cuenta también pequeña."
+  }
+},
+{
+  "model": "documents.servicetype",
+  "pk": 1,
+  "fields": {
+    "name": "Siniestro",
+    "description": null,
+    "site": 5
+  }
+},
+{
+  "model": "documents.servicetype",
+  "pk": 2,
+  "fields": {
+    "name": "Taller Automarket",
+    "description": null,
+    "site": 2
+  }
+},
+{
+  "model": "documents.servicetype",
+  "pk": 3,
+  "fields": {
+    "name": "Potrero",
+    "description": null,
+    "site": 3
+  }
+},
+{
+  "model": "documents.servicetype",
+  "pk": 4,
+  "fields": {
+    "name": "Mantenimiento General",
+    "description": "Animales pequeño propio ciento jamás estudio. Hicieron análisis reforma servicio resto único nombre. Nunca cerca televisión g.",
+    "site": 1
+  }
+},
+{
+  "model": "documents.workorderstatus",
+  "pk": 1,
+  "fields": {
+    "name": "Pendiente",
+    "description": "Orden de trabajo pendiente de asignación",
+    "color": "#ffc107"
+  }
+},
+{
+  "model": "documents.workorderstatus",
+  "pk": 2,
+  "fields": {
+    "name": "En Progreso",
+    "description": "Orden de trabajo en ejecución",
+    "color": "#007bff"
+  }
+},
+{
+  "model": "documents.workorderstatus",
+  "pk": 3,
+  "fields": {
+    "name": "Completada",
+    "description": "Orden de trabajo finalizada",
+    "color": "#28a745"
+  }
+},
+{
+  "model": "documents.workorderstatus",
+  "pk": 4,
+  "fields": {
+    "name": "Cancelada",
+    "description": "Orden de trabajo cancelada",
+    "color": "#dc3545"
+  }
+},
+{
+  "model": "documents.workorderstatus",
+  "pk": 5,
+  "fields": {
+    "name": "Pausada",
+    "description": "Orden de trabajo temporalmente pausada",
+    "color": "#6c757d"
+  }
+}
+]
