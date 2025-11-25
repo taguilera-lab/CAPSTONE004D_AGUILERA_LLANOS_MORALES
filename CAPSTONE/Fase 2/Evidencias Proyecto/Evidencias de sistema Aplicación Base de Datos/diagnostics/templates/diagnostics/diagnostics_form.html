@@ -225,6 +225,11 @@
                   <div class="mb-3">
                     {{ form.location.label_tag }}
                     {{ form.location }}
+                    <datalist id="sites-list">
+                      {% for site in sites %}
+                        <option value="{{ site.name }}">
+                      {% endfor %}
+                    </datalist>
                     {% if form.location.errors %}
                       <div class="text-danger">{{ form.location.errors }}</div>
                     {% endif %}

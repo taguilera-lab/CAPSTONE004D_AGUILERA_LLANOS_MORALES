@@ -866,19 +866,21 @@ def generate_excel_report(request, report_type):
 			# KPIs principales
 			ws_kpi['A1'] = "REPORTE DE PRODUCTIVIDAD"
 			ws_kpi['A1'].font = Font(size=16, bold=True)
-			ws_kpi.merge_cells('A1:D1')
+			ws_kpi.merge_cells('A1:E1')
 			ws_kpi['A1'].alignment = Alignment(horizontal='center')
 			
 			ws_kpi['A2'] = f"Período: {period_name}"
 			ws_kpi['A2'].font = Font(bold=True)
-			ws_kpi.merge_cells('A2:D2')
+			ws_kpi.merge_cells('A2:E2')
 			ws_kpi['A2'].alignment = Alignment(horizontal='center')
 			
 			# KPIs
 			ws_kpi['A4'] = "KPI"
 			ws_kpi['B4'] = "Valor"
+			ws_kpi['C4'] = "Fórmula"
 			ws_kpi['A4'].font = Font(bold=True)
 			ws_kpi['B4'].font = Font(bold=True)
+			ws_kpi['C4'].font = Font(bold=True)
 			
 			# Calcular KPIs
 			total_vehicles_attended = len(vehicles_set)
@@ -912,15 +914,16 @@ def generate_excel_report(request, report_type):
 			productivity_ratio = (total_effective_hours / programmed_hours * 100) if programmed_hours > 0 else 0
 			
 			kpis = [
-				["Vehículos atendidos", total_vehicles_attended],
-				["Total órdenes de trabajo", total_work_orders],
-				["Horas hombre efectivas totales", round(total_effective_hours, 2)],
-				["Productividad total (%)", f"{round(productivity_ratio, 1)}%"],
+				["Vehículos atendidos", total_vehicles_attended, ""],
+				["Total órdenes de trabajo", total_work_orders, ""],
+				["Horas hombre efectivas totales", round(total_effective_hours, 2), "Horas trabajadas - tiempo de pausas"],
+				["Productividad total (%)", f"{round(productivity_ratio, 1)}%", "(Horas efectivas totales / Horas programadas) × 100"],
 			]
 			
-			for i, (kpi, value) in enumerate(kpis, 5):
+			for i, (kpi, value, formula) in enumerate(kpis, 5):
 				ws_kpi.cell(row=i, column=1, value=kpi)
 				ws_kpi.cell(row=i, column=2, value=value)
+				ws_kpi.cell(row=i, column=3, value=formula)
 			
 			# Eficiencia por mecánico
 			ws_kpi['A10'] = "EFICIENCIA POR MECÁNICO"
@@ -940,6 +943,11 @@ def generate_excel_report(request, report_type):
 				ws_kpi.cell(row=row, column=2, value=data['work_orders'])
 				ws_kpi.cell(row=row, column=3, value=round(data['hours'], 2))
 				row += 1
+			
+			# Ajustar ancho de columnas
+			ws_kpi.column_dimensions['A'].width = 30  # KPI
+			ws_kpi.column_dimensions['B'].width = 25  # Valor
+			ws_kpi.column_dimensions['C'].width = 50  # Fórmula
 			
 			# Autoajustar columnas KPIs
 			for column in ws_kpi.columns:
@@ -1102,7 +1110,6 @@ def generate_excel_report(request, report_type):
 			# Determinar filtros
 			now = timezone.now()
 			periodo = request.GET.get('periodo', 'mensual')
-			filtro = request.GET.get('filtro', 'todos')
 			
 			# Determinar rango de fechas
 			if periodo == 'semanal':
@@ -1125,14 +1132,6 @@ def generate_excel_report(request, report_type):
 				'mechanic_assignments__mechanic',
 				'pauses__pause_type'
 			)
-			
-			# Aplicar filtro adicional si es necesario
-			if filtro == 'zona':
-				# Solo incluir OTs que tienen zona asignada
-				base_query = base_query.filter(ingreso__patent__site__isnull=False)
-			elif filtro == 'mecanico':
-				# Solo incluir OTs que tienen mecánicos asignados
-				base_query = base_query.filter(mechanic_assignments__isnull=False).distinct()
 			
 			work_orders = base_query
 			
@@ -1286,16 +1285,11 @@ def generate_excel_report(request, report_type):
 			ws_analysis.merge_cells('A2:E2')
 			ws_analysis['A2'].alignment = Alignment(horizontal='center')
 			
-			ws_analysis['A3'] = f"Filtro aplicado: {filtro.replace('_', ' ').title()}"
-			ws_analysis['A3'].font = Font(bold=True)
-			ws_analysis.merge_cells('A3:E3')
-			ws_analysis['A3'].alignment = Alignment(horizontal='center')
-			
 			# KPIs principales
-			ws_analysis['A5'] = "KPI"
-			ws_analysis['B5'] = "Valor"
-			ws_analysis['A5'].font = Font(bold=True)
-			ws_analysis['B5'].font = Font(bold=True)
+			ws_analysis['A4'] = "KPI"
+			ws_analysis['B4'] = "Valor"
+			ws_analysis['A4'].font = Font(bold=True)
+			ws_analysis['B4'].font = Font(bold=True)
 			
 			# Calcular KPIs
 			total_effective_hours = sum(
@@ -1329,7 +1323,7 @@ def generate_excel_report(request, report_type):
 				["Tiempos promedio por tipo", " | ".join(avg_times_display[:3])],  # Limitar a 3 tipos
 			]
 			
-			for i, (kpi, value) in enumerate(kpis, 6):
+			for i, (kpi, value) in enumerate(kpis, 5):
 				ws_analysis.cell(row=i, column=1, value=kpi)
 				ws_analysis.cell(row=i, column=2, value=value)
 			
@@ -1357,10 +1351,22 @@ def generate_excel_report(request, report_type):
 					
 				for pause in wo.pauses.all():
 					if pause.mechanic_assignment:
+						# Pausa específica para un mecánico
 						mechanic_name = pause.mechanic_assignment.mechanic.name
 						if mechanic_name not in mechanic_stats:
 							mechanic_stats[mechanic_name] = {'work_hours': 0, 'pause_minutes': 0}
 						mechanic_stats[mechanic_name]['pause_minutes'] += pause.duration_minutes or 0
+					else:
+						# Pausa general que afecta a todos los mecánicos de la OT
+						mechanic_assignments = wo.mechanic_assignments.all()
+						if mechanic_assignments.exists():
+							# Distribuir la pausa entre todos los mecánicos asignados
+							pause_per_mechanic = (pause.duration_minutes or 0) / mechanic_assignments.count()
+							for assignment in mechanic_assignments:
+								mechanic_name = assignment.mechanic.name
+								if mechanic_name not in mechanic_stats:
+									mechanic_stats[mechanic_name] = {'work_hours': 0, 'pause_minutes': 0}
+								mechanic_stats[mechanic_name]['pause_minutes'] += pause_per_mechanic
 			
 			row = 14
 			for mechanic, stats in sorted(mechanic_stats.items(), key=lambda x: x[1]['work_hours'], reverse=True):
@@ -1546,7 +1552,6 @@ def generate_excel_report(request, report_type):
 			
 			# Obtener parámetros de filtro
 			periodo = request.GET.get('periodo', 'mensual')
-			filtro = request.GET.get('filtro', 'todos')
 			
 			# Calcular fechas según período
 			if periodo == 'semanal':
@@ -1567,15 +1572,6 @@ def generate_excel_report(request, report_type):
 				'repuesto', 'supplier', 'work_order', 'performed_by'
 			)
 			
-			# Aplicar filtro adicional si es necesario
-			if filtro != 'todos':
-				if filtro == 'zona':
-					# Filtrar por zona si está disponible
-					pass
-				elif filtro == 'mecanico':
-					# Filtrar por mecánico si está disponible
-					pass
-			
 			# Crear hoja de datos
 			ws_data = wb.create_sheet("Datos Repuestos")
 			
@@ -1589,11 +1585,6 @@ def generate_excel_report(request, report_type):
 			ws_data.merge_cells('A2:I2')
 			ws_data['A2'].alignment = Alignment(horizontal='center')
 			
-			ws_data['A3'] = f"Filtro aplicado: {filtro.replace('_', ' ').title()}"
-			ws_data['A3'].font = Font(bold=True)
-			ws_data.merge_cells('A3:I3')
-			ws_data['A3'].alignment = Alignment(horizontal='center')
-			
 			# Encabezados
 			headers = [
 				'Patente', 'Repuesto', 'Cantidad Usada', 'Proveedor', 
@@ -1601,12 +1592,12 @@ def generate_excel_report(request, report_type):
 			]
 			
 			for col, header in enumerate(headers, 1):
-				ws_data.cell(row=5, column=col, value=header)
-				ws_data.cell(row=5, column=col).font = Font(bold=True)
-				ws_data.cell(row=5, column=col).fill = PatternFill(start_color="FFD3D3D3", end_color="FFD3D3D3", fill_type="solid")
+				ws_data.cell(row=4, column=col, value=header)
+				ws_data.cell(row=4, column=col).font = Font(bold=True)
+				ws_data.cell(row=4, column=col).fill = PatternFill(start_color="FFD3D3D3", end_color="FFD3D3D3", fill_type="solid")
 			
 			# Datos de repuestos utilizados
-			row = 6
+			row = 5
 			total_cost = 0
 			parts_by_vehicle = {}
 			parts_by_mechanic = {}
@@ -1908,7 +1899,6 @@ def generate_excel_report(request, report_type):
 			
 			# Obtener parámetros de filtro
 			periodo = request.GET.get('periodo', 'semanal')
-			filtro = request.GET.get('filtro', 'todos')
 			
 			# Calcular fechas según período
 			if periodo == 'diario':
@@ -1975,46 +1965,32 @@ def generate_excel_report(request, report_type):
 			# Ordenar por fecha de entrada descendente
 			ingresos.sort(key=lambda x: x.entry_datetime, reverse=True)
 			
-			# Aplicar filtro adicional si es necesario
-			if filtro != 'todos':
-				if filtro == 'zona':
-					# Filtrar por zona (sitio del vehículo)
-					ingresos = [i for i in ingresos if i.patent and i.patent.site]
-				elif filtro == 'sucursal':
-					# Filtrar por sucursal (mismo que zona para este caso)
-					ingresos = [i for i in ingresos if i.patent and i.patent.site]
-			
 			# Crear hoja de datos
 			ws_data = wb.create_sheet("Vehículos IO")
 			
 			ws_data['A1'] = "REPORTE DE VEHÍCULOS INGRESADOS/SALIDOS"
 			ws_data['A1'].font = Font(size=16, bold=True)
-			ws_data.merge_cells('A1:J1')
+			ws_data.merge_cells('A1:I1')
 			ws_data['A1'].alignment = Alignment(horizontal='center')
 			
 			ws_data['A2'] = f"Período: {period_name}"
 			ws_data['A2'].font = Font(bold=True)
-			ws_data.merge_cells('A2:J2')
+			ws_data.merge_cells('A2:I2')
 			ws_data['A2'].alignment = Alignment(horizontal='center')
-			
-			ws_data['A3'] = f"Filtro aplicado: {filtro.replace('_', ' ').title()}"
-			ws_data['A3'].font = Font(bold=True)
-			ws_data.merge_cells('A3:J3')
-			ws_data['A3'].alignment = Alignment(horizontal='center')
 			
 			# Encabezados
 			headers = [
 				'Patente', 'Ruta/Origen', 'Chofer', 'Sucursal', 'Hora Ingreso', 
-				'Hora Salida', 'Estado Vehículo', 'Incidencias', 'Autorización Salida', 'Tiempo en Taller'
+				'Hora Salida', 'Incidencias', 'Autorización Salida', 'Tiempo en Taller'
 			]
 			
 			for col, header in enumerate(headers, 1):
-				ws_data.cell(row=5, column=col, value=header)
-				ws_data.cell(row=5, column=col).font = Font(bold=True)
-				ws_data.cell(row=5, column=col).fill = PatternFill(start_color="FFD3D3D3", end_color="FFD3D3D3", fill_type="solid")
+				ws_data.cell(row=4, column=col, value=header)
+				ws_data.cell(row=4, column=col).font = Font(bold=True)
+				ws_data.cell(row=4, column=col).fill = PatternFill(start_color="FFD3D3D3", end_color="FFD3D3D3", fill_type="solid")
 			
 			# Datos de vehículos
-			row = 6
+			row = 5
 			total_ingresos = 0
 			total_salidas = 0
 			tiempos_taller = []
@@ -2030,12 +2006,6 @@ def generate_excel_report(request, report_type):
 					sucursal = ingreso.patent.site.name if ingreso.patent.site else "Sin sucursal"
 					hora_ingreso = ingreso.entry_datetime.strftime('%d/%m/%Y %H:%M')
 					hora_salida = ingreso.exit_datetime.strftime('%d/%m/%Y %H:%M') if ingreso.exit_datetime else "Pendiente"
-					
-					# Estado del vehículo (basado en imágenes)
-					estado_vehiculo = "Sin imágenes"
-					imagenes_count = ingreso.ingreso_images.count() if hasattr(ingreso, 'ingreso_images') else 0
-					if imagenes_count > 0:
-						estado_vehiculo = f"{imagenes_count} imagen(es)"
 					
 					# Incidencias (daños reportados)
 					incidencias = "Sin incidencias"
@@ -2068,18 +2038,17 @@ def generate_excel_report(request, report_type):
 					ws_data.cell(row=row, column=4, value=sucursal)
 					ws_data.cell(row=row, column=5, value=hora_ingreso)
 					ws_data.cell(row=row, column=6, value=hora_salida)
-					ws_data.cell(row=row, column=7, value=estado_vehiculo)
-					ws_data.cell(row=row, column=8, value=incidencias)
-					ws_data.cell(row=row, column=9, value=autorizacion)
-					ws_data.cell(row=row, column=10, value=tiempo_taller)
+					ws_data.cell(row=row, column=7, value=incidencias)
+					ws_data.cell(row=row, column=8, value=autorizacion)
+					ws_data.cell(row=row, column=9, value=tiempo_taller)
 					
 					# Colorear si no tiene autorización o tiempo excesivo
 					if not ingreso.authorization:
-						for col in range(1, 11):
+						for col in range(1, 10):
 							ws_data.cell(row=row, column=col).fill = PatternFill(start_color="FFFFFF00", end_color="FFFFFF00", fill_type="solid")  # Amarillo
 					
 					if ingreso.exit_datetime and (ingreso.exit_datetime - ingreso.entry_datetime).total_seconds() > 24 * 3600:  # Más de 24 horas
-						for col in range(1, 11):
+						for col in range(1, 10):
 							ws_data.cell(row=row, column=col).fill = PatternFill(start_color="FFFFA500", end_color="FFFFA500", fill_type="solid")  # Naranja
 					
 					# Acumuladores para análisis
@@ -2135,19 +2104,21 @@ def generate_excel_report(request, report_type):
 			
 			ws_analysis['A1'] = "ANÁLISIS DE VEHÍCULOS INGRESADOS/SALIDOS"
 			ws_analysis['A1'].font = Font(size=16, bold=True)
-			ws_analysis.merge_cells('A1:E1')
+			ws_analysis.merge_cells('A1:F1')
 			ws_analysis['A1'].alignment = Alignment(horizontal='center')
 			
 			ws_analysis['A2'] = f"Período: {period_name}"
 			ws_analysis['A2'].font = Font(bold=True)
-			ws_analysis.merge_cells('A2:E2')
+			ws_analysis.merge_cells('A2:F2')
 			ws_analysis['A2'].alignment = Alignment(horizontal='center')
 			
 			# KPIs principales
 			ws_analysis['A4'] = "KPI"
 			ws_analysis['B4'] = "Valor"
+			ws_analysis['C4'] = "Fórmula"
 			ws_analysis['A4'].font = Font(bold=True)
 			ws_analysis['B4'].font = Font(bold=True)
+			ws_analysis['C4'].font = Font(bold=True)
 			
 			# Calcular KPIs mejorados
 			tiempo_promedio = sum(tiempos_taller) / len(tiempos_taller) if tiempos_taller else 0
@@ -2160,38 +2131,39 @@ def generate_excel_report(request, report_type):
 			vehiculos_sin_autorizacion = sum(1 for i in ingresos if not i.authorization)
 			
 			kpis = [
-				["Total Ingresos", total_ingresos],
-				["Total Salidas", total_salidas],
-				["Vehículos en Taller", total_ingresos - total_salidas],
-				["Tiempo Promedio en Taller", f"{round(tiempo_promedio, 1)} horas"],
-				["Tasa de Ocupación", f"{round(tasa_ocupacion, 1)}%"],
-				["Eficiencia de Reparación", f"{round(eficiencia_reparacion, 1)}%"],
-				["Vehículos con Retraso (>24h)", vehiculos_retraso],
-				["Tasa de Autorización", f"{round(tasa_autorizacion, 1)}%"],
-				["Vehículos sin Autorización", vehiculos_sin_autorizacion],
+				["Total Ingresos", total_ingresos, ""],
+				["Total Salidas", total_salidas, ""],
+				["Vehículos en Taller", total_ingresos - total_salidas, ""],
+				["Tiempo Promedio en Taller", f"{round(tiempo_promedio, 1)} horas", "Promedio de tiempos de estadía"],
+				["Tasa de Ocupación", f"{round(tasa_ocupacion, 1)}%", "(Ingresos - Salidas) / Ingresos × 100"],
+				["Eficiencia de Reparación", f"{round(eficiencia_reparacion, 1)}%", "Salidas / Ingresos × 100"],
+				["Vehículos con Retraso (>24h)", vehiculos_retraso, ""],
+				["Tasa de Autorización", f"{round(tasa_autorizacion, 1)}%", ""],
+				["Vehículos sin Autorización", vehiculos_sin_autorizacion, ""],
 			]
 			
-			for i, (kpi, value) in enumerate(kpis, 5):
+			for i, (kpi, value, formula) in enumerate(kpis, 5):
 				ws_analysis.cell(row=i, column=1, value=kpi)
 				ws_analysis.cell(row=i, column=2, value=value)
+				ws_analysis.cell(row=i, column=3, value=formula)
 			
 			# Análisis por zona
-			ws_analysis['A12'] = "VEHÍCULOS POR ZONA"
-			ws_analysis['A12'].font = Font(bold=True)
-			ws_analysis.merge_cells('A12:C12')
+			ws_analysis['E4'] = "VEHÍCULOS POR ZONA"
+			ws_analysis['E4'].font = Font(bold=True)
+			ws_analysis.merge_cells('E4:G4')
 			
-			ws_analysis['A13'] = "Zona"
-			ws_analysis['B13'] = "Ingresos"
-			ws_analysis['C13'] = "Salidas"
-			ws_analysis['A13'].font = Font(bold=True)
-			ws_analysis['B13'].font = Font(bold=True)
-			ws_analysis['C13'].font = Font(bold=True)
+			ws_analysis['E5'] = "Zona"
+			ws_analysis['F5'] = "Ingresos"
+			ws_analysis['G5'] = "Salidas"
+			ws_analysis['E5'].font = Font(bold=True)
+			ws_analysis['F5'].font = Font(bold=True)
+			ws_analysis['G5'].font = Font(bold=True)
 			
-			row = 14
+			row = 6
 			for zona, data in sorted(vehiculos_por_zona.items()):
-				ws_analysis.cell(row=row, column=1, value=zona)
-				ws_analysis.cell(row=row, column=2, value=data['ingresos'])
-				ws_analysis.cell(row=row, column=3, value=data['salidas'])
+				ws_analysis.cell(row=row, column=5, value=zona)
+				ws_analysis.cell(row=row, column=6, value=data['ingresos'])
+				ws_analysis.cell(row=row, column=7, value=data['salidas'])
 				row += 1
 			
 			# Autoajustar columnas análisis
@@ -2208,65 +2180,6 @@ def generate_excel_report(request, report_type):
 						pass
 				if column_letter:
 					ws_analysis.column_dimensions[column_letter].width = min(max_length + 2, 30)
-			
-			# Crear hoja de mapa simple (usando fórmulas)
-			ws_mapa = wb.create_sheet("Mapa Zonas")
-			
-			ws_mapa['A1'] = "MAPA SIMPLE DE ZONAS"
-			ws_mapa['A1'].font = Font(size=16, bold=True)
-			ws_mapa.merge_cells('A1:D1')
-			ws_mapa['A1'].alignment = Alignment(horizontal='center')
-			
-			ws_mapa['A3'] = "Esta hoja contiene un mapa simple usando fórmulas de Excel."
-			ws_mapa['A3'].font = Font(italic=True)
-			
-			# Crear mapa simple con coordenadas simuladas
-			ws_mapa['A5'] = "Zona"
-			ws_mapa['B5'] = "Latitud"
-			ws_mapa['C5'] = "Longitud"
-			ws_mapa['D5'] = "Vehículos Activos"
-			ws_mapa['A5'].font = Font(bold=True)
-			ws_mapa['B5'].font = Font(bold=True)
-			ws_mapa['C5'].font = Font(bold=True)
-			ws_mapa['D5'].font = Font(bold=True)
-			
-			# Coordenadas simuladas para zonas comunes
-			zonas_coords = {
-				'Santiago Centro': {'lat': -33.4489, 'lng': -70.6693},
-				'Santiago Norte': {'lat': -33.4000, 'lng': -70.6500},
-				'Santiago Sur': {'lat': -33.5000, 'lng': -70.6500},
-				'Santiago Oriente': {'lat': -33.4500, 'lng': -70.6000},
-				'Santiago Poniente': {'lat': -33.4500, 'lng': -70.7000},
-			}
-			
-			row = 6
-			for zona, coords in zonas_coords.items():
-				activos = vehiculos_por_zona.get(zona, {'ingresos': 0, 'salidas': 0})
-				activos_count = activos['ingresos'] - activos['salidas']
-				
-				ws_mapa.cell(row=row, column=1, value=zona)
-				ws_mapa.cell(row=row, column=2, value=coords['lat'])
-				ws_mapa.cell(row=row, column=3, value=coords['lng'])
-				ws_mapa.cell(row=row, column=4, value=max(0, activos_count))
-				row += 1
-			
-			ws_mapa['A15'] = "Para crear un mapa real, use Power Map o inserte un gráfico de mapa."
-			ws_mapa['A15'].font = Font(italic=True)
-			
-			# Autoajustar columnas mapa
-			for column in ws_mapa.columns:
-				max_length = 0
-				column_letter = None
-				for cell in column:
-					try:
-						if hasattr(cell, 'column_letter'):
-							column_letter = cell.column_letter
-						if len(str(cell.value)) > max_length:
-							max_length = len(str(cell.value))
-					except:
-						pass
-				if column_letter:
-					ws_mapa.column_dimensions[column_letter].width = min(max_length + 2, 25)
 			
 			# Crear hoja de gráficos
 			ws_charts = wb.create_sheet("Gráficos")

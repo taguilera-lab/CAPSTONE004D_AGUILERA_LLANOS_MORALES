@@ -718,82 +718,82 @@ def orden_trabajo_detail(request, work_order_id):
         
         # Calcular tiempo real de trabajo sumando intervalos entre pausas
         for assignment in mechanic_assignments:
-            # Verificar si el mecánico tiene tareas asignadas
-            mechanic_has_tasks = any(
-                any(ta.user == assignment.mechanic for ta in task_info['task'].taskassignment_set.all())
-                for task_info in tasks_with_hours
-            )
-            
-            # Solo calcular tiempo si el mecánico tiene tareas asignadas
-            if mechanic_has_tasks:
-                # Determinar el punto de inicio del cálculo para este mecánico
-                # Usar la fecha de la primera tarea asignada
-                mechanic_task_assignments = []
-                for task_info in tasks_with_hours:
-                    for ta in task_info['task'].taskassignment_set.all():
-                        if ta.user == assignment.mechanic:
-                            mechanic_task_assignments.append(ta)
-                
-                if mechanic_task_assignments:
-                    earliest_task_assignment = min(mechanic_task_assignments, key=lambda ta: ta.assigned_at)
-                    mechanic_start_time = earliest_task_assignment.assigned_at
-                else:
-                    mechanic_start_time = work_started
-                
-                # Obtener todas las pausas relevantes para este mecánico:
-                # - Pausas individuales del mecánico
-                # - Pausas globales (que afectan a todos los mecánicos)
-                mechanic_pauses = WorkOrderPause.objects.filter(
-                    work_order=work_order,
-                    mechanic_assignment=assignment
-                ).order_by('start_datetime')
-                
-                global_pauses = WorkOrderPause.objects.filter(
-                    work_order=work_order,
-                    mechanic_assignment__isnull=True
-                ).order_by('start_datetime')
-                
-                # Combinar todas las pausas relevantes
-                all_pauses = list(mechanic_pauses) + list(global_pauses)
-                all_pauses.sort(key=lambda x: x.start_datetime)
-                
-                # Verificar si hay una pausa activa (individual o global)
-                active_pause = None
-                for pause in all_pauses:
-                    if not pause.end_datetime:
-                        active_pause = pause
-                        break
-                
-                # Calcular intervalos de trabajo
-                real_work_time = 0
-                previous_end = mechanic_start_time
-                
-                for pause in all_pauses:
-                    if pause.end_datetime:  # Pausa completada
-                        # Intervalo desde previous_end hasta pause.start_datetime
-                        if previous_end < pause.start_datetime:
-                            real_work_time += calculate_working_hours_elapsed(previous_end, pause.start_datetime)
-                        # Actualizar previous_end al end de la pausa
-                        previous_end = pause.end_datetime
-                    else:  # Pausa activa
-                        # Intervalo desde previous_end hasta pause.start_datetime
-                        if previous_end < pause.start_datetime:
-                            real_work_time += calculate_working_hours_elapsed(previous_end, pause.start_datetime)
-                        # No continuar después de pausa activa
-                        break
-                
-                # Si no hay pausa activa, agregar intervalo desde previous_end hasta ahora (o hasta completion si está completada)
-                if not active_pause:
-                    end_time = work_order.actual_completion if work_order.actual_completion else timezone.now()
-                    real_work_time += calculate_working_hours_elapsed(previous_end, end_time)
+            # Si la OT está completada, usar las horas ya guardadas
+            if work_order.actual_completion:
+                real_work_time = float(assignment.hours_worked)
             else:
-                # Si no tiene tareas asignadas, tiempo = 0
-                real_work_time = 0
+                real_work_time = 0  # Inicializar por defecto
+                # Verificar si el mecánico tiene tareas asignadas
+                mechanic_has_tasks = any(
+                    any(ta.user == assignment.mechanic for ta in task_info['task'].taskassignment_set.all())
+                    for task_info in tasks_with_hours
+                )
+                
+                # Solo calcular tiempo si el mecánico tiene tareas asignadas
+                if mechanic_has_tasks:
+                    # Determinar el punto de inicio del cálculo para este mecánico
+                    # Usar la fecha de la primera tarea asignada
+                    mechanic_task_assignments = []
+                    for task_info in tasks_with_hours:
+                        for ta in task_info['task'].taskassignment_set.all():
+                            if ta.user == assignment.mechanic:
+                                mechanic_task_assignments.append(ta)
+                    
+                    if mechanic_task_assignments:
+                        earliest_task_assignment = min(mechanic_task_assignments, key=lambda ta: ta.assigned_at)
+                        mechanic_start_time = earliest_task_assignment.assigned_at
+                    else:
+                        mechanic_start_time = work_started
+                    
+                    # Obtener todas las pausas relevantes para este mecánico:
+                    # - Pausas individuales del mecánico
+                    # - Pausas globales (que afectan a todos los mecánicos)
+                    mechanic_pauses = WorkOrderPause.objects.filter(
+                        work_order=work_order,
+                        mechanic_assignment=assignment
+                    ).order_by('start_datetime')
+                    
+                    global_pauses = WorkOrderPause.objects.filter(
+                        work_order=work_order,
+                        mechanic_assignment__isnull=True
+                    ).order_by('start_datetime')
+                    
+                    # Combinar todas las pausas relevantes
+                    all_pauses = list(mechanic_pauses) + list(global_pauses)
+                    all_pauses.sort(key=lambda x: x.start_datetime)
+                    
+                    # Verificar si hay una pausa activa (individual o global)
+                    active_pause = None
+                    for pause in all_pauses:
+                        if not pause.end_datetime:
+                            active_pause = pause
+                            break
+                    
+                    # Calcular intervalos de trabajo
+                    real_work_time = 0
+                    previous_end = mechanic_start_time
+                    
+                    for pause in all_pauses:
+                        if pause.end_datetime:  # Pausa completada
+                            # Intervalo desde previous_end hasta pause.start_datetime
+                            if previous_end < pause.start_datetime:
+                                real_work_time += calculate_working_hours_elapsed(previous_end, pause.start_datetime)
+                            # Actualizar previous_end al end de la pausa
+                            previous_end = pause.end_datetime
+                        else:  # Pausa activa
+                            # Intervalo desde previous_end hasta pause.start_datetime
+                            if previous_end < pause.start_datetime:
+                                real_work_time += calculate_working_hours_elapsed(previous_end, pause.start_datetime)
+                            # No continuar después de pausa activa
+                            break
+                    
+                    # Si no hay pausa activa, agregar intervalo desde previous_end hasta ahora
+                    if not active_pause:
+                        real_work_time += calculate_working_hours_elapsed(previous_end, timezone.now())
+                else:
+                    # Si no tiene tareas asignadas, tiempo = 0
+                    real_work_time = 0
             
-            # Agregar el tiempo calculado como atributo del objeto assignment
-            assignment.real_work_time = real_work_time
-            total_real_work_time += real_work_time
-
             # Agregar el tiempo calculado como atributo del objeto assignment
             assignment.real_work_time = real_work_time
             total_real_work_time += real_work_time
@@ -892,7 +892,6 @@ def orden_trabajo_detail(request, work_order_id):
         'pauses_data': json.dumps(pauses_data, cls=DjangoJSONEncoder),
         'global_active_pause': global_active_pause,
         'is_jefe_taller': is_jefe_taller,
-        'work_order_completed': work_order.actual_completion is not None,
     }
 
     return render(request, 'agenda/orden_trabajo_detail.html', context)
@@ -1118,6 +1117,23 @@ def orden_trabajo_complete(request, work_order_id):
         completed_status = WorkOrderStatus.objects.filter(name='Completada').first()
         if completed_status:
             work_order.status = completed_status
+            
+            # Calcular y actualizar horas trabajadas para los mecánicos asignados
+            if work_order.work_started_at and work_order.actual_completion:
+                from datetime import timedelta
+                time_diff = work_order.actual_completion - work_order.work_started_at
+                total_hours_worked = time_diff.total_seconds() / 3600  # Convertir a horas
+                
+                # Obtener mecánicos activos asignados
+                active_assignments = work_order.mechanic_assignments.filter(is_active=True)
+                if active_assignments.exists():
+                    # Distribuir horas equitativamente entre mecánicos activos
+                    hours_per_mechanic = total_hours_worked / active_assignments.count()
+                    
+                    for assignment in active_assignments:
+                        assignment.hours_worked = round(hours_per_mechanic, 2)
+                        assignment.save()
+            
             work_order.save()
             
             from django.contrib import messages

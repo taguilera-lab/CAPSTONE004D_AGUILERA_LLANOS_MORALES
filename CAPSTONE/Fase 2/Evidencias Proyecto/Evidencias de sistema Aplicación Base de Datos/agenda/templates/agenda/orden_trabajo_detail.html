@@ -881,10 +881,17 @@
                     </td>
                     <td>
                       {% if work_started %}
-                        <span id="real-time-{{ assignment.id_assignment }}">
-                          {% if assignment.has_tasks %}0.00 h{% else %}{{ assignment.real_work_time|floatformat:2 }} h{% endif %}
-                        </span>
-                        <small class="text-muted">(real)</small>
+                        {% if work_order_completed %}
+                          <!-- OT completada: mostrar horas guardadas -->
+                          {{ assignment.hours_worked|floatformat:2 }} h
+                          <small class="text-muted">(final)</small>
+                        {% else %}
+                          <!-- OT activa: mostrar contador en tiempo real -->
+                          <span id="real-time-{{ assignment.id_assignment }}">
+                            {{ assignment.real_work_time|floatformat:2 }} h
+                          </span>
+                          <small class="text-muted">(real)</small>
+                        {% endif %}
                       {% else %}
                         {{ assignment.hours_worked|floatformat:2 }} h
                         <small class="text-muted">(asignado)</small>
@@ -930,8 +937,13 @@
                     <td>
                       <strong>
                         {% if work_started %}
-                          <span id="total-real-time">{{ total_real_work_time|floatformat:2 }} h</span>
-                          <small class="text-muted">(real)</small>
+                          {% if work_order_completed %}
+                            {{ total_mechanic_hours|floatformat:2 }} h
+                            <small class="text-muted">(final)</small>
+                          {% else %}
+                            <span id="total-real-time">{{ total_real_work_time|floatformat:2 }} h</span>
+                            <small class="text-muted">(real)</small>
+                          {% endif %}
                         {% else %}
                           {{ total_mechanic_hours|floatformat:2 }} h
                           <small class="text-muted">(asignado)</small>
@@ -1306,6 +1318,7 @@ function openImageModal(imageUrl, name, description, date, user) {
 // Datos para actualización de tiempo
 const workStartedAt = new Date('{{ work_started.isoformat }}');
 const pausesData = JSON.parse('{{ pauses_data|escapejs }}');
+const workOrderCompleted = {{ work_order_completed|yesno:"true,false" }};
 const mechanicAssignments = [
     {% for assignment in mechanic_assignments %}
     {id: {{ assignment.id_assignment }}, assignedAt: new Date('{{ assignment.assigned_datetime.isoformat }}'), taskStartTime: new Date('{{ assignment.task_start_time.isoformat }}'), hasTasks: {{ assignment.has_tasks|yesno:"true,false" }}},

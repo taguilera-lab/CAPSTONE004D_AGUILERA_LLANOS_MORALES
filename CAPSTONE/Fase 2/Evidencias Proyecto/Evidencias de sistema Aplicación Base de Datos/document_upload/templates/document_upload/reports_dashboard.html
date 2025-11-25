@@ -12,7 +12,7 @@
             <i class="fas fa-arrow-left"></i> Volver al Dashboard
           </a>
           <h1 class="mb-0">
-            <i class="fas fa-file-excel"></i> Reportes de Reportes
+            <i class="fas fa-file-excel"></i> Generación automática de Reportes
           </h1>
         </div>
       </div>
@@ -37,7 +37,7 @@
       </h3>
       <div class="row">
         {% for report in report_types %}
-          {% if report.id|slice:":8" == "reportes" %}
+          {% comment %} {% if report.id|slice:":8" == "reportes" %}
             <div class="col-md-6 col-lg-4 mb-4">
               <div class="card h-100 border-{{ report.color }}">
                 <div class="card-header bg-{{ report.color }} text-white">
@@ -54,8 +54,8 @@
                   </a>
                 </div>
               </div>
-            </div>
-          {% elif report.id == "productividad" %}
+            </div> {% endcomment %}
+          {% if report.id == "productividad" %}
             <div class="col-md-6 col-lg-4 mb-4">
               <div class="card h-100 border-{{ report.color }}">
                 <div class="card-header bg-{{ report.color }} text-white">
@@ -97,23 +97,11 @@
                 <div class="card-body">
                   <p class="card-text">{{ report.description }}</p>
                   <div class="mt-3">
-                    <div class="row">
-                      <div class="col-6">
-                        <label for="periodo-tiempos" class="form-label small">Período:</label>
-                        <select class="form-select form-select-sm" id="periodo-tiempos">
-                          <option value="semanal">Semanal</option>
-                          <option value="mensual">Mensual</option>
-                        </select>
-                      </div>
-                      <div class="col-6">
-                        <label for="filtro-tiempos" class="form-label small">Filtrar por:</label>
-                        <select class="form-select form-select-sm" id="filtro-tiempos">
-                          <option value="todos">Todos</option>
-                          <option value="zona">Por Zona</option>
-                          <option value="mecanico">Por Mecánico</option>
-                        </select>
-                      </div>
-                    </div>
+                    <label for="periodo-tiempos" class="form-label small">Seleccionar período:</label>
+                    <select class="form-select form-select-sm" id="periodo-tiempos">
+                      <option value="semanal">Semanal</option>
+                      <option value="mensual">Mensual</option>
+                    </select>
                   </div>
                   <div class="mt-2">
                     <small class="text-muted">
@@ -139,24 +127,12 @@
                 <div class="card-body">
                   <p class="card-text">{{ report.description }}</p>
                   <div class="mt-3">
-                    <div class="row">
-                      <div class="col-6">
-                        <label for="periodo-vehiculos" class="form-label small">Período:</label>
-                        <select class="form-select form-select-sm" id="periodo-vehiculos">
-                          <option value="diario">Diario</option>
-                          <option value="semanal">Semanal</option>
-                          <option value="mensual">Mensual</option>
-                        </select>
-                      </div>
-                      <div class="col-6">
-                        <label for="filtro-vehiculos" class="form-label small">Filtrar por:</label>
-                        <select class="form-select form-select-sm" id="filtro-vehiculos">
-                          <option value="todos">Todos</option>
-                          <option value="zona">Por Zona</option>
-                          <option value="sucursal">Por Sucursal</option>
-                        </select>
-                      </div>
-                    </div>
+                    <label for="periodo-vehiculos" class="form-label small">Seleccionar período:</label>
+                    <select class="form-select form-select-sm" id="periodo-vehiculos">
+                      <option value="diario">Diario</option>
+                      <option value="semanal">Semanal</option>
+                      <option value="mensual">Mensual</option>
+                    </select>
                   </div>
                   <div class="mt-2">
                     <small class="text-muted">
@@ -182,22 +158,12 @@
                 <div class="card-body">
                   <p class="card-text">{{ report.description }}</p>
                   <div class="mt-3">
-                    <div class="row">
-                      <div class="col-6">
-                        <label for="periodo-repuestos" class="form-label small">Período:</label>
-                        <select class="form-select form-select-sm" id="periodo-repuestos">
-                          <option value="semanal">Semanal</option>
-                          <option value="mensual">Mensual</option>
-                        </select>
-                      </div>
-                      <div class="col-6">
-                        <label for="filtro-repuestos" class="form-label small">Filtrar por:</label>
-                        <select class="form-select form-select-sm" id="filtro-repuestos">
-                          <option value="todos">Todos</option>
-                          <option value="zona">Por Zona</option>
-                          <option value="proveedor">Por Proveedor</option>
-                        </select>
-                      </div>
+                    <label for="periodo-repuestos" class="form-label small">Seleccionar período:</label>
+                    <select class="form-select form-select-sm" id="periodo-repuestos">
+                      <option value="semanal">Semanal</option>
+                      <option value="mensual">Mensual</option>
+                    </select>
+                  </div>
                     </div>
                   </div>
                   <div class="mt-2">
@@ -213,7 +179,7 @@
                 </div>
               </div>
             </div> {% endcomment %}
-          {% elif report.id == "kpis_flota" %}
+          {% comment %} {% elif report.id == "kpis_flota" %}
             <div class="col-md-6 col-lg-4 mb-4">
               <div class="card h-100 border-{{ report.color }}">
                 <div class="card-header bg-{{ report.color }} text-white">
@@ -241,7 +207,7 @@
                   </button>
                 </div>
               </div>
-            </div>
+            </div> {% endcomment %}
           {% endif %}
         {% endfor %}
       </div>

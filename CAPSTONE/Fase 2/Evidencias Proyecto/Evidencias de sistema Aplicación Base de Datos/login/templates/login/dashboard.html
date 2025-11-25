@@ -25,7 +25,27 @@
 
         {% if role == "Supervisor" or role == "Jefe de Flota" and kpis %}
         <div class="dashboard-section">
-            <h3><i class="fas fa-chart-line"></i> KPIs Operativos</h3>
+            <h3><i class="fas fa-chart-line"></i> KPIs Diarios</h3>
+            <form method="get" class="mb-3 d-flex align-items-center gap-2">
+                <label for="kpi_date" class="form-label mb-0">Seleccionar fecha:</label>
+                <input type="date" id="kpi_date" name="kpi_date" value="{{ selected_kpi_date|date:'Y-m-d' }}" class="form-control form-control-sm" style="width: auto;">
+                <button type="submit" class="btn btn-primary btn-sm">Actualizar</button>
+            </form>
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-value">{{ kpis.ingresos_today }}</div>
+                    <div class="kpi-label">Vehículos Ingresados</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">{{ kpis.salidas_today }}</div>
+                    <div class="kpi-label">Vehículos Salidos</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-section">
+            <h3><i class="fas fa-calendar-alt"></i> KPIs Mensuales</h3>
+            <p class="section-description">Métricas del último mes (30 días)</p>
             <div class="kpi-grid">
                 <div class="kpi-card">
                     <div class="kpi-value">{{ kpis.active_work_orders }}</div>
@@ -37,11 +57,11 @@
                 </div>
                 <div class="kpi-card">
                     <div class="kpi-value">{{ kpis.documents_last_month }}</div>
-                    <div class="kpi-label">Documentos (Último Mes)</div>
+                    <div class="kpi-label">Documentos Subidos</div>
                 </div>
                 <div class="kpi-card">
                     <div class="kpi-value">{{ kpis.completed_work_orders_last_month }}</div>
-                    <div class="kpi-label">OTs Completadas (Último Mes)</div>
+                    <div class="kpi-label">OTs Completadas</div>
                 </div>
                 <div class="kpi-card">
                     <div class="kpi-value">{{ kpis.active_supervisor_users }}</div>
@@ -49,15 +69,73 @@
                 </div>
                 <div class="kpi-card">
                     <div class="kpi-value">{{ kpis.productivity_ratio }}%</div>
-                    <div class="kpi-label">Tasa de Productividad</div>
+                    <div class="kpi-label">Eficiencia de Trabajo</div>
+                    <div class="kpi-formula">
+                        <small class="text-muted">Fórmula: (Horas trabajadas / Total tiempo) × 100</small>
+                    </div>
                 </div>
                 <div class="kpi-card">
                     <div class="kpi-value">{{ kpis.total_man_hours_last_month }}</div>
-                    <div class="kpi-label">Horas Hombre (Último Mes)</div>
+                    <div class="kpi-label">Horas Hombre</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-value">{{ kpis.total_pause_time_last_month }}h</div>
+                    <div class="kpi-label">Tiempo Total de Pausas</div>
                 </div>
             </div>
             <div class="kpi-refresh">
                 <small class="text-muted">Los datos se actualizan automáticamente al recargar la página (F5)</small>
+            </div>
+        </div>
+
+        <!-- Productividad por Mecánico -->
+        <div class="dashboard-section">
+            <h3><i class="fas fa-users"></i> Productividad por Mecánico (Último Mes)</h3>
+            <p class="section-description">Eficiencia individual de cada mecánico basada en horas trabajadas vs tiempo total</p>
+            
+            <div class="mechanic-productivity-container">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Mecánico</th>
+                                <th>Horas Trabajadas</th>
+                                <th>Horas de Pausa</th>
+                                <th>Productividad</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for mechanic_data in mechanic_productivity %}
+                            <tr>
+                                <td><strong>{{ mechanic_data.mechanic.name }}</strong></td>
+                                <td>{{ mechanic_data.worked_hours }}h</td>
+                                <td>{{ mechanic_data.pause_hours }}h</td>
+                                <td>
+                                    <span class="productivity-badge 
+                                        {% if mechanic_data.productivity >= 90 %}badge-success
+                                        {% elif mechanic_data.productivity >= 70 %}badge-warning
+                                        {% else %}badge-danger{% endif %}">
+                                        {{ mechanic_data.productivity }}%
+                                    </span>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted">No hay datos de mecánicos disponibles</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="productivity-legend mt-3">
+                    <small class="text-muted">
+                        <strong>Leyenda:</strong> 
+                        <span class="badge-success">≥90%</span> Excelente | 
+                        <span class="badge-warning">70-89%</span> Bueno | 
+                        <span class="badge-danger"><90%</span> Requiere atención
+                    </small>
+                </div>
             </div>
         </div>
 
@@ -69,6 +147,27 @@
                 <!-- Gráfico de Barras: Órdenes por Estado -->
                 <div class="chart-container">
                     <h4>Órdenes de Trabajo por Estado</h4>
+                    <form method="get" class="mb-3">
+                        <div class="d-flex align-items-center gap-3 mb-2">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="view_type" id="daily" value="daily" {% if view_type == 'daily' %}checked{% endif %}>
+                                <label class="form-check-label" for="daily">
+                                    Diario
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="view_type" id="monthly" value="monthly" {% if view_type == 'monthly' %}checked{% endif %}>
+                                <label class="form-check-label" for="monthly">
+                                    Mensual (último mes)
+                                </label>
+                            </div>
+                        </div>
+                        <div id="date-picker" class="d-flex align-items-center gap-2 {% if view_type == 'monthly' %}d-none{% endif %}">
+                            <label for="date" class="form-label mb-0">Seleccionar fecha:</label>
+                            <input type="date" id="date" name="date" value="{{ selected_date|date:'Y-m-d' }}" class="form-control form-control-sm" style="width: auto;">
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-sm mt-2">Filtrar</button>
+                    </form>
                     <canvas id="statusChart" width="400" height="200"></canvas>
                 </div>
 
@@ -221,6 +320,18 @@ new Chart(documentsCtx, {
             }
         }
     }
+});
+
+// JavaScript para mostrar/ocultar el selector de fecha
+document.querySelectorAll('input[name="view_type"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        const datePicker = document.getElementById('date-picker');
+        if (this.value === 'daily') {
+            datePicker.classList.remove('d-none');
+        } else {
+            datePicker.classList.add('d-none');
+        }
+    });
 });
 </script>
 {% endif %}

@@ -1,5 +1,5 @@
 from django import forms
-from documents.models import Diagnostics, Incident, Route, FlotaUser
+from documents.models import Diagnostics, Incident, Route, FlotaUser, Site
 
 class DiagnosticsForm(forms.ModelForm):
     """Formulario completo para crear y editar diagnósticos"""
@@ -40,7 +40,8 @@ class DiagnosticsForm(forms.ModelForm):
             'route': forms.Select(attrs={'class': 'form-select'}),
             'location': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Ubicación del diagnóstico (ej: Taller Central, Ruta 5 km 45, etc.)'
+                'placeholder': 'Ubicación del diagnóstico (ej: Taller Central, Ruta 5 km 45, etc.)',
+                'list': 'sites-list'
             }),
             'status': forms.Select(attrs={'class': 'form-select'}),
             'assigned_to': forms.Select(attrs={'class': 'form-select'}),

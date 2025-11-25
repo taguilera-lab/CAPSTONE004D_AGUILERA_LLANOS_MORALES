@@ -5,7 +5,7 @@ from django.db.models import Q, Prefetch
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
-from documents.models import Diagnostics, Incident, Vehicle, FlotaUser, Route, WorkOrder, WorkOrderStatus
+from documents.models import Diagnostics, Incident, Vehicle, FlotaUser, Route, WorkOrder, WorkOrderStatus, Site
 from .forms import DiagnosticsForm
 
 @login_required
@@ -180,6 +180,7 @@ def diagnostics_create(request, incident_id=None):
                     'incident': incident,
                     'incidents': [incident] if incident else [],
                     'ingreso': ingreso,
+                    'sites': Site.objects.all(),
                     'is_create': True,
                     'from_ingreso': bool(from_ingreso_id),
                 }
@@ -224,6 +225,7 @@ def diagnostics_create(request, incident_id=None):
         'incident': incident,  # Mantener para compatibilidad con template
         'incidents': [incident] if incident else [],  # Lista de incidentes para el template
         'ingreso': ingreso,  # Agregar el ingreso si existe
+        'sites': Site.objects.all(),
         'is_create': True,
         'from_ingreso': bool(from_ingreso_id),  # Indicar si viene de ingreso
     }
@@ -362,6 +364,7 @@ def diagnostics_update(request, diagnostic_id):
                     'diagnostic': diagnostic,
                     'incidents': incidents,
                     'unique_vehicles': unique_vehicles,
+                    'sites': Site.objects.all(),
                     'is_create': False,
                 }
                 return render(request, 'diagnostics/diagnostics_form.html', context)
@@ -449,6 +452,7 @@ def diagnostics_update(request, diagnostic_id):
         'diagnostic': diagnostic,
         'incidents': incidents,
         'unique_vehicles': unique_vehicles,
+        'sites': Site.objects.all(),
         'is_create': False,
     }
 

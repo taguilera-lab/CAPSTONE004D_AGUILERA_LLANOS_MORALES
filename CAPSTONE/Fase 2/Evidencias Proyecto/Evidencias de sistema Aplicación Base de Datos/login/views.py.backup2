@@ -106,7 +106,7 @@ def bodeguero_dashboard(request):
 @login_required
 def supervisor_dashboard(request):
     from django.utils import timezone
-    from datetime import timedelta, date
+    from datetime import timedelta
     from django.db.models import Count, Q, Sum, Avg
     from documents.models import WorkOrder, Ingreso, FlotaUser, Role, ServiceType, WorkOrderMechanic
     from pausas.models import WorkOrderPause
@@ -114,31 +114,6 @@ def supervisor_dashboard(request):
 
     now = timezone.now()
     last_month = now - timedelta(days=30)
-
-    # Obtener fecha seleccionada y tipo de vista
-    selected_date_str = request.GET.get('date')
-    view_type = request.GET.get('view_type', 'daily')
-    selected_kpi_date_str = request.GET.get('kpi_date')
-    
-    if view_type == 'monthly':
-        selected_date = None
-    else:
-        if selected_date_str:
-            try:
-                selected_date = date.fromisoformat(selected_date_str)
-            except ValueError:
-                selected_date = now.date()
-        else:
-            selected_date = now.date()
-    
-    # Fecha para KPIs diarios
-    if selected_kpi_date_str:
-        try:
-            selected_kpi_date = date.fromisoformat(selected_kpi_date_str)
-        except ValueError:
-            selected_kpi_date = now.date()
-    else:
-        selected_kpi_date = now.date()
 
     # KPI 1: Órdenes de trabajo activas
     active_work_orders = WorkOrder.objects.filter(
@@ -206,80 +181,27 @@ def supervisor_dashboard(request):
         total_hours=Sum('hours_worked')
     )['total_hours'] or 0
 
-    # KPI 8: Tiempo total de pausas en el último mes (simplificado)
-    total_pause_time_last_month = WorkOrderPause.objects.filter(
+    # KPI 8: Tiempo total de pausas en el último mes
+    total_pause_time_last_month = 0
+    pauses_last_month = WorkOrderPause.objects.filter(
         start_datetime__gte=last_month,
         is_active=True
-    ).aggregate(
-        total_minutes=Sum('duration_minutes')
-    )['total_minutes'] or 0
+    )
     
-    # Convertir minutos a horas
-    total_pause_time_last_month = total_pause_time_last_month / 60
-
-    # KPIs diarios: Ingresos y salidas
-    ingresos_today = Ingreso.objects.filter(
-        entry_datetime__date=selected_kpi_date
-    ).count()
-    
-    salidas_today = Ingreso.objects.filter(
-        exit_datetime__date=selected_kpi_date
-    ).count()
-
-    # ===== PRODUCTIVIDAD POR MECÁNICO (ÚLTIMO MES) =====
-    mechanic_productivity = []
-    
-    # Obtener todos los mecánicos activos
-    active_mechanics = FlotaUser.objects.filter(
-        role__name='Mecánico',
-        status__name='Activo'
-    ).order_by('name')
-    
-    for mechanic in active_mechanics:
-        # Horas trabajadas por este mecánico en el último mes
-        mechanic_worked_hours = float(WorkOrderMechanic.objects.filter(
-            mechanic=mechanic,
-            work_order__created_datetime__gte=last_month
-        ).aggregate(
-            total_hours=Sum('hours_worked')
-        )['total_hours'] or 0)
-        
-        # Horas de pausa de este mecánico en el último mes
-        mechanic_pause_minutes = WorkOrderPause.objects.filter(
-            Q(mechanic_assignment__mechanic=mechanic) | Q(mechanic_assignment__isnull=True, work_order__mechanic_assignments__mechanic=mechanic),
-            start_datetime__gte=last_month,
-            is_active=True
-        ).aggregate(
-            total_minutes=Sum('duration_minutes')
-        )['total_minutes'] or 0
-        
-        mechanic_pause_hours = mechanic_pause_minutes / 60
-        
-        # Calcular productividad individual
-        total_mechanic_time = mechanic_worked_hours + mechanic_pause_hours
-        if total_mechanic_time > 0:
-            productivity = (mechanic_worked_hours / total_mechanic_time) * 100
-        else:
-            productivity = 0
-        
-        mechanic_productivity.append({
-            'mechanic': mechanic,
-            'worked_hours': round(mechanic_worked_hours, 2),
-            'pause_hours': round(mechanic_pause_hours, 2),
-            'productivity': round(productivity, 1)
-        })
+    for pause in pauses_last_month:
+        if pause.duration_minutes:
+            total_pause_time_last_month += pause.duration_minutes / 60  # Convertir a horas
+        elif pause.end_datetime and pause.start_datetime:
+            # Calcular duración si no está almacenada
+            duration = pause.end_datetime - pause.start_datetime
+            total_pause_time_last_month += duration.total_seconds() / 3600  # Convertir a horas
 
     # ===== DATOS PARA GRÁFICOS =====
 
     # Gráfico de barras: Órdenes de trabajo por estado
-    if view_type == 'monthly':
-        work_orders_by_status = WorkOrder.objects.filter(created_datetime__gte=last_month).values('status__name').annotate(
-            count=Count('id_work_order')
-        ).order_by('-count')[:10]
-    else:
-        work_orders_by_status = WorkOrder.objects.filter(created_datetime__date=selected_date).values('status__name').annotate(
-            count=Count('id_work_order')
-        ).order_by('-count')[:10]
+    work_orders_by_status = WorkOrder.objects.values('status__name').annotate(
+        count=Count('id_work_order')
+    ).order_by('-count')[:10]
 
     status_labels = [item['status__name'] or 'Sin estado' for item in work_orders_by_status]
     status_counts = [item['count'] for item in work_orders_by_status]
@@ -331,8 +253,6 @@ def supervisor_dashboard(request):
             'productivity_ratio': round(productivity_ratio, 1),
             'total_man_hours_last_month': round(total_man_hours_last_month, 1),
             'total_pause_time_last_month': round(total_pause_time_last_month, 1),
-            'ingresos_today': ingresos_today,
-            'salidas_today': salidas_today,
         },
         'charts': {
             'status_labels': status_labels,
@@ -343,11 +263,7 @@ def supervisor_dashboard(request):
             'trend_completed': trend_completed,
             'doc_type_labels': doc_type_labels,
             'doc_type_counts': doc_type_counts,
-        },
-        'mechanic_productivity': mechanic_productivity,
-        'selected_date': selected_date,
-        'view_type': view_type,
-        'selected_kpi_date': selected_kpi_date,
+        }
     }
 
     return render(request, 'login/dashboard.html', context)
